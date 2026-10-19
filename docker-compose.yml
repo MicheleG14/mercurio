@@ -1,0 +1,22 @@
+# Local development: only the database. The API and the web app run on the host
+# (pnpm dev) for hot reload. Production uses docker-compose.prod.yml.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mercurio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mercurio}
+      POSTGRES_DB: ${POSTGRES_DB:-mercurio}
+    ports:
+      # Bound to localhost only: Docker port publishing bypasses host firewalls.
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:

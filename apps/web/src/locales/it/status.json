@@ -1,0 +1,24 @@
+{
+  "title": "Stato del sistema",
+  "subtitle": "Mercurio è in costruzione. Questa pagina verifica che l'applicazione e il database siano raggiungibili.",
+  "overall": {
+    "ok": "Operativo",
+    "degraded": "Servizio degradato",
+    "unreachable": "Non raggiungibile",
+    "checking": "Verifica in corso"
+  },
+  "checks": {
+    "api": "API",
+    "database": "Database",
+    "version": "Versione",
+    "uptime": "Attivo da",
+    "checkedAt": "Ultimo controllo"
+  },
+  "value": {
+    "up": "Raggiungibile",
+    "down": "Non raggiungibile"
+  },
+  "unreachableHint": "Il server non risponde. Riprova tra qualche istante.",
+  "refresh": "Aggiorna",
+  "next": "Prossimo passo: accesso con verifica in due passaggi."
+}

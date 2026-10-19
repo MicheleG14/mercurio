@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-24.04
+    services:
+      # A real PostgreSQL for the end-to-end tests (docs/conventions.md B20).
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: mercurio
+          POSTGRES_PASSWORD: mercurio
+          POSTGRES_DB: mercurio
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mercurio -d mercurio"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://mercurio:mercurio@localhost:5432/mercurio
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+      # pnpm version comes from "packageManager" in package.json, as in the Dockerfile.
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm generate
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm test:e2e
+      - run: pnpm build
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-24.04
+    needs: check
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          push: false
+          build-args: |
+            APP_BASE_PATH=/mercurio
+            APP_VERSION=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

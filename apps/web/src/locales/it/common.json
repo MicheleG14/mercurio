@@ -1,0 +1,21 @@
+{
+  "app": {
+    "name": "Mercurio",
+    "tagline": "ERP per magazzino e fatturazione",
+    "demo": "Ambiente dimostrativo: tutti i dati sono fittizi."
+  },
+  "theme": {
+    "label": "Tema",
+    "system": "Sistema",
+    "light": "Chiaro",
+    "dark": "Scuro"
+  },
+  "language": {
+    "label": "Lingua",
+    "it": "Italiano",
+    "en": "English"
+  },
+  "footer": {
+    "source": "Codice sorgente su GitHub"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "app": {
+    "name": "Mercurio",
+    "tagline": "Warehouse and invoicing ERP",
+    "demo": "Demo environment: all data is fictitious."
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "language": {
+    "label": "Language",
+    "it": "Italiano",
+    "en": "English"
+  },
+  "footer": {
+    "source": "Source code on GitHub"
+  }
+}

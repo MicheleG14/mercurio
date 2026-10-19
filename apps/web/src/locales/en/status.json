@@ -1,0 +1,24 @@
+{
+  "title": "System status",
+  "subtitle": "Mercurio is under construction. This page checks that the application and its database are reachable.",
+  "overall": {
+    "ok": "Operational",
+    "degraded": "Degraded service",
+    "unreachable": "Unreachable",
+    "checking": "Checking"
+  },
+  "checks": {
+    "api": "API",
+    "database": "Database",
+    "version": "Version",
+    "uptime": "Up for",
+    "checkedAt": "Last check"
+  },
+  "value": {
+    "up": "Reachable",
+    "down": "Unreachable"
+  },
+  "unreachableHint": "The server is not responding. Try again in a moment.",
+  "refresh": "Refresh",
+  "next": "Next step: sign-in with two-step verification."
+}

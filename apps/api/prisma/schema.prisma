@@ -1,0 +1,11 @@
+// Prisma schema. Phase 0 has no domain tables: the database is only checked by /health.
+// Domain models arrive with their modules (phase 1 onwards).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
