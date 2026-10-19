@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v5
       # pnpm first: setup-node caches the pnpm store, so pnpm must already be on the PATH.
       # Its version comes from "packageManager" in package.json, as in the Dockerfile.
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v5
         with:
           node-version-file: .node-version
