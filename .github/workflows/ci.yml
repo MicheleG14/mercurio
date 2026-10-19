@@ -38,7 +38,7 @@ jobs:
       # pnpm first: setup-node caches the pnpm store, so pnpm must already be on the PATH.
       # Its version comes from "packageManager" in package.json, as in the Dockerfile.
       - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: pnpm
