@@ -1,0 +1,62 @@
+name: Deploy
+
+# Deploys a published image version to the production server.
+# - Automatically, from CI, when a version tag (v0.1.0) has been built and published.
+# - By hand, from the Actions tab, for any published version: this is also the rollback.
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Image version to deploy, e.g. 0.1.0 or sha-1a2b3c4'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+# Never two deployments at once, and never cancel one halfway.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-24.04
+    # Secrets live in the "production" environment, which can require approval.
+    environment: production
+    steps:
+      - name: Check the version
+        id: version
+        env:
+          REQUESTED: ${{ inputs.version }}
+        run: |
+          version="${REQUESTED#v}"
+          if [[ ! $version =~ ^([0-9]+\.[0-9]+\.[0-9]+|sha-[0-9a-f]{7})$ ]]; then
+            echo "::error::Invalid version '$REQUESTED': expected 0.1.0 or sha-1a2b3c4"
+            exit 1
+          fi
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+
+      # The server key only allows running the deployment script (forced command):
+      # what is sent here is just the version, which the script validates again.
+      - name: Run the deployment on the server
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # The server's host key is pinned: an unknown or changed key aborts the connection.
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" "$VERSION"

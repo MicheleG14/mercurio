@@ -39,6 +39,38 @@ flowchart LR
 In development the same pieces run without nginx: PostgreSQL in Docker, the API with `nest start
 --watch`, and Vite with a proxy for `/api`.
 
+## Delivery
+
+```mermaid
+flowchart LR
+    dev([git push / tag]) --> ci
+
+    subgraph gh[GitHub]
+        ci[CI<br/>format · types · lint · tests · build]
+        images[Docker images<br/>build and publish]
+        deploy[Deploy workflow<br/>tags, or by hand]
+        ghcr[(GitHub Container Registry<br/>mercurio · mercurio-migrate)]
+        ci --> images --> ghcr
+        images -- version tag --> deploy
+    end
+
+    subgraph host[Server]
+        script[deploy.sh &lt;version&gt;]
+        compose[Docker Compose]
+    end
+
+    deploy -- SSH, key limited to deploy.sh --> script
+    script -- pull --> ghcr
+    script --> compose
+```
+
+- Every push to `main` publishes images tagged `sha-<commit>` and `latest`; a tag `vX.Y.Z`
+  publishes `X.Y.Z` and deploys it. Pull requests only build.
+- The server builds nothing and has no copy of the repository: `deploy.sh` pulls the requested
+  version, runs the migrations, restarts the app and waits until `/api/health` reports that version.
+- GitHub's SSH key can only run `deploy.sh`. See
+  [ADR 0007](adr/0007-continuous-delivery-github-actions.md).
+
 ## Modules
 
 ```mermaid

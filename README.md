@@ -73,15 +73,20 @@ pnpm dev:web                     # web app on http://127.0.0.1:5173
 
 ## Production
 
-The app runs in Docker behind nginx under the `/mercurio` path:
+The app runs in Docker behind nginx under the `/mercurio` path. CI publishes the images to GitHub
+Container Registry, and pushing a version tag deploys it:
 
 ```bash
-cp .env.production.example .env.production   # set a real password
-deploy/deploy.sh                              # pull, build, migrate, restart, health check
+git tag v0.1.0 && git push origin v0.1.0   # build, publish, deploy
 ```
 
+On the server, the deployment folder holds only `docker-compose.prod.yml`, `deploy/deploy.sh` and
+`.env.production` (from `.env.production.example`, with a real password). The script pulls the
+images, runs the migrations, restarts the app and waits for the health check. Any published version
+can be redeployed by hand from the **Deploy** workflow, which is also the rollback.
+
 `deploy/nginx/mercurio.conf` holds the nginx locations; the container listens on `127.0.0.1:8001` only
-and the database is not exposed.
+and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-delivery-github-actions.md).
 
 ## Roadmap
 

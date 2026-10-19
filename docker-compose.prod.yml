@@ -1,6 +1,9 @@
-# Production on the server:
-#   docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
-# See deploy/deploy.sh. nginx on the host proxies /mercurio/ to 127.0.0.1:8001.
+# Production. The images are built and published by CI (GitHub Container Registry);
+# the server only pulls them: see deploy/deploy.sh. nginx on the host proxies /mercurio/
+# to 127.0.0.1:8001.
+#
+# The `build` sections let you build and try the same images locally:
+#   APP_VERSION=local docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
 name: mercurio-prod
 
 x-hardening: &hardening
@@ -29,6 +32,7 @@ services:
       - no-new-privileges:true
 
   migrate:
+    image: ghcr.io/micheleg14/mercurio-migrate:${APP_VERSION:?set APP_VERSION, e.g. 0.1.0}
     build:
       context: .
       target: migrator
@@ -41,13 +45,13 @@ services:
     <<: *hardening
 
   app:
-    image: mercurio:${APP_VERSION:-latest}
+    image: ghcr.io/micheleg14/mercurio:${APP_VERSION:?set APP_VERSION, e.g. 0.1.0}
     build:
       context: .
       target: runtime
       args:
         APP_BASE_PATH: ${APP_BASE_PATH:-/mercurio}
-        APP_VERSION: ${APP_VERSION:-dev}
+        APP_VERSION: ${APP_VERSION}
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}

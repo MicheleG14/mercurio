@@ -25,4 +25,7 @@ features yet.
   development and production, nginx location, deployment script.
 - Quality tooling: Vitest, Testing Library, oxlint, Prettier, Husky, lint-staged, commitlint.
 - GitHub Actions CI: format, type check, lint, unit and end-to-end tests, build, Docker image.
+- Continuous delivery: CI publishes the images to GitHub Container Registry, a version tag deploys
+  them over SSH with a key restricted to the deployment script, any version can be redeployed by
+  hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
