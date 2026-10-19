@@ -5,7 +5,7 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-10-19
 
 Phase 0: walking skeleton. The full path from code to production works end to end, with no business
 features yet.
@@ -29,3 +29,5 @@ features yet.
   them over SSH with a key restricted to the deployment script, any version can be redeployed by
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
+
+[0.1.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.1.0
