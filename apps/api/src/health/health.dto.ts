@@ -3,6 +3,12 @@ import { ApiProperty } from '@nestjs/swagger';
 export class HealthChecksDto {
   @ApiProperty({ enum: ['up', 'down'] })
   database!: 'up' | 'down';
+
+  @ApiProperty({
+    enum: ['up', 'down'],
+    description: 'Down when the database role could bypass Row-Level Security',
+  })
+  tenantIsolation!: 'up' | 'down';
 }
 
 export class HealthResponseDto {

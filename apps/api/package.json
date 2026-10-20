@@ -20,7 +20,9 @@
     "test:cov": "vitest run --coverage",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "db:provision": "node --env-file-if-exists=../../.env scripts/provision-app-role.mjs",
+    "db:setup": "prisma migrate deploy && pnpm db:provision"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
