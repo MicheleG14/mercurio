@@ -60,6 +60,8 @@ describe('web app served by the API (e2e)', () => {
     await request(app.getHttpServer()).get('/mercurio/api/health').expect(200);
     const res = await request(app.getHttpServer()).get('/mercurio/api/does-not-exist').expect(404);
 
-    expect(res.headers['content-type']).toContain('application/json');
+    // An API error (docs/adr/0003), not the web app's index.html.
+    expect(res.headers['content-type']).toContain('application/problem+json');
+    expect(res.body).toMatchObject({ code: 'NOT_FOUND' });
   });
 });

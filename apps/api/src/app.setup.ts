@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import type { AppConfig } from './config/app-config.js';
+import { ProblemDetailsFilter, validationException } from './shared/errors/index.js';
 
 /**
  * Everything that makes the HTTP application what it is. Shared by main.ts and the
@@ -24,8 +25,15 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): vo
   );
   app.setGlobalPrefix(config.apiPrefix);
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      exceptionFactory: validationException,
+    }),
   );
+  // Every error leaves the API as RFC 9457 Problem Details (docs/adr/0003).
+  app.useGlobalFilters(new ProblemDetailsFilter());
   app.enableShutdownHooks();
 
   if (config.swaggerEnabled) {
