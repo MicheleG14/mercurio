@@ -1,8 +1,11 @@
-import type { INestApplicationContext } from '@nestjs/common';
+import { HttpStatus, type INestApplicationContext } from '@nestjs/common';
 import type { ParseArgsOptionsConfig } from 'node:util';
 import { IdentityService } from '../modules/identity/index.js';
 import { MODULE_KEYS, TenancyService } from '../modules/tenancy/index.js';
+import { APP_CONFIG, type AppConfig } from '../config/app-config.js';
 import { PrismaService } from '../prisma/index.js';
+import { DomainException } from '../shared/errors/index.js';
+import { seedDemo } from './seed-demo.js';
 
 /** Where a command writes: human-readable lines, and one audit event per completed command. */
 export interface CliIo {
@@ -12,9 +15,11 @@ export interface CliIo {
   audit(event: Record<string, unknown>): void;
 }
 
+/** Option values; boolean flags arrive as 'true' (see runCli). */
 type Values = Record<string, string | undefined>;
 
 interface Services {
+  config: AppConfig;
   prisma: PrismaService;
   tenancy: TenancyService;
   identity: IdentityService;
@@ -190,6 +195,28 @@ export const COMMANDS: Record<string, Command> = {
     },
   },
 
+  'seed-demo': {
+    summary:
+      'Create the fictitious demo tenants (refused in production without --allow-production)',
+    options: { 'allow-production': { type: 'boolean' } },
+    required: [],
+    async run({ config, prisma, tenancy, identity }, v, io) {
+      if (config.isProduction && v['allow-production'] !== 'true') {
+        throw new DomainException('DEMO_IN_PRODUCTION', HttpStatus.CONFLICT, {
+          detail: 'add --allow-production to seed a production database on purpose',
+        });
+      }
+      const seeded = await prisma.$transaction((tx) => seedDemo(tx, { tenancy, identity }));
+      for (const tenant of seeded) {
+        io.out(
+          `Demo tenant ${tenant.slug}: ${tenant.companies} companies, ${tenant.members} members`,
+        );
+      }
+      io.out('Fictitious data. Sign-in for demo users arrives with phase 1b.');
+      io.audit({ command: 'seed-demo', tenants: seeded.map((t) => t.slug) });
+    },
+  },
+
   'list-tenants': {
     summary: 'List tenants with their companies, modules and members',
     options: {},
@@ -218,6 +245,7 @@ export const COMMANDS: Record<string, Command> = {
 
 export function resolveServices(app: INestApplicationContext): Services {
   return {
+    config: app.get<AppConfig>(APP_CONFIG),
     prisma: app.get(PrismaService),
     tenancy: app.get(TenancyService),
     identity: app.get(IdentityService),
