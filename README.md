@@ -113,7 +113,7 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 | Phase | Content                                                          | Status |
 | ----- | ---------------------------------------------------------------- | ------ |
 | 0     | Walking skeleton: monorepo, CI, Docker, status page              | ✅     |
-| 1a    | Tenancy: tenants, companies, people, modules, Row-Level Security |        |
+| 1a    | Tenancy: tenants, companies, people, modules, Row-Level Security | ✅     |
 | 1b    | Authentication: sign-in, TOTP two-factor, roles, audit log       |        |
 | 2     | Registry: customers, suppliers, items                            |        |
 | 3     | Warehouse: movements, stock levels, goods receipt                |        |

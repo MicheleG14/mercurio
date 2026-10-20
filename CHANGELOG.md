@@ -5,7 +5,7 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
-## [0.2.0] - Unreleased
+## [0.2.0] - 2026-10-20
 
 Phase 1a: tenancy and identity. The multi-tenant foundations every later phase builds on, with
 isolation enforced by the database. No sign-in yet: it arrives with phase 1b.
