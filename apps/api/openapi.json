@@ -1,0 +1,1200 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The API and its database are reachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A dependency is down",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/audit-events": {
+      "get": {
+        "operationId": "AuditController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "TENANT_SELECTED",
+                "TENANT_CREATED",
+                "MEMBER_ADDED",
+                "MEMBER_REMOVED",
+                "MODULES_CHANGED",
+                "COMPANY_ADDED"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "From this instant (ISO 8601), inclusive",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Until this instant (ISO 8601), exclusive",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Events of the current tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditEventPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "audit"
+        ]
+      }
+    },
+    "/auth/activate": {
+      "post": {
+        "operationId": "AuthController_activate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivateResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Redeem an activation code and set the password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/mfa/enroll/start": {
+      "post": {
+        "operationId": "AuthController_enrollStart",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollStartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollStartResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create the two-factor secret to show as a QR code",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/mfa/enroll/confirm": {
+      "post": {
+        "operationId": "AuthController_enrollConfirm",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollConfirmDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollConfirmResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Confirm the two-factor setup with a code; signs the person in",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "First step of signing in: email and password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/mfa/verify": {
+      "post": {
+        "operationId": "AuthController_verifyMfa",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyMfaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Second step of signing in: a code or a recovery code",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Swap the refresh cookie for a new one and a new access token",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/tenant": {
+      "post": {
+        "operationId": "AuthController_selectTenant",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Choose or change the tenant of the session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Close this session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout-all": {
+      "post": {
+        "operationId": "AuthController_logoutAll",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Close every session of the person",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change the password; the other sessions are closed",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/recovery-codes": {
+      "post": {
+        "operationId": "AuthController_regenerateRecoveryCodes",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegenerateRecoveryCodesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodesDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace the recovery codes (needs the password and a current code)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Who is signed in, with permissions, modules and companies",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/events": {
+      "get": {
+        "operationId": "AuthController_events",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthEventPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The latest security events of the signed-in person",
+        "tags": [
+          "auth"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Mercurio API",
+    "description": "Warehouse and invoicing",
+    "version": "0.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "mercurio_refresh"
+      }
+    },
+    "schemas": {
+      "HealthChecksDto": {
+        "type": "object",
+        "properties": {
+          "database": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down"
+            ]
+          },
+          "tenantIsolation": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down"
+            ],
+            "description": "Down when the database role could bypass Row-Level Security"
+          }
+        },
+        "required": [
+          "database",
+          "tenantIsolation"
+        ]
+      },
+      "HealthResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "checks": {
+            "$ref": "#/components/schemas/HealthChecksDto"
+          },
+          "version": {
+            "type": "string",
+            "example": "0.1.0"
+          },
+          "uptimeSeconds": {
+            "type": "number",
+            "description": "Seconds since the process started",
+            "example": 42
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2026-10-19T15:00:00.000Z"
+          }
+        },
+        "required": [
+          "status",
+          "checks",
+          "version",
+          "uptimeSeconds",
+          "timestamp"
+        ]
+      },
+      "AuditActorDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email"
+        ]
+      },
+      "AuditEventDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "example": "2026-10-20T15:00:00.000Z"
+          },
+          "type": {
+            "type": "string",
+            "example": "MEMBER_ADDED"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "API",
+              "CLI"
+            ]
+          },
+          "actor": {
+            "nullable": true,
+            "description": "Empty for the terminal operator",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuditActorDto"
+              }
+            ]
+          },
+          "subjectType": {
+            "type": "string",
+            "nullable": true
+          },
+          "subjectId": {
+            "type": "string",
+            "nullable": true
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true,
+            "description": "Small structured facts about the event, never secrets"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "type",
+          "source",
+          "actor"
+        ]
+      },
+      "AuditEventPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditEventDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "ActivateDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "The one-time activation code received from the administrator"
+          },
+          "password": {
+            "type": "string",
+            "description": "The new password, 12 to 128 characters"
+          }
+        },
+        "required": [
+          "code",
+          "password"
+        ]
+      },
+      "ActivateResponseDto": {
+        "type": "object",
+        "properties": {
+          "enrollToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enrollToken"
+        ]
+      },
+      "EnrollStartDto": {
+        "type": "object",
+        "properties": {
+          "enrollToken": {
+            "type": "string",
+            "description": "The enrollment token returned by the activation"
+          }
+        },
+        "required": [
+          "enrollToken"
+        ]
+      },
+      "EnrollStartResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "The secret in base32, for typing into an app by hand"
+          },
+          "uri": {
+            "type": "string",
+            "description": "The otpauth:// address to show as a QR code"
+          }
+        },
+        "required": [
+          "secret",
+          "uri"
+        ]
+      },
+      "EnrollConfirmDto": {
+        "type": "object",
+        "properties": {
+          "enrollToken": {
+            "type": "string",
+            "description": "The enrollment token returned by the activation"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456",
+            "description": "The six-digit code shown by the app"
+          }
+        },
+        "required": [
+          "enrollToken",
+          "code"
+        ]
+      },
+      "TenantChoiceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "WAREHOUSE_KEEPER",
+              "ACCOUNTANT",
+              "READ_ONLY"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "role"
+        ]
+      },
+      "EnrollConfirmResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Send as \"Authorization: Bearer <token>\""
+          },
+          "expiresIn": {
+            "type": "number",
+            "description": "Seconds until the access token expires"
+          },
+          "tenantId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The tenant of the session; empty until chosen"
+          },
+          "tenants": {
+            "description": "Tenants the person can choose from",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TenantChoiceDto"
+            }
+          },
+          "recoveryCodes": {
+            "description": "Shown once: the person must save them",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "accessToken",
+          "expiresIn",
+          "tenantId",
+          "tenants",
+          "recoveryCodes"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "mario@example.com"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "MFA_REQUIRED",
+              "ENROLLMENT_REQUIRED"
+            ],
+            "description": "MFA_REQUIRED: send the challenge token with a code to /auth/mfa/verify. ENROLLMENT_REQUIRED: the two-factor setup was never finished; use the enrollment token."
+          },
+          "token": {
+            "type": "string",
+            "description": "Challenge token or enrollment token, according to status"
+          }
+        },
+        "required": [
+          "status",
+          "token"
+        ]
+      },
+      "VerifyMfaDto": {
+        "type": "object",
+        "properties": {
+          "challengeToken": {
+            "type": "string",
+            "description": "The challenge token returned by the login"
+          },
+          "code": {
+            "type": "string",
+            "description": "A six-digit code, or a recovery code",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "challengeToken",
+          "code"
+        ]
+      },
+      "SessionDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Send as \"Authorization: Bearer <token>\""
+          },
+          "expiresIn": {
+            "type": "number",
+            "description": "Seconds until the access token expires"
+          },
+          "tenantId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The tenant of the session; empty until chosen"
+          },
+          "tenants": {
+            "description": "Tenants the person can choose from",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TenantChoiceDto"
+            }
+          }
+        },
+        "required": [
+          "accessToken",
+          "expiresIn",
+          "tenantId",
+          "tenants"
+        ]
+      },
+      "SelectTenantDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenantId"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "RegenerateRecoveryCodesDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456",
+            "description": "A current six-digit code"
+          }
+        },
+        "required": [
+          "password",
+          "code"
+        ]
+      },
+      "RecoveryCodesDto": {
+        "type": "object",
+        "properties": {
+          "recoveryCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "recoveryCodes"
+        ]
+      },
+      "MeUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name"
+        ]
+      },
+      "MeTenantDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ]
+      },
+      "MeCompanyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "legalName": {
+            "type": "string"
+          },
+          "vatNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "legalName",
+          "vatNumber"
+        ]
+      },
+      "MeDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/MeUserDto"
+          },
+          "tenant": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MeTenantDto"
+              }
+            ]
+          },
+          "role": {
+            "type": "string",
+            "nullable": true
+          },
+          "permissions": {
+            "example": [
+              "registry:read"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "modules": {
+            "example": [
+              "registry",
+              "warehouse"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "companies": {
+            "description": "Companies the person can work on",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MeCompanyDto"
+            }
+          },
+          "tenants": {
+            "description": "Every tenant the person can switch to",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TenantChoiceDto"
+            }
+          }
+        },
+        "required": [
+          "user",
+          "tenant",
+          "permissions",
+          "modules",
+          "companies",
+          "tenants"
+        ]
+      },
+      "AuthEventDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "example": "LOGIN_SUCCEEDED"
+          },
+          "ip": {
+            "type": "string",
+            "nullable": true
+          },
+          "userAgent": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "type"
+        ]
+      },
+      "AuthEventPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthEventDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      }
+    }
+  }
+}

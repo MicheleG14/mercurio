@@ -24,7 +24,8 @@
     "db:deploy": "prisma migrate deploy",
     "db:provision": "node --env-file-if-exists=../../.env scripts/provision-app-role.mjs",
     "db:setup": "prisma migrate deploy && pnpm db:provision",
-    "cli": "nest build && node --env-file-if-exists=../../.env dist/cli.js"
+    "cli": "nest build && node --env-file-if-exists=../../.env dist/cli.js",
+    "openapi": "nest build && node dist/openapi.js openapi.json"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

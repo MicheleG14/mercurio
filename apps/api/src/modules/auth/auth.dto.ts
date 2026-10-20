@@ -126,7 +126,11 @@ export class EnrollStartResponseDto {
 export class SessionDto {
   @ApiProperty({ description: 'Send as "Authorization: Bearer <token>"' }) accessToken!: string;
   @ApiProperty({ description: 'Seconds until the access token expires' }) expiresIn!: number;
-  @ApiProperty({ nullable: true, description: 'The tenant of the session; empty until chosen' })
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: 'The tenant of the session; empty until chosen',
+  })
   tenantId!: string | null;
   @ApiProperty({ type: [TenantChoiceDto], description: 'Tenants the person can choose from' })
   tenants!: TenantChoiceDto[];
@@ -162,7 +166,7 @@ export class MeCompanyDto {
 export class MeDto {
   @ApiProperty({ type: MeUserDto }) user!: MeUserDto;
   @ApiProperty({ type: MeTenantDto, nullable: true }) tenant!: MeTenantDto | null;
-  @ApiPropertyOptional({ nullable: true }) role!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) role!: string | null;
   @ApiProperty({ type: [String], example: ['registry:read'] }) permissions!: string[];
   @ApiProperty({ type: [String], example: ['registry', 'warehouse'] }) modules!: string[];
   @ApiProperty({ type: [MeCompanyDto], description: 'Companies the person can work on' })

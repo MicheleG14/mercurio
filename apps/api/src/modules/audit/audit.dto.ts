@@ -39,9 +39,14 @@ export class AuditEventDto {
     description: 'Empty for the terminal operator',
   })
   actor!: AuditActorDto | null;
-  @ApiPropertyOptional({ nullable: true }) subjectType!: string | null;
-  @ApiPropertyOptional({ nullable: true }) subjectId!: string | null;
-  @ApiPropertyOptional({ description: 'Small structured facts about the event, never secrets' })
+  @ApiPropertyOptional({ type: String, nullable: true }) subjectType!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) subjectId!: string | null;
+  @ApiPropertyOptional({
+    type: 'object',
+    additionalProperties: true,
+    nullable: true,
+    description: 'Small structured facts about the event, never secrets',
+  })
   details!: Record<string, unknown> | null;
 }
 
@@ -56,8 +61,8 @@ export class AuthEventDto {
   @ApiProperty() id!: string;
   @ApiProperty() at!: string;
   @ApiProperty({ example: 'LOGIN_SUCCEEDED' }) type!: string;
-  @ApiPropertyOptional({ nullable: true }) ip!: string | null;
-  @ApiPropertyOptional({ nullable: true }) userAgent!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) ip!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) userAgent!: string | null;
 }
 
 export class AuthEventPageDto {
