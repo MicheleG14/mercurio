@@ -95,6 +95,11 @@ erDiagram
     memberships ||--o{ membership_companies : "limited to"
     companies ||--o{ membership_companies : "reachable by"
     users ||--o{ activation_tokens : "activates with"
+    users ||--o| credentials : "signs in with"
+    users ||--o{ recovery_codes : has
+    users ||--o{ sessions : opens
+    users ||--o{ auth_events : "security events"
+    tenants ||--o{ audit_events : records
 ```
 
 | Table                  | Kind     | Holds                                                                    |
@@ -106,6 +111,11 @@ erDiagram
 | `tenant_modules`       | tenant   | Modules a tenant has enabled                                             |
 | `memberships`          | tenant   | A person in a tenant: role, status, "all companies" or a list            |
 | `membership_companies` | tenant   | The companies a membership can reach when not all                        |
+| `credentials`          | platform | Password hash and encrypted TOTP secret of a person                      |
+| `recovery_codes`       | platform | One-time two-factor recovery codes, as hashes                            |
+| `sessions`             | platform | Signed-in browsers: refresh token hash, chosen tenant, expiry            |
+| `auth_events`          | platform | Security events of a person (append-only)                                |
+| `audit_events`         | tenant   | What happened in a tenant, who did it (append-only)                      |
 
 **How isolation works**
 
@@ -119,9 +129,12 @@ erDiagram
 3. Platform tables follow the memberships: a person sees their own active memberships in every
    tenant (to pick one at sign-in) but changes data only in the current one; people are visible only
    to tenants they belong to.
-4. The API role (`mercurio_app`) gets privileges per table, only when a feature needs them; in this
-   phase it reads only. A guard test fails CI if a table with `tenant_id` lacks the protection, and
-   the isolation tests run as the API role on every tenant table.
+4. The tables of a person (`credentials`, `recovery_codes`, `sessions`, `auth_events`) are visible only
+   to that person (`user_id = app_user_id()`).
+5. The API role (`mercurio_app`) gets privileges per table, and for updates per column, only when a
+   feature needs them; a test lists every write privilege. A guard test fails CI if a table with
+   `tenant_id` lacks the protection or any other table lacks Row-Level Security, and the isolation
+   tests run as the API role.
 
 ```mermaid
 sequenceDiagram
@@ -139,6 +152,42 @@ sequenceDiagram
 Tenants and people are created only by terminal commands (`create-tenant`, `add-user`, …), which
 connect as the owner role and are never reachable over HTTP.
 
+## Signing in
+
+Each new person receives a one-time activation code from the operator, sets a password and an
+authenticator app, and saves ten recovery codes. Signing in takes the password, then a code
+([ADR 0012](adr/0012-sessions-and-tokens.md),
+[0013](adr/0013-passwords-and-two-factor-authentication.md)).
+
+```mermaid
+sequenceDiagram
+    actor P as Person
+    participant W as Web app
+    participant A as API
+    participant D as PostgreSQL
+    P->>W: email and password
+    W->>A: POST /auth/login
+    A->>D: app_find_login_subject(email), then the person's credentials
+    A-->>W: challenge token (5 minutes)
+    P->>W: six-digit code
+    W->>A: POST /auth/mfa/verify
+    A-->>W: access token (10 minutes) + refresh cookie
+    W->>A: POST /auth/tenant (when the person has several)
+    A-->>W: access token for that tenant
+    Note over W,A: every request: Authorization Bearer, X-Company-Id
+    W->>A: POST /auth/refresh with the cookie when the token expires
+    A->>D: app_rotate_session(old hash, new hash)
+    A-->>W: new access token + new cookie
+```
+
+- The access token lives in memory; the refresh token in a cookie `HttpOnly`, `SameSite=Strict`,
+  limited to `<base>/api/auth`, stored as a hash and replaced at each use. A replaced token used
+  again closes the session.
+- Sign-in, activation and refresh happen before the API knows who is calling, so they go through
+  three reviewed `SECURITY DEFINER` functions; everything else runs under Row-Level Security.
+- Recovery without email: the operator issues a new activation code (`issue-code`), which resets the
+  password and the two-factor setup when used; `revoke-sessions` signs a person out everywhere.
+
 ## Modules
 
 ```mermaid
@@ -151,7 +200,8 @@ flowchart TB
         health[health]
         tenancy[tenancy<br/>tenants · companies · modules]
         identity[identity<br/>people · memberships]
-        auth[auth]
+        auth[auth<br/>sign-in · sessions · guards]
+        audit[audit<br/>security and tenant events]
         registry[registry]
         warehouse[warehouse]
         orders[orders]
@@ -161,17 +211,20 @@ flowchart TB
 
     ui -- REST + OpenAPI client --> api
     identity -- public service --> tenancy
+    auth -- public services --> identity
+    auth -- public services --> tenancy
+    auth -- public service --> audit
     orders -- public service --> registry
     orders -- public service --> warehouse
     orders -. OrderFulfilledEvent .-> invoicing
     invoicing -- public service --> registry
 
     classDef planned stroke-dasharray: 5 5
-    class auth,registry,warehouse,orders,invoicing planned
+    class registry,warehouse,orders,invoicing planned
 ```
 
 Dashed boxes are planned (see the roadmap in the [README](../README.md#roadmap)). Today the API has
-the business modules `tenancy` and `identity` (in `src/modules/`), `health`, the technical modules
+the business modules `tenancy`, `identity`, `auth` and `audit` (in `src/modules/`), `health`, the technical modules
 `config`, `prisma` and `web`, and the terminal commands in `src/cli/`.
 
 Each module can be sold on its own: the catalog in `tenancy` lists modules and their requirements,
@@ -200,7 +253,8 @@ What every API request goes through, in order:
 5. **ValidationPipe** validates the request DTO with class-validator, rejecting unknown fields; a
    failure becomes `400 VALIDATION_FAILED` with the path and code of each invalid field.
 6. The **controller** calls a **service**; the service works on tenant data through
-   `TenantDatabase` and returns a response DTO, never a database model.
+   `TenantDatabase` and returns a response DTO, never a database model. Changes are recorded with
+   `AuditService` in the same transaction.
 7. **ProblemDetailsFilter** turns every error into RFC 9457 Problem Details with a stable `code`;
    unexpected errors are logged and answered with a generic 500
    ([ADR 0003](adr/0003-problem-details-errors.md)).
@@ -220,6 +274,9 @@ With a missing or malformed variable the application refuses to start and lists 
 | `LOG_LEVEL`             | pino log level                                                                  |
 | `SWAGGER_ENABLED`       | API docs at `<base>/api/docs`; on in development, off in production             |
 | `WEB_DIST_PATH`         | Folder of the built web app; unset in development                               |
+| `AUTH_JWT_SECRET`       | Signs access, challenge and enrolment tokens (at least 32 characters)           |
+| `MFA_ENCRYPTION_KEY`    | 32 bytes in hex: encrypts the TOTP secrets                                      |
+| `AUTH_*` (optional)     | Token and session lifetimes, cookie `Secure` flag, sign-in rate limit           |
 
 ## Health check
 

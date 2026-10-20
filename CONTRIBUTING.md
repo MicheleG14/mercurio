@@ -17,6 +17,16 @@ pnpm check:boundaries
 pnpm test
 pnpm test:e2e     # needs the database: docker compose up -d db && pnpm db:setup
 pnpm build
+pnpm openapi && git diff --exit-code apps/api/openapi.json apps/web/src/api/schema.d.ts
+```
+
+The browser test needs Chromium (`pnpm --filter @mercurio/web exec playwright install chromium`) and
+the production build under `/mercurio`:
+
+```bash
+pnpm --filter @mercurio/api build
+APP_BASE_PATH=/mercurio pnpm --filter @mercurio/web build
+pnpm --filter @mercurio/web test:browser
 ```
 
 ## How the code is written
@@ -40,6 +50,18 @@ pnpm build
 3. Access the table only from the module's repository, through `TenantDatabase`.
 4. Add the expected write privileges to the guard test (`test/tenant-tables.e2e-spec.ts`) and an
    isolation test for the new feature. The guard test fails if the protection is missing.
+
+## Adding an API route
+
+1. Routes are **closed by default**. Add `@RequiresPermission('area:action')` when the route needs
+   more than a signed-in person, `@RequiresModule('<module>')` when it belongs to a module, and
+   `@RequiresCompany()` when it works on one company. Only sign-in routes are `@Public()`; opening
+   another one means adding it to the expected list in `test/routes.e2e-spec.ts`.
+2. A new permission goes in the role table (`apps/api/src/modules/identity/permissions.ts`) and its
+   test, which lists every role row by row.
+3. Use cases that change data record an event with `AuditService` in the same transaction.
+4. Describe the DTOs with `@ApiProperty`, then run `pnpm openapi` and commit the regenerated files.
+5. Translate every new error `code` in `apps/web/src/locales/<lang>/errors.json`.
 
 ## Commits
 
