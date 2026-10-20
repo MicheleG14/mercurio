@@ -72,5 +72,22 @@ services:
       - /tmp
     <<: *hardening
 
+  # Terminal commands (create tenants and users): never started by `up`, only by
+  #   docker compose --env-file .env.production -f docker-compose.prod.yml run --rm cli <command> ...
+  # They connect as the owner role, which the running API never receives.
+  cli:
+    image: ghcr.io/micheleg14/mercurio:${APP_VERSION:?set APP_VERSION, e.g. 0.1.0}
+    profiles: [tools]
+    entrypoint: ['node', 'dist/cli.js']
+    environment:
+      DATABASE_ADMIN_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+    read_only: true
+    <<: *hardening
+
 volumes:
   db-data:

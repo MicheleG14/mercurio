@@ -81,6 +81,24 @@ export class TenancyService {
     }
   }
 
+  /**
+   * Ids of the tenant's companies with these VAT numbers (how people name companies in
+   * commands). Fails if any is not a company of this tenant.
+   */
+  async companyIdsByVat(db: DbClient, tenantId: string, vatNumbers: readonly string[]) {
+    const wanted = [...new Set(vatNumbers.map((vat) => vat.replace(/\s+/g, '').toUpperCase()))];
+    // Italian numbers are stored without the IT prefix.
+    const normalized = wanted.map((vat) => (/^IT\d{11}$/.test(vat) ? vat.slice(2) : vat));
+    const found = await this.repository.findCompaniesByVat(db, tenantId, normalized);
+    if (found.length !== normalized.length) {
+      const missing = normalized.filter((vat) => !found.some((c) => c.vatNumber === vat));
+      throw new DomainException('COMPANY_NOT_IN_TENANT', HttpStatus.BAD_REQUEST, {
+        detail: missing.join(', '),
+      });
+    }
+    return found.map((company) => company.id);
+  }
+
   listTenants(db: DbClient) {
     return this.repository.listTenants(db);
   }

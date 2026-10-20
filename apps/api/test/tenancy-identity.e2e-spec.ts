@@ -160,10 +160,11 @@ describe('tenancy and identity (e2e)', () => {
       });
 
       expect(added).toMatchObject({ identityCreated: true, reactivated: false });
-      expect(added.activationCode).toMatch(/^[A-Za-z0-9_-]{43}$/);
+      expect(added.activation?.code).toMatch(/^[A-Za-z0-9_-]{43}$/);
       const tokens = await admin.activationToken.findMany({ where: { userId: added.userId } });
       expect(tokens).toHaveLength(1);
-      expect(tokens[0]!.tokenHash).toBe(hashActivationCode(added.activationCode!));
+      expect(tokens[0]!.tokenHash).toBe(hashActivationCode(added.activation!.code));
+      expect(tokens[0]!.expiresAt).toEqual(added.activation!.expiresAt);
       const user = await admin.user.findUniqueOrThrow({ where: { id: added.userId } });
       expect(user.email).toBe(`anna.${suffix}@example.com`);
     });
@@ -189,7 +190,7 @@ describe('tenancy and identity (e2e)', () => {
       });
 
       expect(inSecond.userId).toBe(inFirst.userId);
-      expect(inSecond).toMatchObject({ identityCreated: false, activationCode: undefined });
+      expect(inSecond).toMatchObject({ identityCreated: false, activation: undefined });
       const members = await identity.listMembers(admin, second.tenant.id);
       expect(members).toEqual([
         expect.objectContaining({
@@ -254,7 +255,7 @@ describe('tenancy and identity (e2e)', () => {
       const fresh = await identity.issueActivationCode(admin, added.userId);
 
       const tokens = await admin.activationToken.findMany({ where: { userId: added.userId } });
-      expect(tokens.map((t) => t.tokenHash)).toEqual([hashActivationCode(fresh)]);
+      expect(tokens.map((t) => t.tokenHash)).toEqual([hashActivationCode(fresh.code)]);
     });
   });
 
