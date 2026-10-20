@@ -16,6 +16,7 @@
     "generate": "pnpm --filter @mercurio/api generate",
     "db:setup": "pnpm --filter @mercurio/api db:setup",
     "cli": "pnpm --filter @mercurio/api cli",
+    "seed:demo": "pnpm --filter @mercurio/api cli seed-demo",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",

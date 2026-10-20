@@ -29,8 +29,11 @@ export async function runCli(
 
   let values: Record<string, string | undefined>;
   try {
-    values = parseArgs({ args: [...rest], options: command.options, strict: true })
-      .values as Record<string, string | undefined>;
+    const parsed = parseArgs({ args: [...rest], options: command.options, strict: true }).values;
+    // Flags (--allow-production) become 'true', so every command reads plain strings.
+    values = Object.fromEntries(
+      Object.entries(parsed).map(([key, value]) => [key, value === true ? 'true' : value]),
+    ) as Record<string, string | undefined>;
   } catch (error) {
     io.err((error as Error).message);
     printUsage(io, name);
