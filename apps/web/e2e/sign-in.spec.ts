@@ -38,7 +38,9 @@ test('activate, enrol, sign in, switch customer and company, sign out', async ({
   await page.getByRole('button', { name: 'Imposta la password' }).click();
 
   // Two-factor setup: the QR code and the same secret as text.
-  await expect(page.getByTitle("Codice QR per l'app di autenticazione")).toBeVisible();
+  await expect(
+    page.getByRole('img', { name: "Codice QR per l'app di autenticazione" }),
+  ).toBeVisible();
   const secret = (await page.locator('code').innerText()).trim();
   await page.getByLabel('Codice a 6 cifre').fill(totp(secret));
   await page.getByRole('button', { name: 'Conferma' }).click();
