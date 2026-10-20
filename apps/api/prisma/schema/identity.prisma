@@ -1,0 +1,91 @@
+// Module `identity`: people (one identity each, S4), their memberships in tenants with a
+// role and the companies they can reach, and one-time activation codes.
+
+/// A person. The same identity can belong to several tenants through memberships.
+model User {
+  id        String     @id @default(uuid(7)) @db.Uuid
+  /// Stored lowercase and trimmed (checked by the database).
+  email     String     @unique
+  name      String
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  memberships      Membership[]
+  activationTokens ActivationToken[]
+
+  @@map("users")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+
+  @@map("user_status")
+}
+
+/// A user's place in a tenant: role and reachable companies. Never deleted: REMOVED instead.
+model Membership {
+  id           String           @id @default(uuid(7)) @db.Uuid
+  tenantId     String           @map("tenant_id") @db.Uuid
+  userId       String           @map("user_id") @db.Uuid
+  role         MembershipRole
+  status       MembershipStatus @default(ACTIVE)
+  /// True: every company of the tenant. False: only those in membership_companies.
+  allCompanies Boolean          @default(false) @map("all_companies")
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant    Tenant              @relation(fields: [tenantId], references: [id])
+  user      User                @relation(fields: [userId], references: [id])
+  companies MembershipCompany[]
+
+  @@unique([tenantId, userId])
+  @@unique([tenantId, id])
+  @@map("memberships")
+}
+
+enum MembershipRole {
+  ADMIN
+  WAREHOUSE_KEEPER
+  ACCOUNTANT
+  READ_ONLY
+
+  @@map("membership_role")
+}
+
+enum MembershipStatus {
+  ACTIVE
+  REMOVED
+
+  @@map("membership_status")
+}
+
+/// Companies reachable by a membership with allCompanies = false. Both foreign keys include
+/// tenant_id, so a membership can only reach companies of its own tenant (B25).
+model MembershipCompany {
+  tenantId     String @map("tenant_id") @db.Uuid
+  membershipId String @map("membership_id") @db.Uuid
+  companyId    String @map("company_id") @db.Uuid
+
+  membership Membership @relation(fields: [tenantId, membershipId], references: [tenantId, id])
+  company    Company    @relation(fields: [tenantId, companyId], references: [tenantId, id])
+
+  @@id([membershipId, companyId])
+  @@map("membership_companies")
+}
+
+/// One-time code to activate an identity (set a password and MFA, from phase 1b).
+/// Only the SHA-256 hash is stored; the API role has no access at all.
+model ActivationToken {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("activation_tokens")
+}

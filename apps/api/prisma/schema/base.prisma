@@ -1,0 +1,13 @@
+// Prisma schema, one file per module (docs/conventions.md B3): this file holds the generator
+// and the datasource; each module's models live in prisma/schema/<module>.prisma.
+// Row-Level Security, roles and grants are written by hand in the migrations: Prisma does not
+// model them (docs/adr/0008).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}

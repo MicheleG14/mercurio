@@ -1,0 +1,60 @@
+// Module `tenancy`: the customers of the platform (tenants), their companies and the
+// modules each tenant has enabled. Tables with tenant_id are protected by Row-Level Security.
+
+/// A customer of the platform: whoever holds the subscription. Never deleted (B10).
+model Tenant {
+  id        String       @id @default(uuid(7)) @db.Uuid
+  name      String
+  /// Lowercase identifier used by terminal commands, e.g. `rossi`.
+  slug      String       @unique
+  status    TenantStatus @default(ACTIVE)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  companies   Company[]
+  modules     TenantModule[]
+  memberships Membership[]
+
+  @@map("tenants")
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+
+  @@map("tenant_status")
+}
+
+/// A legal entity of a tenant (its own VAT number, invoice numbering, warehouses).
+/// Invoice header data (address, REA, SdI code…) arrives with the invoicing phase.
+model Company {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  legalName String   @map("legal_name")
+  vatNumber String   @map("vat_number")
+  taxCode   String?  @map("tax_code")
+  /// ISO 3166-1 alpha-2.
+  country   String   @default("IT") @db.Char(2)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant              Tenant              @relation(fields: [tenantId], references: [id])
+  membershipCompanies MembershipCompany[]
+
+  /// Target of composite foreign keys: a reference can never cross tenants (B25).
+  @@unique([tenantId, id])
+  @@unique([tenantId, vatNumber])
+  @@map("companies")
+}
+
+/// A module a tenant has enabled. Keys are validated against the module catalog in code.
+model TenantModule {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  moduleKey String   @map("module_key")
+  enabledAt DateTime @default(now()) @map("enabled_at") @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@id([tenantId, moduleKey])
+  @@map("tenant_modules")
+}
