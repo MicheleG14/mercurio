@@ -1,0 +1,16 @@
+{
+  "title": "Overview",
+  "welcome": "Hello, {{name}}",
+  "description": "You are working on {{tenant}}.",
+  "role": "Role",
+  "modules": "Enabled modules",
+  "noModules": "No module enabled",
+  "company": "Company",
+  "comingSoon": "Module features arrive in the next phases.",
+  "module": {
+    "registry": "Registry",
+    "warehouse": "Warehouse",
+    "orders": "Orders",
+    "invoicing": "Invoicing"
+  }
+}

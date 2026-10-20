@@ -1,0 +1,20 @@
+{
+  "title": "Activity",
+  "description": "What happened in this customer. The log is append-only: nobody can edit it.",
+  "filterType": "Event type",
+  "allTypes": "All",
+  "empty": "No events.",
+  "when": "When",
+  "what": "Event",
+  "who": "Who",
+  "subject": "Concerns",
+  "terminal": "Operator (terminal)",
+  "type": {
+    "TENANT_SELECTED": "Customer opened",
+    "TENANT_CREATED": "Customer created",
+    "MEMBER_ADDED": "Person added",
+    "MEMBER_REMOVED": "Person removed",
+    "MODULES_CHANGED": "Modules changed",
+    "COMPANY_ADDED": "Company added"
+  }
+}

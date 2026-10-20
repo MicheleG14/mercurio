@@ -1,0 +1,53 @@
+{
+  "title": "Il mio account",
+  "description": "Password, codici di recupero e accessi recenti.",
+  "profile": {
+    "title": "Profilo",
+    "name": "Nome",
+    "email": "Email"
+  },
+  "password": {
+    "title": "Cambia la password",
+    "current": "Password attuale",
+    "next": "Nuova password",
+    "confirm": "Ripeti la nuova password",
+    "submit": "Cambia password",
+    "done": "Password cambiata. Le altre sessioni sono state chiuse."
+  },
+  "recovery": {
+    "title": "Codici di recupero",
+    "description": "Genera nuovi codici: i vecchi smettono di funzionare. Servono la password e un codice attuale dell'app.",
+    "password": "Password",
+    "code": "Codice a 6 cifre",
+    "submit": "Genera nuovi codici",
+    "new": "Nuovi codici di recupero (salvali ora):"
+  },
+  "sessions": {
+    "title": "Sessioni",
+    "description": "Esci da tutti i dispositivi, compreso questo.",
+    "signOutAll": "Esci ovunque"
+  },
+  "events": {
+    "title": "Accessi e sicurezza",
+    "empty": "Nessun evento registrato.",
+    "when": "Quando",
+    "what": "Evento",
+    "from": "Da",
+    "type": {
+      "ACCOUNT_ACTIVATED": "Account attivato",
+      "MFA_ENROLLED": "Autenticazione a due fattori configurata",
+      "LOGIN_SUCCEEDED": "Accesso riuscito",
+      "LOGIN_FAILED": "Accesso non riuscito",
+      "MFA_FAILED": "Codice a due fattori errato",
+      "RECOVERY_CODE_USED": "Codice di recupero usato",
+      "ACCOUNT_LOCKED": "Account bloccato per troppi errori",
+      "PASSWORD_CHANGED": "Password cambiata",
+      "RECOVERY_CODES_REGENERATED": "Codici di recupero rigenerati",
+      "SESSION_REFRESH_REUSED": "Sessione chiusa: token riutilizzato",
+      "LOGGED_OUT": "Uscita",
+      "LOGGED_OUT_ALL": "Uscita da tutti i dispositivi",
+      "ACCOUNT_RECOVERY_ISSUED": "Recupero dell'account avviato dall'operatore",
+      "SESSIONS_REVOKED": "Sessioni chiuse dall'operatore"
+    }
+  }
+}

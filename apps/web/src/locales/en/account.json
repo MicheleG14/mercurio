@@ -1,0 +1,53 @@
+{
+  "title": "My account",
+  "description": "Password, recovery codes and recent sign-ins.",
+  "profile": {
+    "title": "Profile",
+    "name": "Name",
+    "email": "Email"
+  },
+  "password": {
+    "title": "Change password",
+    "current": "Current password",
+    "next": "New password",
+    "confirm": "Repeat the new password",
+    "submit": "Change password",
+    "done": "Password changed. Your other sessions were closed."
+  },
+  "recovery": {
+    "title": "Recovery codes",
+    "description": "Generate new codes: the old ones stop working. You need your password and a current app code.",
+    "password": "Password",
+    "code": "6-digit code",
+    "submit": "Generate new codes",
+    "new": "New recovery codes (save them now):"
+  },
+  "sessions": {
+    "title": "Sessions",
+    "description": "Sign out of every device, including this one.",
+    "signOutAll": "Sign out everywhere"
+  },
+  "events": {
+    "title": "Sign-ins and security",
+    "empty": "No events recorded.",
+    "when": "When",
+    "what": "Event",
+    "from": "From",
+    "type": {
+      "ACCOUNT_ACTIVATED": "Account activated",
+      "MFA_ENROLLED": "Two-factor authentication set up",
+      "LOGIN_SUCCEEDED": "Signed in",
+      "LOGIN_FAILED": "Failed sign-in",
+      "MFA_FAILED": "Wrong two-factor code",
+      "RECOVERY_CODE_USED": "Recovery code used",
+      "ACCOUNT_LOCKED": "Account locked after too many errors",
+      "PASSWORD_CHANGED": "Password changed",
+      "RECOVERY_CODES_REGENERATED": "Recovery codes regenerated",
+      "SESSION_REFRESH_REUSED": "Session closed: token reused",
+      "LOGGED_OUT": "Signed out",
+      "LOGGED_OUT_ALL": "Signed out of every device",
+      "ACCOUNT_RECOVERY_ISSUED": "Account recovery started by the operator",
+      "SESSIONS_REVOKED": "Sessions closed by the operator"
+    }
+  }
+}

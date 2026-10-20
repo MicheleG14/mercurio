@@ -1,0 +1,20 @@
+{
+  "title": "Attività",
+  "description": "Cosa è successo in questo cliente. Il registro è in sola aggiunta: nessuno può modificarlo.",
+  "filterType": "Tipo di evento",
+  "allTypes": "Tutti",
+  "empty": "Nessun evento.",
+  "when": "Quando",
+  "what": "Evento",
+  "who": "Chi",
+  "subject": "Riguarda",
+  "terminal": "Operatore (terminale)",
+  "type": {
+    "TENANT_SELECTED": "Cliente aperto",
+    "TENANT_CREATED": "Cliente creato",
+    "MEMBER_ADDED": "Persona aggiunta",
+    "MEMBER_REMOVED": "Persona rimossa",
+    "MODULES_CHANGED": "Moduli modificati",
+    "COMPANY_ADDED": "Azienda aggiunta"
+  }
+}

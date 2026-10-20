@@ -1,0 +1,16 @@
+{
+  "title": "Panoramica",
+  "welcome": "Ciao, {{name}}",
+  "description": "Stai lavorando su {{tenant}}.",
+  "role": "Ruolo",
+  "modules": "Moduli attivi",
+  "noModules": "Nessun modulo attivo",
+  "company": "Azienda",
+  "comingSoon": "Le funzioni dei moduli arrivano nelle prossime fasi.",
+  "module": {
+    "registry": "Anagrafiche",
+    "warehouse": "Magazzino",
+    "orders": "Ordini",
+    "invoicing": "Fatturazione"
+  }
+}
