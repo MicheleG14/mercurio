@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import type { AppConfig } from './config/app-config.js';
@@ -23,6 +24,7 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): vo
       strictTransportSecurity: false,
     }),
   );
+  app.use(cookieParser());
   app.setGlobalPrefix(config.apiPrefix);
   app.useGlobalPipes(
     new ValidationPipe({
@@ -43,6 +45,8 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): vo
         .setTitle('Mercurio API')
         .setDescription('Warehouse and invoicing')
         .setVersion(config.appVersion)
+        .addBearerAuth()
+        .addCookieAuth('mercurio_refresh')
         .build(),
     );
     SwaggerModule.setup(`${config.apiPrefix}/docs`, app, document);

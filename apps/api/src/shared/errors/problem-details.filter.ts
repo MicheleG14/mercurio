@@ -26,6 +26,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse<Response>();
     const body = this.toProblem(exception);
+    if (body.status === 429) standardRetryAfter(response);
     response.status(body.status).type(PROBLEM_CONTENT_TYPE).json(body);
   }
 
@@ -46,6 +47,17 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     this.logger.error(exception instanceof Error ? exception.stack : String(exception));
     return problem(500, codeForStatus(500));
   }
+}
+
+/**
+ * The throttler names its header after the limit that was hit (`Retry-After-strict`). Clients
+ * look for the standard `Retry-After`, so the first one found is repeated under that name.
+ */
+function standardRetryAfter(response: Response): void {
+  if (response.getHeader('Retry-After') !== undefined) return;
+  const named = Object.keys(response.getHeaders()).find((name) => name.startsWith('retry-after-'));
+  const value = named && response.getHeader(named);
+  if (value !== undefined) response.setHeader('Retry-After', value);
 }
 
 function clientErrorStatus(exception: unknown): number | undefined {

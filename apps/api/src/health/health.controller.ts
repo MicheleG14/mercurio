@@ -2,10 +2,12 @@ import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
 import { ApiOkResponse, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import type { Response } from 'express';
+import { Public } from '../modules/auth/index.js';
 import { HealthResponseDto } from './health.dto.js';
 import { HealthService } from './health.service.js';
 
 @ApiTags('health')
+@Public()
 @SkipThrottle()
 @Controller('health')
 export class HealthController {

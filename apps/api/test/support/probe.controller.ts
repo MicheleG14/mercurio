@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpStatus, Post } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsEmail, IsInt, IsPositive, ValidateNested } from 'class-validator';
+import { Public } from '../../src/modules/auth/index.js';
 import { RequiresModule } from '../../src/modules/tenancy/index.js';
 import { DomainException } from '../../src/shared/errors/index.js';
 
@@ -21,6 +22,9 @@ class ProbeBodyDto {
   lines!: ProbeLineDto[];
 }
 
+// Open to everyone: these tests exercise validation, errors and the module guard in isolation,
+// not signing in (that has its own tests).
+@Public()
 @Controller('probe')
 export class ProbeController {
   @Post('validate')
