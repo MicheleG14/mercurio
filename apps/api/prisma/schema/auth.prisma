@@ -1,0 +1,79 @@
+// Module `auth`: how a person proves who they are. Credentials, recovery codes and sessions
+// belong to the person, not to a tenant: they are platform tables, protected by Row-Level
+// Security on user_id (docs/adr/0012, 0013).
+
+/// Password and two-factor settings of an activated identity. Created by the activation function.
+model Credential {
+  userId          String    @id @map("user_id") @db.Uuid
+  /// argon2id. Never leaves the auth module.
+  passwordHash    String    @map("password_hash")
+  /// TOTP secret, AES-256-GCM encrypted (`v1:` prefix). Set at enrollment, confirmed later.
+  totpSecretEnc   String?   @map("totp_secret_enc")
+  totpConfirmedAt DateTime? @map("totp_confirmed_at") @db.Timestamptz(6)
+  /// Last accepted 30-second step: a code can be used only once.
+  totpLastStep    BigInt?   @map("totp_last_step")
+  /// Consecutive password or MFA failures; at the limit the account is locked for a while.
+  failedAttempts  Int       @default(0) @map("failed_attempts")
+  lockedUntil     DateTime? @map("locked_until") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("credentials")
+}
+
+/// A one-time MFA recovery code. Only the SHA-256 hash is stored.
+model RecoveryCode {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  codeHash  String    @unique @map("code_hash")
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("recovery_codes")
+}
+
+/// A signed-in browser. The tenant is chosen after sign-in, so it starts empty (the column is not
+/// called tenant_id on purpose: the session belongs to a person, so it is not a tenant table). The refresh
+/// token is stored as a hash; rotation goes through the database function app_rotate_session.
+model Session {
+  id                  String    @id @default(uuid(7)) @db.Uuid
+  userId              String    @map("user_id") @db.Uuid
+  selectedTenantId    String?   @map("selected_tenant_id") @db.Uuid
+  refreshHash         String    @unique @map("refresh_hash")
+  /// The hash replaced by the last rotation: seeing it again means a stolen token.
+  previousRefreshHash String?   @unique @map("previous_refresh_hash")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  lastUsedAt          DateTime  @default(now()) @map("last_used_at") @db.Timestamptz(6)
+  absoluteExpiresAt   DateTime  @map("absolute_expires_at") @db.Timestamptz(6)
+  revokedAt           DateTime? @map("revoked_at") @db.Timestamptz(6)
+  ip                  String?
+  userAgent           String?   @map("user_agent")
+
+  user   User    @relation(fields: [userId], references: [id])
+  tenant Tenant? @relation(fields: [selectedTenantId], references: [id])
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// Security events of a person (sign-ins, MFA, password changes), recorded before or outside
+/// any tenant. Append-only. user_id is empty for an unknown email: the email itself is not kept.
+model AuthEvent {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  type      String
+  ip        String?
+  userAgent String?  @map("user_agent")
+  details   Json?
+  at        DateTime @default(now()) @db.Timestamptz(6)
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId, at(sort: Desc)])
+  @@map("auth_events")
+}

@@ -13,6 +13,22 @@ export class IdentityRepository {
     return db.user.findUnique({ where: { email } });
   }
 
+  findUserById(db: DbClient, id: string) {
+    return db.user.findUnique({ where: { id } });
+  }
+
+  /** The person's active memberships, in every tenant (policy own_memberships). */
+  listActiveMemberships(db: DbClient, userId: string) {
+    return db.membership.findMany({ where: { userId, status: 'ACTIVE' } });
+  }
+
+  findMembershipWithCompanies(db: DbClient, tenantId: string, userId: string) {
+    return db.membership.findUnique({
+      where: { tenantId_userId: { tenantId, userId } },
+      include: { companies: { select: { companyId: true } } },
+    });
+  }
+
   createUser(db: DbClient, data: { email: string; name: string }) {
     return db.user.create({ data });
   }

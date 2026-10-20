@@ -80,6 +80,17 @@ export async function deleteTenantsAndUsers(
   userIds: readonly string[],
 ): Promise<void> {
   const tenantId = { in: [...tenantIds] };
+  const userId = { in: [...userIds] };
+  // The audit tables refuse deletes (append-only trigger). Test data is the one thing that may go:
+  // in this transaction the owner turns triggers off for itself, which no API role can do.
+  await admin.$transaction([
+    admin.$executeRaw`SET LOCAL session_replication_role = replica`,
+    admin.auditEvent.deleteMany({ where: { OR: [{ tenantId }, { actorUserId: userId }] } }),
+    admin.authEvent.deleteMany({ where: { userId } }),
+  ]);
+  await admin.session.deleteMany({ where: { userId } });
+  await admin.recoveryCode.deleteMany({ where: { userId } });
+  await admin.credential.deleteMany({ where: { userId } });
   await admin.membershipCompany.deleteMany({ where: { tenantId } });
   await admin.membership.deleteMany({ where: { tenantId } });
   await admin.tenantModule.deleteMany({ where: { tenantId } });

@@ -5,6 +5,8 @@ import { Injectable } from '@nestjs/common';
 export interface TenantContext {
   tenantId: string;
   userId?: string;
+  /** The company the person is working on (header X-Company-Id, already verified). */
+  companyId?: string;
 }
 
 // One store for the whole process: every async call started inside run() sees the same context,

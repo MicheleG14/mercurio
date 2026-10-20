@@ -45,28 +45,72 @@ describe('tenant tables (guard)', () => {
     expect(unprotected).toEqual([]);
   });
 
-  it('keeps the platform tables behind Row-Level Security too', async () => {
+  it('keeps every other table behind Row-Level Security too', async () => {
     const tables = await admin.$queryRaw<{ table: string; enabled: boolean; forced: boolean }[]>`
-      SELECT relname AS table, relrowsecurity AS enabled, relforcerowsecurity AS forced
-      FROM pg_class
-      WHERE relname IN ('tenants', 'users', 'activation_tokens') AND relkind = 'r'
-      ORDER BY relname`;
+      SELECT c.relname AS table, c.relrowsecurity AS enabled, c.relforcerowsecurity AS forced
+      FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = 'public' AND c.relkind = 'r'
+        AND c.relname NOT IN ('_prisma_migrations') AND c.relname NOT LIKE 'test\\_%'
+        AND NOT EXISTS (SELECT 1 FROM information_schema.columns col
+                        WHERE col.table_schema = 'public' AND col.table_name = c.relname
+                          AND col.column_name = 'tenant_id')
+      ORDER BY c.relname`;
 
-    expect(tables).toEqual([
-      { table: 'activation_tokens', enabled: true, forced: true },
-      { table: 'tenants', enabled: true, forced: true },
-      { table: 'users', enabled: true, forced: true },
+    // Platform tables: people and tenants. Adding one without protection fails here.
+    expect(tables.map((t) => t.table)).toEqual([
+      'activation_tokens',
+      'auth_events',
+      'credentials',
+      'recovery_codes',
+      'sessions',
+      'tenants',
+      'users',
     ]);
+    expect(tables.filter((t) => !(t.enabled && t.forced))).toEqual([]);
   });
 
-  // Phase 1a grants no write access. When a feature needs it, this becomes an explicit list of
-  // the expected (table, privilege) pairs, so every new grant is a deliberate change.
-  it('gives the API role read access only', async () => {
-    const writable = await admin.$queryRaw<{ table: string }[]>`
-      SELECT table_name AS table FROM information_schema.role_table_grants
+  // Every write privilege of the API role is listed here, so a new grant is a deliberate change
+  // (conventions B26). Reading is granted more freely and is not listed.
+  it('gives the API role exactly the write privileges it needs', async () => {
+    const tableWrites = await admin.$queryRaw<{ table: string; privilege: string }[]>`
+      SELECT table_name AS table, privilege_type AS privilege
+      FROM information_schema.role_table_grants
       WHERE grantee = 'mercurio_app' AND privilege_type IN ('INSERT', 'UPDATE', 'DELETE', 'TRUNCATE')
-        AND table_name NOT LIKE 'test\\_%'`;
+        AND table_name NOT LIKE 'test\\_%'
+      ORDER BY table_name, privilege_type`;
+    expect(tableWrites).toEqual([
+      { table: 'audit_events', privilege: 'INSERT' },
+      { table: 'auth_events', privilege: 'INSERT' },
+      { table: 'recovery_codes', privilege: 'INSERT' },
+      { table: 'sessions', privilege: 'INSERT' },
+    ]);
 
-    expect(writable).toEqual([]);
+    // Updates are granted per column; the refresh hashes are not among them (only the rotation
+    // function changes them).
+    const columnUpdates = await admin.$queryRaw<{ table: string; column: string }[]>`
+      SELECT table_name AS table, column_name AS column
+      FROM information_schema.column_privileges
+      WHERE grantee = 'mercurio_app' AND privilege_type = 'UPDATE'
+        AND table_name NOT LIKE 'test\\_%'
+      ORDER BY table_name, column_name`;
+    const byTable = (name: string) =>
+      columnUpdates.filter((c) => c.table === name).map((c) => c.column);
+    expect(byTable('credentials')).toEqual([
+      'failed_attempts',
+      'locked_until',
+      'password_hash',
+      'totp_confirmed_at',
+      'totp_last_step',
+      'totp_secret_enc',
+      'updated_at',
+    ]);
+    expect(byTable('recovery_codes')).toEqual(['used_at']);
+    expect(byTable('sessions')).toEqual(['last_used_at', 'revoked_at', 'selected_tenant_id']);
+    expect([...new Set(columnUpdates.map((c) => c.table))].sort()).toEqual([
+      'credentials',
+      'recovery_codes',
+      'sessions',
+    ]);
   });
 });

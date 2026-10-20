@@ -99,6 +99,21 @@ export class TenancyService {
     return found.map((company) => company.id);
   }
 
+  /** A tenant by id, or null. Inside a request, Row-Level Security shows only permitted tenants. */
+  findTenant(db: DbClient, id: string) {
+    return this.repository.findTenantById(db, id);
+  }
+
+  /** Name and status of the given tenants, for the "choose a tenant" step. */
+  tenantsByIds(db: DbClient, ids: readonly string[]) {
+    return this.repository.findTenantsByIds(db, ids);
+  }
+
+  /** Companies of a tenant, by name. */
+  listCompanies(db: DbClient, tenantId: string) {
+    return this.repository.listCompanies(db, tenantId);
+  }
+
   listTenants(db: DbClient) {
     return this.repository.listTenants(db);
   }
