@@ -3,6 +3,20 @@
 Domain terms used in the code (English) and in the Italian interface. Code always uses the English
 term; the interface uses the term of the selected language.
 
+## Platform
+
+| Code (English)  | Italiano                    | Meaning                                                                                             |
+| --------------- | --------------------------- | --------------------------------------------------------------------------------------------------- |
+| tenant          | cliente (della piattaforma) | A customer of Mercurio: whoever holds the subscription. Its data is invisible to every other tenant |
+| company         | azienda                     | A legal entity of a tenant, with its own VAT number, invoice numbering and warehouses               |
+| user / identity | utente                      | A person. One identity per email, whatever the number of tenants they work for                      |
+| membership      | appartenenza                | A person's place in a tenant: role and reachable companies                                          |
+| role            | ruolo                       | What a person can do in a tenant: administrator, warehouse keeper, accountant, read only            |
+| module          | modulo                      | A sellable business area (registry, warehouse, orders, invoicing), enabled per tenant               |
+| activation code | codice di attivazione       | One-time code a new person uses to set their password and two-factor authentication                 |
+| VAT number      | partita IVA                 | Tax identifier of a company; Italian numbers have 11 digits and a check digit                       |
+| tax code        | codice fiscale              | Italian tax identifier: 11 digits for companies, 16 characters for individuals                      |
+
 ## Registry
 
 | Code (English)  | Italiano        | Meaning                                         |
@@ -63,7 +77,15 @@ term; the interface uses the term of the selected language.
 Examples of values stored in the database and returned by the API ([G2a](conventions.md)); the
 interface translates them. The list grows with the modules.
 
-| Code     | Italiano | Used for         |
-| -------- | -------- | ---------------- |
-| `DRAFT`  | Bozza    | Invoices, orders |
-| `ISSUED` | Emessa   | Invoices         |
+| Code               | Italiano       | Used for                    |
+| ------------------ | -------------- | --------------------------- |
+| `ACTIVE`           | Attivo         | Tenants, users, memberships |
+| `SUSPENDED`        | Sospeso        | Tenants                     |
+| `DISABLED`         | Disattivato    | Users                       |
+| `REMOVED`          | Rimosso        | Memberships                 |
+| `ADMIN`            | Amministratore | Roles                       |
+| `WAREHOUSE_KEEPER` | Magazziniere   | Roles                       |
+| `ACCOUNTANT`       | Contabile      | Roles                       |
+| `READ_ONLY`        | Sola lettura   | Roles                       |
+| `DRAFT`            | Bozza          | Invoices, orders            |
+| `ISSUED`           | Emessa         | Invoices                    |
