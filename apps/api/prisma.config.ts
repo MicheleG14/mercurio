@@ -12,5 +12,6 @@ try {
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: { path: 'prisma/migrations' },
-  datasource: { url: process.env.DATABASE_URL },
+  // Migrations run as the owner role; the API itself connects as mercurio_app (DATABASE_URL).
+  datasource: { url: process.env.DATABASE_ADMIN_URL },
 });

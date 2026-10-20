@@ -34,7 +34,10 @@ jobs:
           --health-timeout 3s
           --health-retries 10
     env:
-      DATABASE_URL: postgresql://mercurio:mercurio@localhost:5432/mercurio
+      # Owner role for migrations and test fixtures; mercurio_app for the API (docs/conventions.md B26).
+      DATABASE_ADMIN_URL: postgresql://mercurio:mercurio@localhost:5432/mercurio
+      POSTGRES_APP_PASSWORD: mercurio-app-ci-password
+      DATABASE_URL: postgresql://mercurio_app:mercurio-app-ci-password@localhost:5432/mercurio
     steps:
       - uses: actions/checkout@v7
       # pnpm first: setup-node caches the pnpm store, so pnpm must already be on the PATH.
@@ -50,6 +53,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
+      - run: pnpm db:setup
       - run: pnpm test:e2e
       - run: pnpm build
 

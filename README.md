@@ -59,6 +59,7 @@ cp .env.example .env
 docker compose up -d db          # PostgreSQL on 127.0.0.1:5432
 pnpm install
 pnpm generate                    # Prisma client
+pnpm db:setup                    # migrations, then the login of the API's database role
 
 pnpm dev:api                     # API on http://127.0.0.1:3000/api (docs at /api/docs)
 pnpm dev:web                     # web app on http://127.0.0.1:5173

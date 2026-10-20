@@ -7,22 +7,47 @@ const config = loadConfig({
   APP_VERSION: '1.2.3',
 });
 
+// The health query returns whether the role could bypass Row-Level Security.
+const safeRole = () => Promise.resolve([{ bypass: false }]);
+
 function serviceWith(queryRaw: () => Promise<unknown>): HealthService {
   const prisma = { $queryRaw: queryRaw } as unknown as PrismaService;
   return new HealthService(prisma, config);
 }
 
 describe('HealthService', () => {
-  it('reports ok when the database answers', async () => {
-    const report = await serviceWith(() => Promise.resolve([{ '?column?': 1 }])).check();
+  it('reports ok when the database answers with a safe role', async () => {
+    const report = await serviceWith(safeRole).check();
 
-    expect(report).toMatchObject({ status: 'ok', checks: { database: 'up' }, version: '1.2.3' });
+    expect(report).toMatchObject({
+      status: 'ok',
+      checks: { database: 'up', tenantIsolation: 'up' },
+      version: '1.2.3',
+    });
+  });
+
+  it('reports degraded when the role could bypass Row-Level Security', async () => {
+    const report = await serviceWith(() => Promise.resolve([{ bypass: true }])).check();
+
+    expect(report).toMatchObject({
+      status: 'degraded',
+      checks: { database: 'up', tenantIsolation: 'down' },
+    });
+  });
+
+  it('treats a role it cannot inspect as unsafe', async () => {
+    const report = await serviceWith(() => Promise.resolve([])).check();
+
+    expect(report.checks.tenantIsolation).toBe('down');
   });
 
   it('reports degraded when the database fails', async () => {
     const report = await serviceWith(() => Promise.reject(new Error('connection refused'))).check();
 
-    expect(report).toMatchObject({ status: 'degraded', checks: { database: 'down' } });
+    expect(report).toMatchObject({
+      status: 'degraded',
+      checks: { database: 'down', tenantIsolation: 'down' },
+    });
   });
 
   it('reports degraded when the database does not answer in time', async () => {

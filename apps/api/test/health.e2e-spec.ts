@@ -23,7 +23,10 @@ describe('GET /api/health (e2e)', () => {
   it('reports the API and the database as up', async () => {
     const res = await request(app.getHttpServer()).get('/api/health').expect(200);
 
-    expect(res.body).toMatchObject({ status: 'ok', checks: { database: 'up' } });
+    expect(res.body).toMatchObject({
+      status: 'ok',
+      checks: { database: 'up', tenantIsolation: 'up' },
+    });
     expect(res.headers['x-request-id']).toBeDefined();
   });
 

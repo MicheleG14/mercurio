@@ -31,10 +31,10 @@ COPY apps/web/package.json apps/web/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod --filter @mercurio/api
 
-# ---------- migrator: applies database migrations, then exits ----------
+# ---------- migrator: applies database migrations, enables the API role, then exits ----------
 FROM build AS migrator
 WORKDIR /repo/apps/api
-CMD ["pnpm", "exec", "prisma", "migrate", "deploy"]
+CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node scripts/provision-app-role.mjs"]
 
 # ---------- runtime: the image that runs in production ----------
 FROM node:${NODE_VERSION}-alpine AS runtime
