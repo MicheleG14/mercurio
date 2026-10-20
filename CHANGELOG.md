@@ -5,7 +5,7 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
-## [Unreleased]
+## [0.3.0] - 2026-10-20
 
 Phase 1b: authentication, permissions and audit. People sign in, with two-factor authentication,
 and see only what their role allows; every route is closed by default.
@@ -104,6 +104,6 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
-[Unreleased]: https://github.com/MicheleG14/mercurio/compare/v0.2.0...HEAD
+[0.3.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.3.0
 [0.2.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.2.0
 [0.1.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.1.0
