@@ -93,6 +93,8 @@ describe('authentication (e2e)', () => {
       expect(cookie).toContain('HttpOnly');
       expect(cookie).toContain('SameSite=Strict');
       expect(cookie).toContain('Path=/api/auth');
+      // Responses with tokens must never be cached.
+      expect(res.headers['cache-control']).toBe('no-store');
       // The tests do not run in production, where the cookie is also Secure (see the config tests).
       person.w = { ...person.w, secret: started.body.secret };
     });
@@ -203,7 +205,11 @@ describe('authentication (e2e)', () => {
       // The email of an unknown person is not kept anywhere.
       const events = await admin.authEvent.findMany({ where: { userId: null } });
       expect(JSON.stringify(events)).not.toContain('nobody@example.com');
-      await admin.authEvent.deleteMany({ where: { userId: null } }).catch(() => undefined);
+      // Anonymous events belong to nobody, so the world cleanup would not find them.
+      await admin.$transaction([
+        admin.$executeRaw`SET LOCAL session_replication_role = replica`,
+        admin.authEvent.deleteMany({ where: { userId: null } }),
+      ]);
     });
 
     it('locks the account after five wrong passwords, silently, and unlocks it later', async () => {
