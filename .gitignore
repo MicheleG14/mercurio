@@ -24,3 +24,8 @@ apps/api/src/generated/
 
 # planning documents (decisions, conventions drafts, phase plans, mockups): kept local, not published
 pianificazione/
+
+# browser tests (Playwright)
+apps/web/e2e/.state.json
+apps/web/test-results/
+apps/web/playwright-report/
