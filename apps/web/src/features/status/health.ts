@@ -4,7 +4,8 @@ import { ApiError, apiUrl } from '@/lib/api';
 /** Mirrors HealthResponseDto of the API. From phase 1 these types are generated from OpenAPI. */
 export interface HealthReport {
   status: 'ok' | 'degraded';
-  checks: { database: 'up' | 'down' };
+  /** tenantIsolation is down when the API's database role could bypass Row-Level Security. */
+  checks: { database: 'up' | 'down'; tenantIsolation: 'up' | 'down' };
   version: string;
   uptimeSeconds: number;
   timestamp: string;

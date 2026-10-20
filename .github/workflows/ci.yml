@@ -52,6 +52,7 @@ jobs:
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm lint
+      - run: pnpm check:boundaries
       - run: pnpm test
       - run: pnpm db:setup
       - run: pnpm test:e2e
