@@ -1,0 +1,38 @@
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { AuditModule } from '../audit/index.js';
+import { IdentityModule } from '../identity/index.js';
+import { TenancyModule } from '../tenancy/index.js';
+import { AuthContextService } from './auth-context.js';
+import { AuthController } from './auth.controller.js';
+import { AuthenticationMiddleware } from './auth.middleware.js';
+import { AuthRepository } from './auth.repository.js';
+import { AuthService } from './auth.service.js';
+import { AuthGuard, CompanyGuard, PermissionGuard } from './guards.js';
+import { TokenService } from './tokens.js';
+
+/**
+ * Signing in: activation, passwords, two-factor authentication, sessions, and the guards that
+ * keep every route closed unless it is marked public (docs/adr/0012, 0013, 0014).
+ */
+@Module({
+  imports: [TenancyModule, IdentityModule, AuditModule],
+  controllers: [AuthController],
+  providers: [
+    AuthContextService,
+    AuthRepository,
+    AuthService,
+    AuthenticationMiddleware,
+    TokenService,
+    // Global guards, in the order they must run: signed in, then allowed, then company.
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_GUARD, useClass: PermissionGuard },
+    { provide: APP_GUARD, useClass: CompanyGuard },
+  ],
+  exports: [AuthContextService, AuthService],
+})
+export class AuthModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AuthenticationMiddleware).forRoutes('{*path}');
+  }
+}
