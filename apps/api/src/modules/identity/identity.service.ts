@@ -69,15 +69,14 @@ export class IdentityService {
         });
     await this.repository.replaceMembershipCompanies(db, input.tenantId, membership.id, companyIds);
 
-    const activationCode = identityCreated
-      ? await this.issueActivationCode(db, user.id)
-      : undefined;
+    const activation = identityCreated ? await this.issueActivationCode(db, user.id) : undefined;
     return {
       userId: user.id,
+      email,
       membershipId: membership.id,
       identityCreated,
       reactivated: Boolean(existing),
-      activationCode,
+      activation,
     };
   }
 
@@ -96,10 +95,17 @@ export class IdentityService {
   }
 
   /** A new one-time code for the user; any unused previous code stops working. */
-  async issueActivationCode(db: DbClient, userId: string): Promise<string> {
+  async issueActivationCode(db: DbClient, userId: string) {
     const { code, hash, expiresAt } = newActivationCode();
     await this.repository.replaceActivationToken(db, { userId, tokenHash: hash, expiresAt });
-    return code;
+    return { code, expiresAt };
+  }
+
+  /** Same as issueActivationCode, for a person named by email (terminal commands). */
+  async issueActivationCodeFor(db: DbClient, email: string) {
+    const user = await this.repository.findUserByEmail(db, normalizeEmail(email));
+    if (!user) throw new DomainException('USER_NOT_FOUND', HttpStatus.NOT_FOUND, { detail: email });
+    return { email: user.email, ...(await this.issueActivationCode(db, user.id)) };
   }
 
   async listMembers(db: DbClient, tenantId: string) {

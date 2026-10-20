@@ -14,6 +14,8 @@ export function normalizeVatNumber(country: string, value: string): string {
   }
   const digits = vat.startsWith('IT') ? vat.slice(2) : vat;
   if (!/^\d{11}$/.test(digits)) throw invalid('VAT_NUMBER_INVALID', 'expected 11 digits');
+  // All zeros passes the check digit but is never assigned.
+  if (/^0+$/.test(digits)) throw invalid('VAT_NUMBER_INVALID', 'not an assigned number');
   if (!hasValidItalianCheckDigit(digits)) throw invalid('VAT_NUMBER_INVALID', 'wrong check digit');
   return digits;
 }

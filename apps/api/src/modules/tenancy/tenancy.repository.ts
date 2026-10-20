@@ -46,6 +46,10 @@ export class TenancyRepository {
     }
   }
 
+  findCompaniesByVat(db: DbClient, tenantId: string, vatNumbers: readonly string[]) {
+    return db.company.findMany({ where: { tenantId, vatNumber: { in: [...vatNumbers] } } });
+  }
+
   countCompanies(db: DbClient, tenantId: string, ids: readonly string[]) {
     return db.company.count({ where: { tenantId, id: { in: [...ids] } } });
   }

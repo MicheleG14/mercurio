@@ -21,6 +21,7 @@ describe('company identifiers', () => {
     ['1234567890', 'too short'],
     ['1234567890A', 'not a number'],
     ['12345678901', 'wrong check digit'],
+    ['00000000000', 'never assigned'],
   ])('rejects the Italian VAT number %s (%s)', (vat) => {
     expect(() => normalizeVatNumber('IT', vat)).toThrow(
       expect.objectContaining({ code: 'VAT_NUMBER_INVALID' }),
