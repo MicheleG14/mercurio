@@ -2,11 +2,10 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from './prisma.service.js';
 import { type TenantContext, TenantContextService } from './tenant-context.js';
+import { assertUuid } from './uuid.js';
 
 /** The database client a use case receives: every query runs inside its transaction. */
 export type TenantTransaction = Prisma.TransactionClient;
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Runs code on behalf of a tenant. Opens one transaction, sets `app.tenant_id` and
@@ -41,8 +40,4 @@ export class TenantDatabase {
       return work(tx);
     });
   }
-}
-
-function assertUuid(value: string, name: string): void {
-  if (!UUID.test(value)) throw new Error(`Invalid ${name} in tenant context: ${value}`);
 }

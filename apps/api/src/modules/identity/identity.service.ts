@@ -92,6 +92,43 @@ export class IdentityService {
     await this.repository.updateMembership(db, input.tenantId, membership.id, {
       status: 'REMOVED',
     });
+    return { userId: user!.id, membershipId: membership.id };
+  }
+
+  /** The person with this email; fails when there is none. For terminal commands. */
+  async requireUserByEmail(db: DbClient, email: string) {
+    const user = await this.repository.findUserByEmail(db, normalizeEmail(email));
+    if (!user) throw new DomainException('USER_NOT_FOUND', HttpStatus.NOT_FOUND, { detail: email });
+    return user;
+  }
+
+  /** The person behind an id: used by the auth module to check they can still sign in. */
+  getUser(db: DbClient, userId: string) {
+    return this.repository.findUserById(db, userId);
+  }
+
+  /** Tenants where the person is an active member, with their role there. */
+  async listActiveMemberships(db: DbClient, userId: string) {
+    const memberships = await this.repository.listActiveMemberships(db, userId);
+    return memberships.map((m) => ({ tenantId: m.tenantId, role: m.role }));
+  }
+
+  /**
+   * The person's active membership in a tenant with the companies it reaches, or null. Read
+   * on every request: removing someone or changing their role takes effect immediately.
+   */
+  async getActiveMembership(db: DbClient, tenantId: string, userId: string) {
+    const m = await this.repository.findMembershipWithCompanies(db, tenantId, userId);
+    if (!m || m.status !== 'ACTIVE') return null;
+    return {
+      id: m.id,
+      role: m.role,
+      access: {
+        status: m.status,
+        allCompanies: m.allCompanies,
+        companyIds: m.companies.map((c) => c.companyId),
+      } satisfies CompanyAccess,
+    };
   }
 
   /** A new one-time code for the user; any unused previous code stops working. */
@@ -105,7 +142,7 @@ export class IdentityService {
   async issueActivationCodeFor(db: DbClient, email: string) {
     const user = await this.repository.findUserByEmail(db, normalizeEmail(email));
     if (!user) throw new DomainException('USER_NOT_FOUND', HttpStatus.NOT_FOUND, { detail: email });
-    return { email: user.email, ...(await this.issueActivationCode(db, user.id)) };
+    return { userId: user.id, email: user.email, ...(await this.issueActivationCode(db, user.id)) };
   }
 
   async listMembers(db: DbClient, tenantId: string) {

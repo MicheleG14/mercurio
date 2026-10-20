@@ -46,6 +46,18 @@ export class TenancyRepository {
     }
   }
 
+  findTenantById(db: DbClient, id: string) {
+    return db.tenant.findUnique({ where: { id } });
+  }
+
+  findTenantsByIds(db: DbClient, ids: readonly string[]) {
+    return db.tenant.findMany({ where: { id: { in: [...ids] } }, orderBy: { name: 'asc' } });
+  }
+
+  listCompanies(db: DbClient, tenantId: string) {
+    return db.company.findMany({ where: { tenantId }, orderBy: { legalName: 'asc' } });
+  }
+
   findCompaniesByVat(db: DbClient, tenantId: string, vatNumbers: readonly string[]) {
     return db.company.findMany({ where: { tenantId, vatNumber: { in: [...vatNumbers] } } });
   }

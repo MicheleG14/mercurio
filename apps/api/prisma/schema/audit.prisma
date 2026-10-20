@@ -1,0 +1,28 @@
+// Module `audit`: what happened inside a tenant, who did it and when. Append-only: the API role
+// can only insert and read, and a trigger refuses updates and deletes (docs/adr/0015).
+
+enum AuditSource {
+  API
+  CLI
+
+  @@map("audit_source")
+}
+
+model AuditEvent {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  tenantId    String      @map("tenant_id") @db.Uuid
+  /// Who acted; empty for the platform operator working from the terminal.
+  actorUserId String?     @map("actor_user_id") @db.Uuid
+  source      AuditSource
+  type        String
+  subjectType String?     @map("subject_type")
+  subjectId   String?     @map("subject_id") @db.Uuid
+  details     Json?
+  at          DateTime    @default(now()) @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  actor  User?  @relation(fields: [actorUserId], references: [id])
+
+  @@index([tenantId, at(sort: Desc)])
+  @@map("audit_events")
+}

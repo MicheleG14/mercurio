@@ -13,6 +13,11 @@ model User {
 
   memberships      Membership[]
   activationTokens ActivationToken[]
+  credential       Credential?
+  recoveryCodes    RecoveryCode[]
+  sessions         Session[]
+  authEvents       AuthEvent[]
+  auditEvents      AuditEvent[]
 
   @@map("users")
 }
