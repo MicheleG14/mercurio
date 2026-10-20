@@ -1,6 +1,7 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsEmail, IsInt, IsPositive, ValidateNested } from 'class-validator';
+import { RequiresModule } from '../../src/modules/tenancy/index.js';
 import { DomainException } from '../../src/shared/errors/index.js';
 
 // Test-only endpoints, mounted by the e2e tests next to AppModule: they exercise behaviour
@@ -35,5 +36,11 @@ export class ProbeController {
   @Post('crash')
   crash(): never {
     throw new Error('unexpected failure with internal details');
+  }
+
+  @Get('warehouse')
+  @RequiresModule('warehouse')
+  warehouse(): { ok: true } {
+    return { ok: true };
   }
 }
