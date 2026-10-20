@@ -6,6 +6,8 @@ import { LoggerModule } from 'nestjs-pino';
 import { APP_CONFIG, type AppConfig } from './config/app-config.js';
 import { AppConfigModule } from './config/config.module.js';
 import { HealthModule } from './health/health.module.js';
+import { IdentityModule } from './modules/identity/index.js';
+import { TenancyModule } from './modules/tenancy/index.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { WebModule } from './web/web.module.js';
 
@@ -36,6 +38,8 @@ import { WebModule } from './web/web.module.js';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 300 }]),
     PrismaModule,
     HealthModule,
+    TenancyModule,
+    IdentityModule,
     WebModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

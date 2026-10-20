@@ -70,12 +70,26 @@ export async function createWorld(admin: PrismaClient): Promise<World> {
 
 /** Removes everything createWorld created, children first. */
 export async function deleteWorld(admin: PrismaClient, world: World): Promise<void> {
-  const tenantId = { in: Object.values(world.tenants) };
+  await deleteTenantsAndUsers(admin, Object.values(world.tenants), Object.values(world.users));
+}
+
+/** Removes tenants (with everything inside them) and users created by a test. */
+export async function deleteTenantsAndUsers(
+  admin: PrismaClient,
+  tenantIds: readonly string[],
+  userIds: readonly string[],
+): Promise<void> {
+  const tenantId = { in: [...tenantIds] };
   await admin.membershipCompany.deleteMany({ where: { tenantId } });
   await admin.membership.deleteMany({ where: { tenantId } });
   await admin.tenantModule.deleteMany({ where: { tenantId } });
   await admin.company.deleteMany({ where: { tenantId } });
-  await admin.activationToken.deleteMany({ where: { userId: { in: Object.values(world.users) } } });
-  await admin.user.deleteMany({ where: { id: { in: Object.values(world.users) } } });
+  await admin.activationToken.deleteMany({ where: { userId: { in: [...userIds] } } });
+  await admin.user.deleteMany({ where: { id: { in: [...userIds] } } });
   await admin.tenant.deleteMany({ where: { id: tenantId } });
+}
+
+/** A random suffix for names, so test files running in parallel never collide. */
+export function uniqueSuffix(): string {
+  return randomBytes(4).toString('hex');
 }
