@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator';
 
@@ -9,12 +10,14 @@ export const MAX_PAGE_SIZE = 100;
  * Each list decides which fields it can sort on and what `q` searches.
  */
 export class PageQuery {
+  @ApiPropertyOptional({ minimum: 1, default: 1 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   page: number = 1;
 
+  @ApiPropertyOptional({ minimum: 1, maximum: MAX_PAGE_SIZE, default: DEFAULT_PAGE_SIZE })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -23,11 +26,13 @@ export class PageQuery {
   pageSize: number = DEFAULT_PAGE_SIZE;
 
   /** `field:asc` or `field:desc`. */
+  @ApiPropertyOptional({ example: 'at:desc' })
   @IsOptional()
   @IsString()
   @Matches(/^[a-zA-Z]+:(asc|desc)$/)
   sort?: string;
 
+  @ApiPropertyOptional({ description: 'Text to search for' })
   @IsOptional()
   @IsString()
   @MaxLength(100)

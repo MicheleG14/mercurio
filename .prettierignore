@@ -3,3 +3,5 @@ pnpm-lock.yaml
 **/coverage/
 apps/api/src/generated/
 pianificazione/
+apps/api/openapi.json
+apps/web/src/api/schema.d.ts

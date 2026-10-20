@@ -24,7 +24,8 @@
     "test:e2e": "pnpm --filter @mercurio/api test:e2e",
     "check:boundaries": "pnpm -r check:boundaries",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "openapi": "pnpm --filter @mercurio/api openapi && pnpm --filter @mercurio/web api:types"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
