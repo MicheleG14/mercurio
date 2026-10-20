@@ -25,7 +25,38 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(LOG_LEVELS).default('info'),
   SWAGGER_ENABLED: z.enum(['true', 'false']).optional(),
   WEB_DIST_PATH: z.string().optional(),
+  // Authentication (docs/adr/0012, 0013). Two separate secrets: leaking one opens only one door.
+  AUTH_JWT_SECRET: z.string().min(32, 'must be at least 32 characters (openssl rand -hex 32)'),
+  MFA_ENCRYPTION_KEY: z
+    .string()
+    .regex(/^[0-9a-fA-F]{64}$/, 'must be 64 hex characters, i.e. 32 bytes (openssl rand -hex 32)'),
+  AUTH_ACCESS_TOKEN_MINUTES: z.coerce.number().int().min(1).max(60).default(10),
+  AUTH_SESSION_IDLE_HOURS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(24 * 30)
+    .default(8),
+  AUTH_SESSION_MAX_DAYS: z.coerce.number().int().min(1).max(90).default(14),
+  AUTH_COOKIE_SECURE: z.enum(['true', 'false']).optional(),
+  AUTH_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(10_000).default(10),
 });
+
+export interface AuthConfig {
+  /** Signs access, challenge and enrollment tokens. */
+  jwtSecret: string;
+  /** AES-256 key that encrypts the TOTP secrets stored in the database. */
+  mfaEncryptionKey: Buffer;
+  accessTokenSeconds: number;
+  /** A session expires after this much time without being refreshed. */
+  sessionIdleSeconds: number;
+  /** A session expires this long after it started, however active it is. */
+  sessionMaxSeconds: number;
+  /** The refresh cookie is sent over HTTPS only. Off by default outside production. */
+  cookieSecure: boolean;
+  /** Attempts per minute and IP on the sign-in routes (on top of the global limit). */
+  rateLimitPerMinute: number;
+}
 
 export interface AppConfig {
   nodeEnv: 'development' | 'test' | 'production';
@@ -42,6 +73,7 @@ export interface AppConfig {
   swaggerEnabled: boolean;
   /** Folder with the built web app, served under basePath. Null in development (Vite serves it). */
   webDistPath: string | null;
+  auth: AuthConfig;
 }
 
 /**
@@ -72,5 +104,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     // API docs are on in development, off in production unless explicitly enabled.
     swaggerEnabled: values.SWAGGER_ENABLED ? values.SWAGGER_ENABLED === 'true' : !isProduction,
     webDistPath: values.WEB_DIST_PATH?.trim() || null,
+    auth: {
+      jwtSecret: values.AUTH_JWT_SECRET,
+      mfaEncryptionKey: Buffer.from(values.MFA_ENCRYPTION_KEY, 'hex'),
+      accessTokenSeconds: values.AUTH_ACCESS_TOKEN_MINUTES * 60,
+      sessionIdleSeconds: values.AUTH_SESSION_IDLE_HOURS * 3600,
+      sessionMaxSeconds: values.AUTH_SESSION_MAX_DAYS * 86_400,
+      cookieSecure: values.AUTH_COOKIE_SECURE ? values.AUTH_COOKIE_SECURE === 'true' : isProduction,
+      rateLimitPerMinute: values.AUTH_RATE_LIMIT_PER_MINUTE,
+    },
   };
 }
