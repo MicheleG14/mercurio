@@ -85,6 +85,11 @@ export function StatusPage() {
                   {t(`value.${report.checks.database}`)}
                 </Badge>
               </Row>
+              <Row label={t('checks.tenantIsolation')}>
+                <Badge variant={report.checks.tenantIsolation === 'up' ? 'success' : 'destructive'}>
+                  {t(`isolation.${report.checks.tenantIsolation}`)}
+                </Badge>
+              </Row>
               <Row label={t('checks.version')}>
                 <span className="font-mono text-sm">{report.version}</span>
               </Row>

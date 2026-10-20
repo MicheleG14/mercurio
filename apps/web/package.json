@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
+    "check:boundaries": "depcruise src --config ../../.dependency-cruiser.cjs --ts-config tsconfig.app.json",
     "lint": "oxlint --type-aware src/",
     "test": "vitest run",
     "test:watch": "vitest"

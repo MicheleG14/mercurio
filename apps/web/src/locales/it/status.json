@@ -1,6 +1,6 @@
 {
   "title": "Stato del sistema",
-  "subtitle": "Mercurio è in costruzione. Questa pagina verifica che l'applicazione e il database siano raggiungibili.",
+  "subtitle": "Mercurio è in costruzione. Questa pagina verifica che l'applicazione e il database siano raggiungibili e che i dati di ogni cliente restino separati.",
   "overall": {
     "ok": "Operativo",
     "degraded": "Servizio degradato",
@@ -10,6 +10,7 @@
   "checks": {
     "api": "API",
     "database": "Database",
+    "tenantIsolation": "Isolamento dei tenant",
     "version": "Versione",
     "uptime": "Attivo da",
     "checkedAt": "Ultimo controllo"
@@ -17,6 +18,10 @@
   "value": {
     "up": "Raggiungibile",
     "down": "Non raggiungibile"
+  },
+  "isolation": {
+    "up": "Garantito",
+    "down": "Non garantito"
   },
   "unreachableHint": "Il server non risponde. Riprova tra qualche istante.",
   "refresh": "Aggiorna",
