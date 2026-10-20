@@ -3,6 +3,8 @@ import type { PrismaService } from '../prisma/prisma.service.js';
 import { HealthService } from './health.service.js';
 
 const config = loadConfig({
+  AUTH_JWT_SECRET: 'x'.repeat(32),
+  MFA_ENCRYPTION_KEY: 'ab'.repeat(32),
   DATABASE_URL: 'postgresql://user:pass@localhost:5432/db',
   APP_VERSION: '1.2.3',
 });
