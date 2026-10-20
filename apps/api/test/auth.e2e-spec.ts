@@ -2,6 +2,8 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
 import type { PrismaClient } from '../src/generated/prisma/client.js';
 import { newActivationCode } from '../src/modules/identity/activation-code.js';
+import { DEMO_PASSWORD, DEMO_TOTP_SECRET } from '../src/cli/seed-demo.js';
+import { AuthService } from '../src/modules/auth/index.js';
 import { totpCode } from '../src/modules/auth/totp.js';
 import {
   activate,
@@ -620,6 +622,52 @@ describe('authentication (e2e)', () => {
         .query({ type: 'NOT_A_TYPE' })
         .set(bearer(a.accessToken))
         .expect(400);
+    });
+  });
+
+  describe('recovery and demo accounts', () => {
+    it('lets an operator-issued code start over: new password, new two-factor setup, no old sessions', async () => {
+      const old = await sessionOf('u', world.tenants.a);
+      const oldSecret = person.u.secret;
+      const newPassword = 'a-brand-new-password-2026';
+
+      const code = await issueCode(admin, world.users.u);
+      const activated = await http()
+        .post('/api/auth/activate')
+        .send({ code, password: newPassword })
+        .expect(201);
+
+      // The old session is closed, the old password and the old authenticator are worthless.
+      await http().get('/api/auth/me').set(bearer(old.accessToken)).expect(401);
+      await http().post('/api/auth/login').send({ email: email.u, password: PASSWORD }).expect(401);
+      const login = await http()
+        .post('/api/auth/login')
+        .send({ email: email.u, password: newPassword })
+        .expect(200);
+      expect(login.body.status).toBe('ENROLLMENT_REQUIRED');
+
+      const started = await http()
+        .post('/api/auth/mfa/enroll/start')
+        .send({ enrollToken: activated.body.enrollToken });
+      expect(started.body.secret).not.toBe(oldSecret);
+      await http()
+        .post('/api/auth/mfa/enroll/confirm')
+        .send({ enrollToken: activated.body.enrollToken, code: totpCode(started.body.secret) })
+        .expect(200);
+      person.u = { ...person.u, secret: started.body.secret, recoveryCodes: [] };
+    });
+
+    it('lets a demo person sign in with the known password and authenticator secret', async () => {
+      const service = app.get(AuthService);
+      await admin.$transaction((tx) =>
+        service.setDemoCredentials(tx, world.users.v, {
+          password: DEMO_PASSWORD,
+          totpSecret: DEMO_TOTP_SECRET,
+        }),
+      );
+
+      const s = await signIn(app, admin, world.users.v, email.v, DEMO_TOTP_SECRET, DEMO_PASSWORD);
+      expect(s.body.tenantId).toBe(world.tenants.b);
     });
   });
 });
