@@ -8,12 +8,16 @@
 A vertical ERP for warehouse and invoicing, built as a modular monolith with NestJS and React.
 Named after Mercury, the Roman god of commerce.
 
-> **Status: phase 0 of 6.** The walking skeleton is in place: the full path from code to production
-> (CI, Docker, reverse proxy) works end to end, and every following phase ships a complete vertical
-> slice (database → API → UI). See the [roadmap](#roadmap).
+> **Status: phase 1a.** Multi-tenant foundations are in place: tenants, companies, people and
+> enabled modules, isolated by PostgreSQL Row-Level Security and proven by tests. Sign-in arrives
+> with phase 1b. Every phase ships a complete vertical slice (database → API → UI) to production.
+> See the [roadmap](#roadmap).
 
 ## What it will do
 
+- **Multi-tenant**: several customers on one installation, each with one or more companies and only
+  the modules it bought; one identity per person across customers. Isolation is enforced by the
+  database, not only by the code.
 - **Warehouse**: stock movements, stock levels computed from movements (never edited by hand),
   goods receipt, reorder thresholds.
 - **Orders**: purchase and sales orders, partial fulfilment, stock reservation, safe concurrency.
@@ -41,10 +45,13 @@ Named after Mercury, the Roman god of commerce.
 - **Money** is never a JavaScript `number`: PostgreSQL `numeric` and a single `Money` type.
 - **Errors** follow RFC 9457 (Problem Details) with stable codes; the UI translates the codes.
 - **One origin**: the API serves the built web app, so there is no CORS and cookies stay simple.
+- **Tenant isolation**: shared database with Row-Level Security on every tenant table; the API runs
+  as a role that cannot bypass it, and a test fails if a new table lacks protection.
+- **Module boundaries** are checked in CI: a module offers others only what its `index.ts` exports.
 
 ## Documentation
 
-- [Architecture](docs/architecture.md): runtime, modules, request lifecycle, configuration
+- [Architecture](docs/architecture.md): runtime, data model and tenant isolation, modules, request lifecycle
 - [Conventions](docs/conventions.md): the rules the code follows
 - [Glossary](docs/glossary.md): domain terms, English ↔ Italian
 - [Architecture decision records](docs/adr/)
@@ -60,17 +67,20 @@ docker compose up -d db          # PostgreSQL on 127.0.0.1:5432
 pnpm install
 pnpm generate                    # Prisma client
 pnpm db:setup                    # migrations, then the login of the API's database role
+pnpm seed:demo                   # optional: two fictitious tenants to explore
 
 pnpm dev:api                     # API on http://127.0.0.1:3000/api (docs at /api/docs)
 pnpm dev:web                     # web app on http://127.0.0.1:5173
 ```
 
-| Command                        | What it does                      |
-| ------------------------------ | --------------------------------- |
-| `pnpm test` / `pnpm test:e2e`  | Unit tests / API end-to-end tests |
-| `pnpm lint` / `pnpm typecheck` | Static checks                     |
-| `pnpm format`                  | Format the whole repository       |
-| `pnpm build`                   | Production build of both apps     |
+| Command                        | What it does                       |
+| ------------------------------ | ---------------------------------- |
+| `pnpm test` / `pnpm test:e2e`  | Unit tests / API end-to-end tests  |
+| `pnpm lint` / `pnpm typecheck` | Static checks                      |
+| `pnpm check:boundaries`        | Module boundary check              |
+| `pnpm cli <command>`           | Terminal commands (tenants, users) |
+| `pnpm format`                  | Format the whole repository        |
+| `pnpm build`                   | Production build of both apps      |
 
 ## Production
 
@@ -86,20 +96,37 @@ On the server, the deployment folder holds only `docker-compose.prod.yml`, `depl
 images, runs the migrations, restarts the app and waits for the health check. Any published version
 can be redeployed by hand from the **Deploy** workflow, which is also the rollback.
 
+The API connects as the `mercurio_app` database role, whose password (`POSTGRES_APP_PASSWORD`)
+lives in `.env.production` next to the owner's. Tenants and people are created with terminal
+commands, which run as the owner and are never exposed over HTTP:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml run --rm cli create-tenant \
+  --name "…" --slug … --modules all --company-name "…" --vat … --admin-email … --admin-name "…"
+```
+
 `deploy/nginx/mercurio.conf` holds the nginx locations; the container listens on `127.0.0.1:8001` only
 and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-delivery-github-actions.md).
 
 ## Roadmap
 
-| Phase | Content                                                      | Status |
-| ----- | ------------------------------------------------------------ | ------ |
-| 0     | Walking skeleton: monorepo, CI, Docker, status page          | ✅     |
-| 1     | Authentication: sign-in, TOTP two-factor, roles, audit log   |        |
-| 2     | Registry: customers, suppliers, items                        |        |
-| 3     | Warehouse: movements, stock levels, goods receipt            |        |
-| 4     | Orders: purchase and sales orders, reservations, concurrency |        |
-| 5     | Invoicing: invoices, credit notes, due dates, PDF            |        |
-| 6     | Polish: dashboard, architecture decision records, seed data  |        |
+| Phase | Content                                                          | Status |
+| ----- | ---------------------------------------------------------------- | ------ |
+| 0     | Walking skeleton: monorepo, CI, Docker, status page              | ✅     |
+| 1a    | Tenancy: tenants, companies, people, modules, Row-Level Security |        |
+| 1b    | Authentication: sign-in, TOTP two-factor, roles, audit log       |        |
+| 2     | Registry: customers, suppliers, items                            |        |
+| 3     | Warehouse: movements, stock levels, goods receipt                |        |
+| 4     | Orders: purchase and sales orders, reservations, concurrency     |        |
+| 5     | Invoicing: invoices, credit notes, due dates, PDF                |        |
+| 6     | Polish: dashboard, architecture decision records, seed data      |        |
+
+## Out of scope, by choice
+
+- Self-service sign-up, subscriptions and billing, one subdomain per customer: tenants are created
+  with terminal commands ([ADR 0010](docs/adr/0010-identity-and-memberships.md)).
+- General ledger, production planning, purchase invoices.
+- Transmission to the Italian e-invoicing exchange (SdI); at most, generating the FatturaPA XML.
 
 ## License
 

@@ -13,8 +13,9 @@ same checks as CI must pass:
 pnpm format:check
 pnpm typecheck
 pnpm lint
+pnpm check:boundaries
 pnpm test
-pnpm test:e2e     # needs the database: docker compose up -d db
+pnpm test:e2e     # needs the database: docker compose up -d db && pnpm db:setup
 pnpm build
 ```
 
@@ -26,6 +27,19 @@ pnpm build
   of **every** language (`apps/web/src/locales/`); a test fails if one is missing a key.
 - New behaviour comes with tests: unit tests for logic, end-to-end tests for API flows.
 - Comments explain **why**, not what. Public interfaces get TSDoc.
+- A backend module lives in `apps/api/src/modules/<module>` and offers other modules only what its
+  `index.ts` exports; `pnpm check:boundaries` fails otherwise (B3, [ADR 0011](docs/adr/0011-module-activation-and-boundaries.md)).
+
+## Adding a table with tenant data
+
+1. Add the model to `apps/api/prisma/schema/<module>.prisma` with `tenantId` and, for references to
+   other tenant tables, composite relations on `[tenantId, …]`.
+2. `pnpm --filter @mercurio/api exec prisma migrate dev --create-only --name <change>`, then append to
+   the generated SQL: `SELECT mercurio_enable_tenant_isolation('<table>');` and the `GRANT`s the
+   feature needs for `mercurio_app` (and nothing more).
+3. Access the table only from the module's repository, through `TenantDatabase`.
+4. Add the expected write privileges to the guard test (`test/tenant-tables.e2e-spec.ts`) and an
+   isolation test for the new feature. The guard test fails if the protection is missing.
 
 ## Commits
 

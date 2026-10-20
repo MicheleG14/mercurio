@@ -5,6 +5,44 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [0.2.0] - Unreleased
+
+Phase 1a: tenancy and identity. The multi-tenant foundations every later phase builds on, with
+isolation enforced by the database. No sign-in yet: it arrives with phase 1b.
+
+### Added
+
+- Data model for tenants, companies, enabled modules, people, memberships and one-time activation
+  codes; Prisma schema split per module.
+- PostgreSQL Row-Level Security on every tenant table through one standard function, composite
+  foreign keys that cannot cross tenants, and a guard test that fails if a tenant table lacks
+  protection.
+- `TenantDatabase` and `TenantContextService`: tenant work runs in one transaction with the tenant
+  context set for the database.
+- `tenancy` module: module catalog with dependencies, Italian VAT numbers with check digit, and the
+  `@RequiresModule` guard (`403 MODULE_NOT_ENABLED`).
+- `identity` module: one identity per person across tenants, memberships with role and reachable
+  companies, activation codes stored as hashes.
+- Terminal commands (`pnpm cli`, Compose service `cli`): `create-tenant`, `add-company`, `add-user`,
+  `remove-user`, `set-modules`, `issue-code`, `list-tenants`, and `seed-demo` with two fictitious
+  tenants.
+- RFC 9457 Problem Details for every error, with validation errors per field.
+- Module boundary check in CI (`pnpm check:boundaries`).
+- Status page: tenant isolation check. `/health` reports `checks.tenantIsolation`.
+- ADRs 0008-0011.
+
+### Changed
+
+- The API connects as the `mercurio_app` database role, subject to Row-Level Security; migrations,
+  commands and seeds use the owner role through `DATABASE_ADMIN_URL`. In production the API refuses
+  to start with a role that could bypass Row-Level Security.
+- Unknown API routes answer `application/problem+json` with code `NOT_FOUND`.
+
+### Upgrade notes
+
+- Add `POSTGRES_APP_PASSWORD` to `.env.production` and update `docker-compose.prod.yml` on the
+  server **before** deploying: Compose refuses to start without it.
+
 ## [0.1.0] - 2026-10-19
 
 Phase 0: walking skeleton. The full path from code to production works end to end, with no business
@@ -30,4 +68,5 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[0.2.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.2.0
 [0.1.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.1.0
