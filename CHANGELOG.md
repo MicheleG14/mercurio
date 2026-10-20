@@ -5,6 +5,42 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [Unreleased]
+
+Phase 1b: authentication, permissions and audit. People sign in, with two-factor authentication,
+and see only what their role allows; every route is closed by default.
+
+### Added
+
+- Activation of an account with its one-time code, password (argon2id) and mandatory TOTP
+  two-factor authentication with ten one-time recovery codes; the secret is stored encrypted.
+- Sign-in in two steps, the same answer for every refused attempt, lockout after five failures and a
+  strict rate limit on sign-in routes.
+- Sessions with a 10-minute access token and a rotating refresh token in an `HttpOnly`,
+  `SameSite=Strict` cookie; reuse of an old refresh token closes the session. Sign-out from one or
+  every device; password change; new recovery codes.
+- Choice of the tenant after sign-in and at any time; the company from the `X-Company-Id` header,
+  verified on every request.
+- Authorization: routes closed by default (`@Public()` for the exceptions), permissions from roles
+  (`@RequiresPermission`), company guard (`@RequiresCompany`).
+- Audit log: security events of each person (`/auth/events`) and events of each tenant
+  (`/audit-events`, administrators), append-only by database trigger. Terminal commands record their
+  changes.
+- Terminal commands: `issue-code` on an active account is a recovery; `revoke-sessions`; `seed-demo`
+  gives demo people a known password and authenticator secret outside production.
+- Web app: sign-in, two-factor step, activation with QR code, recovery codes, choice of customer and
+  company, overview, account page, activity page; shared form, table and error components.
+- OpenAPI document (`pnpm openapi`) and web client types generated from it, checked in CI.
+- Browser test of the whole sign-in flow with Playwright, in CI.
+- ADRs 0012-0016.
+
+### Changed
+
+- The status page moved to `/status`; `/` is the signed-in overview.
+- API responses are sent with `Cache-Control: no-store`.
+- Production needs `AUTH_JWT_SECRET` and `MFA_ENCRYPTION_KEY`; the Compose file passes them to the
+  API and to the terminal commands.
+
 ## [0.2.0] - 2026-10-20
 
 Phase 1a: tenancy and identity. The multi-tenant foundations every later phase builds on, with
@@ -68,5 +104,6 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[Unreleased]: https://github.com/MicheleG14/mercurio/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.2.0
 [0.1.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.1.0

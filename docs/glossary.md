@@ -5,17 +5,26 @@ term; the interface uses the term of the selected language.
 
 ## Platform
 
-| Code (English)  | Italiano                    | Meaning                                                                                             |
-| --------------- | --------------------------- | --------------------------------------------------------------------------------------------------- |
-| tenant          | cliente (della piattaforma) | A customer of Mercurio: whoever holds the subscription. Its data is invisible to every other tenant |
-| company         | azienda                     | A legal entity of a tenant, with its own VAT number, invoice numbering and warehouses               |
-| user / identity | utente                      | A person. One identity per email, whatever the number of tenants they work for                      |
-| membership      | appartenenza                | A person's place in a tenant: role and reachable companies                                          |
-| role            | ruolo                       | What a person can do in a tenant: administrator, warehouse keeper, accountant, read only            |
-| module          | modulo                      | A sellable business area (registry, warehouse, orders, invoicing), enabled per tenant               |
-| activation code | codice di attivazione       | One-time code a new person uses to set their password and two-factor authentication                 |
-| VAT number      | partita IVA                 | Tax identifier of a company; Italian numbers have 11 digits and a check digit                       |
-| tax code        | codice fiscale              | Italian tax identifier: 11 digits for companies, 16 characters for individuals                      |
+| Code (English)                  | Italiano                     | Meaning                                                                                             |
+| ------------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| tenant                          | cliente (della piattaforma)  | A customer of Mercurio: whoever holds the subscription. Its data is invisible to every other tenant |
+| company                         | azienda                      | A legal entity of a tenant, with its own VAT number, invoice numbering and warehouses               |
+| user / identity                 | utente                       | A person. One identity per email, whatever the number of tenants they work for                      |
+| membership                      | appartenenza                 | A person's place in a tenant: role and reachable companies                                          |
+| role                            | ruolo                        | What a person can do in a tenant: administrator, warehouse keeper, accountant, read only            |
+| module                          | modulo                       | A sellable business area (registry, warehouse, orders, invoicing), enabled per tenant               |
+| activation code                 | codice di attivazione        | One-time code a new person uses to set their password and two-factor authentication                 |
+| session                         | sessione                     | A signed-in browser: a short access token in memory and a refresh token in a cookie                 |
+| access token                    | token di accesso             | Proof of identity sent with every request; valid 10 minutes                                         |
+| refresh token                   | token di rinnovo             | Cookie that obtains a new access token; replaced at every use                                       |
+| two-factor authentication (MFA) | autenticazione a due fattori | Sign-in with a password and a code from an authenticator app (TOTP)                                 |
+| recovery code                   | codice di recupero           | One-time code that replaces the app's code when the app is lost                                     |
+| account recovery                | recupero dell'account        | A new activation code issued by the operator: password and two-factor setup start over              |
+| permission                      | permesso                     | What a role may do, as `area:action` (e.g. `audit:read`)                                            |
+| audit log                       | registro attività            | Append-only record of who did what, and of security events                                          |
+| platform operator               | operatore della piattaforma  | Who runs the installation and creates tenants, from the terminal                                    |
+| VAT number                      | partita IVA                  | Tax identifier of a company; Italian numbers have 11 digits and a check digit                       |
+| tax code                        | codice fiscale               | Italian tax identifier: 11 digits for companies, 16 characters for individuals                      |
 
 ## Registry
 

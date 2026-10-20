@@ -8,10 +8,10 @@
 A vertical ERP for warehouse and invoicing, built as a modular monolith with NestJS and React.
 Named after Mercury, the Roman god of commerce.
 
-> **Status: phase 1a.** Multi-tenant foundations are in place: tenants, companies, people and
-> enabled modules, isolated by PostgreSQL Row-Level Security and proven by tests. Sign-in arrives
-> with phase 1b. Every phase ships a complete vertical slice (database → API → UI) to production.
-> See the [roadmap](#roadmap).
+> **Status: phase 1b.** People sign in with a password and mandatory two-factor authentication,
+> choose a customer and a company, and see only what their role allows; every route is closed by
+> default and every security event is recorded. Business modules start with phase 2. Every phase
+> ships a complete vertical slice (database → API → UI) to production. See the [roadmap](#roadmap).
 
 ## What it will do
 
@@ -48,6 +48,13 @@ Named after Mercury, the Roman god of commerce.
 - **Tenant isolation**: shared database with Row-Level Security on every tenant table; the API runs
   as a role that cannot bypass it, and a test fails if a new table lacks protection.
 - **Module boundaries** are checked in CI: a module offers others only what its `index.ts` exports.
+- **Closed by default**: every API route needs a signed-in person unless it is explicitly public;
+  permissions come from roles and are checked on every request, together with the enabled modules
+  and the company.
+- **Sessions**: a short-lived access token in memory and a rotating refresh token in an `HttpOnly`
+  cookie; reusing an old refresh token closes the session.
+- **Typed API contract**: the web client's types are generated from the API's OpenAPI document, and
+  CI fails if they are out of date.
 
 ## Documentation
 
@@ -67,20 +74,26 @@ docker compose up -d db          # PostgreSQL on 127.0.0.1:5432
 pnpm install
 pnpm generate                    # Prisma client
 pnpm db:setup                    # migrations, then the login of the API's database role
-pnpm seed:demo                   # optional: two fictitious tenants to explore
+pnpm seed:demo                   # optional: two fictitious tenants to explore (see below)
 
 pnpm dev:api                     # API on http://127.0.0.1:3000/api (docs at /api/docs)
 pnpm dev:web                     # web app on http://127.0.0.1:5173
 ```
 
-| Command                        | What it does                       |
-| ------------------------------ | ---------------------------------- |
-| `pnpm test` / `pnpm test:e2e`  | Unit tests / API end-to-end tests  |
-| `pnpm lint` / `pnpm typecheck` | Static checks                      |
-| `pnpm check:boundaries`        | Module boundary check              |
-| `pnpm cli <command>`           | Terminal commands (tenants, users) |
-| `pnpm format`                  | Format the whole repository        |
-| `pnpm build`                   | Production build of both apps      |
+The demo people (for example `anna.rossi@example.com`, see `apps/api/src/cli/seed-demo.ts`) sign in
+with the password `Demo-password-2026` and the authenticator secret `JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP`:
+add it to any authenticator app to get the codes. These credentials exist only outside production.
+
+| Command                                    | What it does                                     |
+| ------------------------------------------ | ------------------------------------------------ |
+| `pnpm test` / `pnpm test:e2e`              | Unit tests / API end-to-end tests                |
+| `pnpm --filter @mercurio/web test:browser` | Browser test of the sign-in flow (Playwright)    |
+| `pnpm lint` / `pnpm typecheck`             | Static checks                                    |
+| `pnpm check:boundaries`                    | Module boundary check                            |
+| `pnpm openapi`                             | Regenerate the OpenAPI document and client types |
+| `pnpm cli <command>`                       | Terminal commands (tenants, people, recovery)    |
+| `pnpm format`                              | Format the whole repository                      |
+| `pnpm build`                               | Production build of both apps                    |
 
 ## Production
 
@@ -92,7 +105,7 @@ git tag v0.1.0 && git push origin v0.1.0   # build, publish, deploy
 ```
 
 On the server, the deployment folder holds only `docker-compose.prod.yml`, `deploy/deploy.sh` and
-`.env.production` (from `.env.production.example`, with a real password). The script pulls the
+`.env.production` (from `.env.production.example`, with real passwords and secrets). The script pulls the
 images, runs the migrations, restarts the app and waits for the health check. Any published version
 can be redeployed by hand from the **Deploy** workflow, which is also the rollback.
 
@@ -105,6 +118,12 @@ docker compose --env-file .env.production -f docker-compose.prod.yml run --rm cl
   --name "…" --slug … --modules all --company-name "…" --vat … --admin-email … --admin-name "…"
 ```
 
+`create-tenant` and `add-user` print a one-time activation code for each new person. The person opens
+`<address>/mercurio/activate#<code>`, chooses a password, sets up an authenticator app and saves the
+recovery codes. There is no email reset: to recover an account, the operator issues a new code
+(`issue-code --email …`), which resets password and two-factor setup when used; `revoke-sessions`
+signs a person out everywhere.
+
 `deploy/nginx/mercurio.conf` holds the nginx locations; the container listens on `127.0.0.1:8001` only
 and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-delivery-github-actions.md).
 
@@ -114,7 +133,7 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 | ----- | ---------------------------------------------------------------- | ------ |
 | 0     | Walking skeleton: monorepo, CI, Docker, status page              | ✅     |
 | 1a    | Tenancy: tenants, companies, people, modules, Row-Level Security | ✅     |
-| 1b    | Authentication: sign-in, TOTP two-factor, roles, audit log       |        |
+| 1b    | Authentication: sign-in, TOTP two-factor, roles, audit log       | ✅     |
 | 2     | Registry: customers, suppliers, items                            |        |
 | 3     | Warehouse: movements, stock levels, goods receipt                |        |
 | 4     | Orders: purchase and sales orders, reservations, concurrency     |        |
