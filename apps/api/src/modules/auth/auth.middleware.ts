@@ -39,12 +39,9 @@ export class AuthenticationMiddleware implements NestMiddleware {
       return next();
     }
 
-    let resolved;
-    try {
-      resolved = await this.auth.resolveIdentity(claims, req.header('x-company-id'));
-    } catch (error) {
-      return next(error);
-    }
+    // An unexpected failure here (database unreachable) reaches the global filter and becomes a
+    // generic 500 in Problem Details: see the route inventory tests.
+    const resolved = await this.auth.resolveIdentity(claims, req.header('x-company-id'));
     if (!resolved.ok) {
       setAuthFailure(req, { status: resolved.status, code: resolved.code });
       return next();

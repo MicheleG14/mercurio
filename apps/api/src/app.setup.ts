@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import type { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import type { AppConfig } from './config/app-config.js';
@@ -25,6 +26,11 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): vo
     }),
   );
   app.use(cookieParser());
+  // API answers carry tokens and personal data: no browser or proxy may keep a copy.
+  app.use(`/${config.apiPrefix}`, (_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
   app.setGlobalPrefix(config.apiPrefix);
   app.useGlobalPipes(
     new ValidationPipe({
@@ -39,16 +45,20 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): vo
   app.enableShutdownHooks();
 
   if (config.swaggerEnabled) {
-    const document = SwaggerModule.createDocument(
-      app,
-      new DocumentBuilder()
-        .setTitle('Mercurio API')
-        .setDescription('Warehouse and invoicing')
-        .setVersion(config.appVersion)
-        .addBearerAuth()
-        .addCookieAuth('mercurio_refresh')
-        .build(),
-    );
-    SwaggerModule.setup(`${config.apiPrefix}/docs`, app, document);
+    SwaggerModule.setup(`${config.apiPrefix}/docs`, app, buildOpenApiDocument(app, config));
   }
+}
+
+/** The OpenAPI description of the API: served at /docs and exported for the generated web client. */
+export function buildOpenApiDocument(app: NestExpressApplication, config: AppConfig) {
+  return SwaggerModule.createDocument(
+    app,
+    new DocumentBuilder()
+      .setTitle('Mercurio API')
+      .setDescription('Warehouse and invoicing')
+      .setVersion(config.appVersion)
+      .addBearerAuth()
+      .addCookieAuth('mercurio_refresh')
+      .build(),
+  );
 }

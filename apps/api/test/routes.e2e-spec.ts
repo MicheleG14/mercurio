@@ -2,7 +2,10 @@ import { RequestMethod } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants.js';
 import { ModulesContainer, Reflector } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import request from 'supertest';
+import { AuthService } from '../src/modules/auth/index.js';
 import { IS_PUBLIC } from '../src/modules/auth/decorators.js';
+import { TokenService } from '../src/modules/auth/tokens.js';
 import { createTestApp } from './support/auth.js';
 
 // Every route is closed unless it says otherwise (docs/adr/0014). This lists the routes the
@@ -68,5 +71,24 @@ describe('route inventory (e2e)', () => {
       .map((r) => r.route);
 
     expect(closed).toEqual(expect.arrayContaining(['GET auth/me', 'GET audit-events']));
+  });
+
+  it('answers in Problem Details when checking a token fails unexpectedly', async () => {
+    const token = await app.get(TokenService).sign('access', {
+      sub: '0198a000-0000-7000-8000-000000000001',
+      sid: '0198a000-0000-7000-8000-000000000002',
+    });
+    vi.spyOn(app.get(AuthService), 'resolveIdentity').mockRejectedValueOnce(
+      new Error('database unreachable'),
+    );
+
+    const res = await request(app.getHttpServer())
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(500);
+
+    expect(res.headers['content-type']).toContain('application/problem+json');
+    expect(res.body).toMatchObject({ status: 500, code: 'INTERNAL_ERROR' });
+    expect(JSON.stringify(res.body)).not.toContain('database unreachable');
   });
 });
