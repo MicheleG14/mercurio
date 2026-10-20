@@ -13,8 +13,13 @@ import { DomainException } from '../shared/errors/index.js';
  * - bianchi: one company, its own admin;
  * - Paola Conti, a consultant, belongs to both tenants with a different role in each (S4).
  *
- * No activation codes: demo credentials arrive with phase 1b.
+ * The command gives every demo person the same fictitious password and authenticator secret
+ * (outside production), so the demo can be signed into.
  */
+export const DEMO_PASSWORD = 'Demo-password-2026';
+/** Base32 secret shared by all demo people: add it to any authenticator app to get the codes. */
+export const DEMO_TOTP_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+
 export const DEMO = {
   tenants: [
     {
@@ -58,6 +63,7 @@ export async function seedDemo(
   const slug = (base: string) => (suffix ? `${base}-${suffix}` : base);
   const email = (local: string) => `${local}${suffix ? `.${suffix}` : ''}@example.com`;
   const summary: { slug: string; companies: number; members: number }[] = [];
+  const userIds = new Set<string>();
 
   for (const tenant of DEMO.tenants) {
     const [first, ...others] = tenant.companies;
@@ -83,7 +89,7 @@ export async function seedDemo(
     }
 
     for (const member of tenant.members) {
-      await services.identity.addMember(db, {
+      const added = await services.identity.addMember(db, {
         tenantId: created.tenant.id,
         email: email(member.email),
         name: member.name,
@@ -91,6 +97,7 @@ export async function seedDemo(
         companies:
           member.companies === 'all' ? 'all' : member.companies.map((index) => companyIds[index]!),
       });
+      userIds.add(added.userId);
     }
     summary.push({
       slug: created.tenant.slug,
@@ -98,7 +105,7 @@ export async function seedDemo(
       members: tenant.members.length,
     });
   }
-  return summary;
+  return { tenants: summary, userIds: [...userIds] };
 }
 
 /** Appends the Italian VAT check digit to 10 digits, so demo numbers pass validation. */

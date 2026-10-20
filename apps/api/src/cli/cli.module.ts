@@ -1,5 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_CONFIG, loadConfig } from '../config/app-config.js';
+import { AuditModule } from '../modules/audit/index.js';
+import { AuthModule } from '../modules/auth/index.js';
 import { IdentityModule } from '../modules/identity/index.js';
 import { TenancyModule } from '../modules/tenancy/index.js';
 import { PrismaModule } from '../prisma/index.js';
@@ -27,5 +29,7 @@ import { PrismaModule } from '../prisma/index.js';
 class CliConfigModule {}
 
 /** What terminal commands need: no HTTP server, no logger middleware, no static files. */
-@Module({ imports: [CliConfigModule, PrismaModule, TenancyModule, IdentityModule] })
+@Module({
+  imports: [CliConfigModule, PrismaModule, TenancyModule, IdentityModule, AuditModule, AuthModule],
+})
 export class CliModule {}
