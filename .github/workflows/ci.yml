@@ -49,6 +49,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm generate
+      # The web client is generated from the API's OpenAPI document: both files are committed,
+      # so a change to the API that is not reflected in them fails here (docs/adr/0016).
+      - name: Generated API client is up to date
+        run: |
+          pnpm openapi
+          git diff --exit-code -- apps/api/openapi.json apps/web/src/api/schema.d.ts
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm lint
@@ -58,10 +64,60 @@ jobs:
       - run: pnpm test:e2e
       - run: pnpm build
 
+  browser:
+    name: Browser tests
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: mercurio
+          POSTGRES_PASSWORD: mercurio
+          POSTGRES_DB: mercurio
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mercurio -d mercurio"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_ADMIN_URL: postgresql://mercurio:mercurio@localhost:5432/mercurio
+      POSTGRES_APP_PASSWORD: mercurio-app-ci-password
+      DATABASE_URL: postgresql://mercurio_app:mercurio-app-ci-password@localhost:5432/mercurio
+      # Throwaway secrets for this job only.
+      AUTH_JWT_SECRET: ci-browser-tests-jwt-secret-0123456789abcdef
+      MFA_ENCRYPTION_KEY: 00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm generate
+      - run: pnpm db:setup
+      # The same build as production: the API serves the web app under /mercurio.
+      - run: pnpm --filter @mercurio/api build
+      - run: pnpm --filter @mercurio/web build
+        env:
+          APP_BASE_PATH: /mercurio
+      - run: pnpm --filter @mercurio/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @mercurio/web test:browser
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report/
+            apps/web/test-results/
+          retention-days: 7
+
   docker:
     name: Docker images
     runs-on: ubuntu-24.04
-    needs: check
+    needs: [check, browser]
     permissions:
       contents: read
       # Only this job can publish to GitHub Container Registry.
