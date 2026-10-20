@@ -1,5 +1,15 @@
+import enAccount from '@/locales/en/account.json';
+import enActivity from '@/locales/en/activity.json';
+import enAuth from '@/locales/en/auth.json';
+import enErrors from '@/locales/en/errors.json';
+import enHome from '@/locales/en/home.json';
 import enCommon from '@/locales/en/common.json';
 import enStatus from '@/locales/en/status.json';
+import itAccount from '@/locales/it/account.json';
+import itActivity from '@/locales/it/activity.json';
+import itAuth from '@/locales/it/auth.json';
+import itErrors from '@/locales/it/errors.json';
+import itHome from '@/locales/it/home.json';
 import itCommon from '@/locales/it/common.json';
 import itStatus from '@/locales/it/status.json';
 
@@ -8,8 +18,24 @@ import itStatus from '@/locales/it/status.json';
  * Adding a language = adding its folder under src/locales and one entry here.
  */
 export const resources = {
-  it: { common: itCommon, status: itStatus },
-  en: { common: enCommon, status: enStatus },
+  it: {
+    common: itCommon,
+    status: itStatus,
+    account: itAccount,
+    activity: itActivity,
+    auth: itAuth,
+    errors: itErrors,
+    home: itHome,
+  },
+  en: {
+    common: enCommon,
+    status: enStatus,
+    account: enAccount,
+    activity: enActivity,
+    auth: enAuth,
+    errors: enErrors,
+    home: enHome,
+  },
 } as const;
 
 export type Language = keyof typeof resources;

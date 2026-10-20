@@ -17,5 +17,32 @@
   },
   "footer": {
     "source": "Source code on GitHub"
+  },
+  "table": {
+    "page": "Page {{page}} of {{pages}} ({{total}} items)",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "nav": {
+    "home": "Overview",
+    "account": "My account",
+    "activity": "Activity",
+    "status": "Status",
+    "signOut": "Sign out",
+    "menu": "Main menu"
+  },
+  "actions": {
+    "continue": "Continue",
+    "back": "Back",
+    "copy": "Copy",
+    "copied": "Copied",
+    "download": "Download",
+    "save": "Save"
+  },
+  "context": {
+    "tenant": "Customer",
+    "company": "Company",
+    "switchTenant": "Switch customer",
+    "switchCompany": "Switch company"
   }
 }

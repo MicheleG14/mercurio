@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { Outlet } from 'react-router';
+import { Link, Outlet } from 'react-router';
 import { BrandMark } from './BrandMark';
 import { LanguageToggle } from './LanguageToggle';
 import { ThemeToggle } from './ThemeToggle';
 
 const REPOSITORY_URL = 'https://github.com/MicheleG14/mercurio';
 
-/** Public layout used until sign-in exists (phase 1 adds the authenticated shell with the sidebar). */
+/** Layout of the public pages: status, sign-in, activation, choice of the customer. */
 export function AppLayout() {
   const { t } = useTranslation();
 
@@ -33,7 +33,12 @@ export function AppLayout() {
       </main>
 
       <footer className="text-muted-foreground mx-auto flex w-full max-w-5xl flex-wrap justify-between gap-2 px-4 py-6 text-sm">
-        <span>{t('app.demo')}</span>
+        <span className="flex gap-4">
+          <span>{t('app.demo')}</span>
+          <Link className="hover:text-foreground underline underline-offset-4" to="/status">
+            {t('nav.status')}
+          </Link>
+        </span>
         <a
           className="hover:text-foreground underline underline-offset-4"
           href={REPOSITORY_URL}

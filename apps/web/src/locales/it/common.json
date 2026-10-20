@@ -17,5 +17,32 @@
   },
   "footer": {
     "source": "Codice sorgente su GitHub"
+  },
+  "table": {
+    "page": "Pagina {{page}} di {{pages}} ({{total}} elementi)",
+    "previous": "Precedente",
+    "next": "Successiva"
+  },
+  "nav": {
+    "home": "Panoramica",
+    "account": "Il mio account",
+    "activity": "Attività",
+    "status": "Stato",
+    "signOut": "Esci",
+    "menu": "Menu principale"
+  },
+  "actions": {
+    "continue": "Continua",
+    "back": "Indietro",
+    "copy": "Copia",
+    "copied": "Copiato",
+    "download": "Scarica",
+    "save": "Salva"
+  },
+  "context": {
+    "tenant": "Cliente",
+    "company": "Azienda",
+    "switchTenant": "Cambia cliente",
+    "switchCompany": "Cambia azienda"
   }
 }
