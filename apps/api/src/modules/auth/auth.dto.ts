@@ -167,7 +167,7 @@ export class MeDto {
   @ApiProperty({ type: MeUserDto }) user!: MeUserDto;
   @ApiProperty({ type: MeTenantDto, nullable: true }) tenant!: MeTenantDto | null;
   @ApiPropertyOptional({ type: String, nullable: true }) role!: string | null;
-  @ApiProperty({ type: [String], example: ['registry:read'] }) permissions!: string[];
+  @ApiProperty({ type: [String], example: ['parties:read'] }) permissions!: string[];
   @ApiProperty({ type: [String], example: ['registry', 'warehouse'] }) modules!: string[];
   @ApiProperty({ type: [MeCompanyDto], description: 'Companies the person can work on' })
   companies!: MeCompanyDto[];

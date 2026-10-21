@@ -6,22 +6,25 @@ import { PERMISSIONS, type Permission, permissionsFor } from './permissions.js';
 const EXPECTED: Record<MembershipRole, Permission[]> = {
   ADMIN: [...PERMISSIONS],
   WAREHOUSE_KEEPER: [
-    'registry:read',
-    'registry:write',
+    'parties:read',
+    'items:read',
+    'items:write',
     'warehouse:read',
     'warehouse:write',
     'orders:read',
     'orders:write',
   ],
   ACCOUNTANT: [
-    'registry:read',
+    'parties:read',
+    'parties:write',
+    'items:read',
     'warehouse:read',
     'orders:read',
     'invoicing:read',
     'invoicing:write',
     'invoicing:issue',
   ],
-  READ_ONLY: ['registry:read', 'warehouse:read', 'orders:read', 'invoicing:read'],
+  READ_ONLY: ['parties:read', 'items:read', 'warehouse:read', 'orders:read', 'invoicing:read'],
 };
 
 describe('role permissions', () => {

@@ -62,3 +62,13 @@ export function parseSort<F extends string>(
     ? { field: field as F, direction: direction as 'asc' | 'desc' }
     : null;
 }
+
+/**
+ * For boolean filters in a query string (`?archived=true`): `@Transform(queryBoolean)`. The
+ * usual `@Type(() => Boolean)` would turn the text "false" into true.
+ */
+export function queryBoolean({ value }: { value: unknown }): unknown {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return value;
+}

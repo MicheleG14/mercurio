@@ -35,6 +35,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       return problem(exception.status, exception.code, {
         detail: exception.detail,
         errors: exception.errors,
+        existingId: exception.existingId,
       });
     }
     if (exception instanceof HttpException) {
