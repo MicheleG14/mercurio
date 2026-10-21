@@ -1,8 +1,8 @@
 import { MembershipRole } from '../../generated/prisma/client.js';
 import { PERMISSIONS, type Permission, permissionsFor } from './permissions.js';
 
-// The matrix, row by row: a change here must be a deliberate change to the table in
-// docs/adr/0014, not a side effect.
+// The matrix, row by row: a change here must be a deliberate decision (docs/adr/0014, and 0018
+// for the registry), not a side effect.
 const EXPECTED: Record<MembershipRole, Permission[]> = {
   ADMIN: [...PERMISSIONS],
   WAREHOUSE_KEEPER: [

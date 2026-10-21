@@ -63,6 +63,23 @@ pnpm --filter @mercurio/web test:browser
 4. Describe the DTOs with `@ApiProperty`, then run `pnpm openapi` and commit the regenerated files.
 5. Translate every new error `code` in `apps/web/src/locales/<lang>/errors.json`.
 
+## Adding an entity people search, open and edit
+
+The registry is the reference ("list and record" in [docs/architecture.md](docs/architecture.md)):
+
+1. **Table**: `version` (B29) and `archived_at` (B31), no `DELETE` grant; updates granted per column,
+   leaving out what must never change. Trigram indexes on the columns `q` searches.
+2. **Rules** in one pure function per entity that collects every broken rule with `FieldErrors` and
+   throws `400 VALIDATION_FAILED` with `errors[]`; unit-test it case by case.
+3. **Service**: one `TenantDatabase.run` per use case; check the `version`, update with
+   `updateAtVersion` (`409 EDIT_CONFLICT` when nothing matched), record the event with the names of
+   the changed fields. Escape `q` with `escapeLike`. Decimals with `shared/decimal.ts` (B30).
+4. **Routes**: `GET /<things>` (B16 query), `GET /<things>/:id`, `POST`, `PATCH` with `version`,
+   `POST /:id/archive` and `/:id/restore` with `version`; a permission per entity and action.
+5. **Web app**: a list with `DataTable`, `SearchInput` and `useListParams`; a record with React Hook
+   Form + Zod, `FormSection`, `RecordNotices`, `ArchiveButton` and `useUnsavedChanges`; query keys in
+   the feature's `queries.ts`; component tests for checks, field errors, read-only mode and conflicts.
+
 ## Commits
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/), checked by a

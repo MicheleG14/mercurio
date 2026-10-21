@@ -22,6 +22,9 @@ a decision that changes gets a new record that supersedes the old one.
 | [0014](0014-authorization.md)                           | Authorization: closed by default, permissions from roles                 | Accepted |
 | [0015](0015-audit-log.md)                               | Audit log: two append-only tables                                        | Accepted |
 | [0016](0016-generated-api-client.md)                    | API contract: OpenAPI document and generated client types                | Accepted |
+| [0017](0017-italian-rules-euro-only.md)                 | Italian tax rules and euro only                                          | Accepted |
+| [0018](0018-registry-parties-and-items.md)              | Registry: parties with roles, items, archiving and versions              | Accepted |
+| [0019](0019-decimals-as-strings-in-json.md)             | Decimals travel as strings in JSON                                       | Accepted |
 
 ## Template
 

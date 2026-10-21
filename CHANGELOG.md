@@ -5,6 +5,38 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [Unreleased]
+
+Phase 2: registry. Customers, suppliers and items, from the database to the browser.
+
+### Added
+
+- Parties (customers, suppliers or both) of four kinds, private person, sole trader, company and
+  organization, each with its required fields; Italian checks for parties in Italy: VAT number and
+  tax code with their check characters (omocodia included), postal code, province, SdI recipient
+  code. Foreign parties are supported with free identifiers.
+- One active party per VAT number in a tenant, with the existing one offered while typing and in
+  the `409 PARTY_VAT_TAKEN` answer (`existingId`).
+- Items with a code unique regardless of case and never reused or changed, unit of measure, VAT
+  code (rates and the natures N1-N7), list price, goods or services.
+- Lists with search (trigram indexes), filters, sorting and paging; records archived and restored,
+  never deleted; edit conflicts refused with `409 EDIT_CONFLICT`; every change in the audit log with
+  the names of the changed fields.
+- `GET /registry/reference-data` with VAT codes, units and legal forms.
+- Web app: customers and suppliers, items, records in sections with read-only mode, archive and
+  restore dialogs, conflict banner, a question before leaving unsaved changes, prices typed and shown
+  in the person's language; the activity page links events to their record.
+- Demo seed: a registry for both demo tenants; it now adds only what is missing, so it can run on
+  an installation that already has the demo.
+- ADRs 0017-0019; conventions B1, B19, B29-B31, F7-F9, F20.
+
+### Changed
+
+- Permissions `registry:read` and `registry:write` are replaced by `parties:read/write` and
+  `items:read/write`: accountants edit parties, warehouse keepers edit items.
+- Company tax codes are checked with their check character.
+- Prices and quantities travel in JSON as decimal strings (ADR 0019).
+
 ## [0.3.0] - 2026-10-20
 
 Phase 1b: authentication, permissions and audit. People sign in, with two-factor authentication,
