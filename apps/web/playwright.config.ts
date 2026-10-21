@@ -33,6 +33,12 @@ export default defineConfig({
       grep: /@phone/,
     },
     {
+      name: 'desktop',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /responsive\.spec\.ts/,
+      grep: /@desktop/,
+    },
+    {
       name: 'tablet',
       use: { ...devices['Desktop Chrome'], viewport: { width: 820, height: 1180 }, hasTouch: true },
       testMatch: /responsive\.spec\.ts/,
