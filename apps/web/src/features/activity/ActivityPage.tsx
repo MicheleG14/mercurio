@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navigate } from 'react-router';
+import { Link, Navigate } from 'react-router';
 import { DataTable } from '@/components/shared/DataTable';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { useMe } from '@/lib/auth/me';
@@ -14,7 +14,18 @@ const TYPES = [
   'MEMBER_REMOVED',
   'MODULES_CHANGED',
   'COMPANY_ADDED',
+  'PARTY_CREATED',
+  'PARTY_UPDATED',
+  'PARTY_ARCHIVED',
+  'PARTY_RESTORED',
+  'ITEM_CREATED',
+  'ITEM_UPDATED',
+  'ITEM_ARCHIVED',
+  'ITEM_RESTORED',
 ] as const;
+
+/** Records an event can be about, and where they open. */
+const SUBJECT_PATHS: Record<string, string> = { party: '/parties', item: '/items' };
 
 /** The audit log of the current customer, for administrators (permission audit:read). */
 export function ActivityPage() {
@@ -71,6 +82,31 @@ export function ActivityPage() {
                 : row.type,
           },
           { key: 'who', header: t('who'), cell: (row) => row.actor?.name ?? t('terminal') },
+          {
+            key: 'subject',
+            header: t('subject'),
+            cell: (row) => {
+              const path = row.subjectId && SUBJECT_PATHS[row.subjectType ?? ''];
+              const fields = (row.details as { fields?: unknown } | null)?.fields;
+              return (
+                <span className="flex flex-col">
+                  {path && (
+                    <Link
+                      className="underline-offset-4 hover:underline"
+                      to={`${path}/${row.subjectId}`}
+                    >
+                      {t(`subjectType.${row.subjectType as 'party'}`)}
+                    </Link>
+                  )}
+                  {Array.isArray(fields) && (
+                    <span className="text-muted-foreground text-xs">
+                      {t('fields', { fields: fields.join(', ') })}
+                    </span>
+                  )}
+                </span>
+              );
+            },
+          },
         ]}
       />
     </div>

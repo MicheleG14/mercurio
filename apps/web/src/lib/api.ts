@@ -11,6 +11,8 @@ export interface ProblemDetails {
   title?: string;
   detail?: string;
   errors?: { field: string; code: string }[];
+  /** On a conflict with an existing resource, its id (e.g. the party with that VAT number). */
+  existingId?: string;
 }
 
 export class ApiError extends Error {
