@@ -9,3 +9,11 @@ export function normalizeName(value: string, code = 'INVALID_NAME'): string {
   }
   return name;
 }
+
+/**
+ * Text to search for "as typed" with Prisma's `contains`, which becomes LIKE '%…%' without
+ * escaping: `%` and `_` would otherwise act as wildcards ("%" would match everything).
+ */
+export function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}

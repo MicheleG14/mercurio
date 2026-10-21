@@ -56,6 +56,15 @@ describe('ProblemDetailsFilter', () => {
     expect(res.body).toMatchObject({ status: 400, errors: [{ field: 'email', code: 'IS_EMAIL' }] });
   });
 
+  it('names the existing resource of a conflict', () => {
+    const id = '0198a000-0000-7000-8000-000000000001';
+    const res = respond(
+      new DomainException('PARTY_VAT_TAKEN', HttpStatus.CONFLICT, { existingId: id }),
+    );
+
+    expect(res.body).toMatchObject({ status: 409, code: 'PARTY_VAT_TAKEN', existingId: id });
+  });
+
   it.each([
     [new NotFoundException(), 404, 'NOT_FOUND'],
     [new ForbiddenException(), 403, 'FORBIDDEN'],

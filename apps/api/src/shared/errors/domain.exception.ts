@@ -12,16 +12,19 @@ export class DomainException extends Error {
   /** Developer-facing explanation; never shown as-is to users. */
   readonly detail?: string;
   readonly errors?: FieldError[];
+  /** The resource a conflict is about (e.g. the party that already has a VAT number). */
+  readonly existingId?: string;
 
   constructor(
     /** Stable, machine-readable code (UPPER_SNAKE_CASE). Part of the API contract. */
     readonly code: string,
     readonly status: HttpStatus = HttpStatus.UNPROCESSABLE_ENTITY,
-    options: { detail?: string; errors?: FieldError[] } = {},
+    options: { detail?: string; errors?: FieldError[]; existingId?: string } = {},
   ) {
     super(options.detail ?? code);
     this.name = 'DomainException';
     this.detail = options.detail;
     this.errors = options.errors;
+    this.existingId = options.existingId;
   }
 }

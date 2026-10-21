@@ -19,6 +19,11 @@ export interface ProblemDetails {
   code: string;
   detail?: string;
   errors?: FieldError[];
+  /**
+   * Extension member (RFC 9457 §3.2): on a conflict with an existing resource, its id, so the
+   * client can lead to it ("this VAT number belongs to…: open it").
+   */
+  existingId?: string;
 }
 
 export const PROBLEM_CONTENT_TYPE = 'application/problem+json';
@@ -46,7 +51,7 @@ export function codeForStatus(status: number): string {
 export function problem(
   status: number,
   code: string,
-  extra: Pick<ProblemDetails, 'detail' | 'errors'> = {},
+  extra: Pick<ProblemDetails, 'detail' | 'errors' | 'existingId'> = {},
 ): ProblemDetails {
   return {
     type: 'about:blank',
@@ -56,5 +61,6 @@ export function problem(
     code,
     ...(extra.detail ? { detail: extra.detail } : {}),
     ...(extra.errors?.length ? { errors: extra.errors } : {}),
+    ...(extra.existingId ? { existingId: extra.existingId } : {}),
   };
 }

@@ -30,7 +30,10 @@ export class AuthGuard implements CanActivate {
   }
 }
 
-/** Enforces @RequiresPermission(...): the permission comes from the role read on this request. */
+/**
+ * Enforces @RequiresPermission(...): the person needs one of the listed permissions, which come
+ * from the role read on this request.
+ */
 @Injectable()
 export class PermissionGuard implements CanActivate {
   constructor(
@@ -39,17 +42,19 @@ export class PermissionGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const required = this.reflector.getAllAndOverride<Permission | undefined>(REQUIRED_PERMISSION, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const required = this.reflector.getAllAndOverride<readonly Permission[] | undefined>(
+      REQUIRED_PERMISSION,
+      [context.getHandler(), context.getClass()],
+    );
     if (!required) return true;
 
     const auth = this.contexts.current();
     if (!auth) throw new DomainException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
     if (!auth.tenantId) throw new DomainException('TENANT_NOT_SELECTED', HttpStatus.FORBIDDEN);
-    if (!auth.permissions.includes(required)) {
-      throw new DomainException('PERMISSION_DENIED', HttpStatus.FORBIDDEN, { detail: required });
+    if (!required.some((permission) => auth.permissions.includes(permission))) {
+      throw new DomainException('PERMISSION_DENIED', HttpStatus.FORBIDDEN, {
+        detail: required.join(' or '),
+      });
     }
     return true;
   }

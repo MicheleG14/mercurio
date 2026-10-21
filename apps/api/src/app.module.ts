@@ -9,6 +9,7 @@ import { HealthModule } from './health/health.module.js';
 import { AuditModule } from './modules/audit/index.js';
 import { AuthModule, STRICT_RATE_LIMIT } from './modules/auth/index.js';
 import { IdentityModule } from './modules/identity/index.js';
+import { RegistryModule } from './modules/registry/index.js';
 import { TenancyModule } from './modules/tenancy/index.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { WebModule } from './web/web.module.js';
@@ -56,6 +57,7 @@ import { WebModule } from './web/web.module.js';
     IdentityModule,
     AuditModule,
     AuthModule,
+    RegistryModule,
     WebModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
