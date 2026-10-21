@@ -16,6 +16,8 @@ model Tenant {
   memberships Membership[]
   sessions    Session[]
   auditEvents AuditEvent[]
+  parties     Party[]
+  items       Item[]
 
   @@map("tenants")
 }

@@ -1,0 +1,93 @@
+// Module `registry`: the parties a tenant trades with (customers and suppliers) and the items it
+// sells or buys. Shared by all the companies of a tenant (S3). Rows are archived, never deleted
+// (B31): orders and invoices will point to them.
+// Written by hand in the migration, because Prisma does not model them: the pg_trgm extension,
+// the unique index on the VAT number of active parties (partial) and the one on lower(code).
+
+/// What kind of subject a party is: it decides which fields are required and how they are checked.
+enum PartyKind {
+  /// A private person: first and last name, personal tax code, no VAT number.
+  PRIVATE
+  /// A sole trader or a professional: the owner's names and tax code, a VAT number.
+  SOLE_TRADER
+  /// A company: legal name and VAT number.
+  COMPANY
+  /// An association or public body: name, VAT number or 11-digit tax code.
+  ORGANIZATION
+
+  @@map("party_kind")
+}
+
+/// A customer, a supplier or both: one row per subject, whatever its roles.
+model Party {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  tenantId   String    @map("tenant_id") @db.Uuid
+  kind       PartyKind
+  /// Only for Italian companies, from the catalog of legal forms in code.
+  legalForm  String?   @map("legal_form")
+  isCustomer Boolean   @map("is_customer")
+  isSupplier Boolean   @map("is_supplier")
+  /// Legal name, or "Last First" for people: what lists sort and search on.
+  name       String
+  firstName  String?   @map("first_name")
+  lastName   String?   @map("last_name")
+  vatNumber  String?   @map("vat_number")
+  taxCode    String?   @map("tax_code")
+  /// ISO 3166-1 alpha-2. Italian rules apply only to IT.
+  country    String    @default("IT") @db.Char(2)
+  address    String?
+  postalCode String?   @map("postal_code")
+  city       String?
+  province   String?   @db.Char(2)
+  email      String?
+  phone      String?
+  pecEmail   String?   @map("pec_email")
+  /// Recipient code of the Italian e-invoicing exchange system (SdI), 7 characters.
+  sdiCode    String?   @map("sdi_code") @db.Char(7)
+  notes      String?
+  /// Optimistic concurrency (B29): every change sends the version it read.
+  version    Int       @default(1)
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  /// Target of composite foreign keys: a reference can never cross tenants (B25).
+  @@unique([tenantId, id])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "parties_name_trgm_idx")
+  @@index([vatNumber(ops: raw("gin_trgm_ops"))], type: Gin, map: "parties_vat_number_trgm_idx")
+  @@index([taxCode(ops: raw("gin_trgm_ops"))], type: Gin, map: "parties_tax_code_trgm_idx")
+  @@index([city(ops: raw("gin_trgm_ops"))], type: Gin, map: "parties_city_trgm_idx")
+  @@map("parties")
+}
+
+/// Something a tenant sells or buys: a good (stock managed) or a service.
+model Item {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  tenantId     String    @map("tenant_id") @db.Uuid
+  /// Unique per tenant regardless of case, archived items included, and never changed: documents
+  /// print it, so a code always means the same item.
+  code         String
+  description  String
+  /// Unit of measure, from the catalog in code.
+  unit         String
+  /// VAT rate or exemption nature, from the catalog in code.
+  vatCode      String    @map("vat_code")
+  /// List price, unit price precision (B8). Empty when there is none.
+  salePrice    Decimal?  @map("sale_price") @db.Decimal(14, 4)
+  /// True for goods; services have no stock.
+  stockManaged Boolean   @default(true) @map("stock_managed")
+  notes        String?
+  version      Int       @default(1)
+  archivedAt   DateTime? @map("archived_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, id])
+  @@index([code(ops: raw("gin_trgm_ops"))], type: Gin, map: "items_code_trgm_idx")
+  @@index([description(ops: raw("gin_trgm_ops"))], type: Gin, map: "items_description_trgm_idx")
+  @@map("items")
+}
