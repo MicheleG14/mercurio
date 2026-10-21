@@ -21,7 +21,10 @@
   "table": {
     "page": "Pagina {{page}} di {{pages}} ({{total}} elementi)",
     "previous": "Precedente",
-    "next": "Successiva"
+    "next": "Successiva",
+    "sortBy": "Ordina per",
+    "asc": "{{column}}, crescente",
+    "desc": "{{column}}, decrescente"
   },
   "nav": {
     "home": "Panoramica",
@@ -65,5 +68,10 @@
     "title": "Uscire senza salvare?",
     "description": "Le modifiche non salvate andranno perse.",
     "discard": "Esci senza salvare"
+  },
+  "filters": {
+    "open": "Filtri",
+    "active": "Filtri ({{count}})",
+    "show": "Mostra i risultati"
   }
 }

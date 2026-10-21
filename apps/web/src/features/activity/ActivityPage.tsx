@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, Navigate } from 'react-router';
 import { DataTable } from '@/components/shared/DataTable';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { useMe } from '@/lib/auth/me';
 import { useAuditEvents } from './queries';
 import { formatTime } from '@/lib/format';
@@ -44,22 +45,21 @@ export function ActivityPage() {
         <label htmlFor="event-type" className="text-muted-foreground">
           {t('filterType')}
         </label>
-        <select
+        <NativeSelect
           id="event-type"
-          className="border-input bg-background h-8 rounded-lg border px-2"
           value={type}
           onChange={(event) => {
             setType(event.target.value);
             setPage(1);
           }}
         >
-          <option value="">{t('allTypes')}</option>
+          <NativeSelectOption value="">{t('allTypes')}</NativeSelectOption>
           {TYPES.map((value) => (
-            <option key={value} value={value}>
+            <NativeSelectOption key={value} value={value}>
               {t(`type.${value}`)}
-            </option>
+            </NativeSelectOption>
           ))}
-        </select>
+        </NativeSelect>
       </div>
       <DataTable
         rows={events.data?.items}
@@ -72,19 +72,31 @@ export function ActivityPage() {
         total={events.data?.total ?? 0}
         onPageChange={setPage}
         columns={[
-          { key: 'at', header: t('when'), cell: (row) => formatTime(row.at, i18n.language) },
+          {
+            key: 'at',
+            header: t('when'),
+            card: 'subtitle',
+            cell: (row) => formatTime(row.at, i18n.language),
+          },
           {
             key: 'type',
             header: t('what'),
+            card: 'title',
             cell: (row) =>
               (TYPES as readonly string[]).includes(row.type)
                 ? t(`type.${row.type as (typeof TYPES)[number]}`)
                 : row.type,
           },
-          { key: 'who', header: t('who'), cell: (row) => row.actor?.name ?? t('terminal') },
+          {
+            key: 'who',
+            header: t('who'),
+            card: 'subtitle',
+            cell: (row) => row.actor?.name ?? t('terminal'),
+          },
           {
             key: 'subject',
             header: t('subject'),
+            card: 'detail',
             cell: (row) => {
               const path = row.subjectId && SUBJECT_PATHS[row.subjectType ?? ''];
               const fields = (row.details as { fields?: unknown } | null)?.fields;

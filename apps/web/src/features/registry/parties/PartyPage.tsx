@@ -11,7 +11,6 @@ import { UnsavedChangesDialog } from '@/components/shared/UnsavedChangesGuard';
 import { useUnsavedChanges } from '@/components/shared/useUnsavedChanges';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
@@ -29,7 +28,7 @@ import {
   useReferenceData,
   useSaveParty,
 } from '../queries';
-import { ArchiveButton, ArchivedBadge, FormSection, RecordNotices } from '../record';
+import { ArchiveButton, ArchivedBadge, FormSection, RecordActions, RecordNotices } from '../record';
 import {
   emptyParty,
   lookupIdentifiers,
@@ -67,7 +66,6 @@ export function PartyPage() {
 
 function PartyForm({ party }: { party?: Party }) {
   const { t, i18n } = useTranslation('registry');
-  const { t: tc } = useTranslation();
   const { t: tError } = useTranslation('errors');
   const navigate = useNavigate();
   const me = useMe().data;
@@ -405,22 +403,12 @@ function PartyForm({ party }: { party?: Party }) {
         </fieldset>
 
         {!readOnly && (
-          <div className="border-border flex flex-wrap items-center justify-end gap-3 border-t pt-4">
-            {isDirty && (
-              <span className="text-muted-foreground text-sm">{t('common.unsavedHint')}</span>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => (party ? form.reset() : navigate('/parties'))}
-              disabled={party ? !isDirty : false}
-            >
-              {tc('actions.cancel')}
-            </Button>
-            <Button type="submit" disabled={save.isPending || (party ? !isDirty : false)}>
-              {tc('actions.save')}
-            </Button>
-          </div>
+          <RecordActions
+            isNew={!party}
+            isDirty={isDirty}
+            saving={save.isPending}
+            onCancel={() => (party ? form.reset() : void navigate('/parties'))}
+          />
         )}
       </form>
       <UnsavedChangesDialog blocker={blocker} />

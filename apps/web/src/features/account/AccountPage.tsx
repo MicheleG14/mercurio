@@ -242,17 +242,24 @@ export function AccountPage() {
               {
                 key: 'at',
                 header: t('events.when'),
+                card: 'subtitle',
                 cell: (row) => formatTime(row.at, i18n.language),
               },
               {
                 key: 'type',
                 header: t('events.what'),
+                card: 'title',
                 cell: (row) =>
                   (EVENT_TYPES as readonly string[]).includes(row.type)
                     ? t(`events.type.${row.type as (typeof EVENT_TYPES)[number]}`)
                     : row.type,
               },
-              { key: 'ip', header: t('events.from'), cell: (row) => row.ip ?? '—' },
+              {
+                key: 'ip',
+                header: t('events.from'),
+                card: 'subtitle',
+                cell: (row) => row.ip ?? '—',
+              },
             ]}
           />
         </CardContent>

@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { json, mockApi, problem } from '@/test/api-mock';
 import { renderApp } from '@/test/render-app';
+import { PHONE_WIDTH, setScreenWidth, TABLET_WIDTH } from '@/test/screen';
 import { page, party, signedInWith } from '../registry-fixtures';
 
 const query = (request: Request) => new URL(request.url).searchParams;
@@ -274,5 +275,68 @@ describe('party record', () => {
       .find((c) => c.path === '/parties/p1/archive')!
       .request.json()) as object;
     expect(sent).toEqual({ version: 3 });
+  });
+});
+
+describe('parties on smaller screens', () => {
+  it('on a tablet: the table without the secondary columns', async () => {
+    setScreenWidth(TABLET_WIDTH);
+    mockApi({ ...signedInWith(), 'GET /parties': () => json(200, page([party()])) });
+    renderApp('/parties');
+
+    expect(await screen.findByRole('columnheader', { name: /Nome/ })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Tipologia' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('columnheader', { name: 'Partita IVA o codice fiscale' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('on a phone: cards, the order from a select and the filters in a panel', async () => {
+    setScreenWidth(PHONE_WIDTH);
+    const user = userEvent.setup();
+    const api = mockApi({
+      ...signedInWith(),
+      'GET /parties': () =>
+        json(
+          200,
+          page([party(), party({ id: 'p2', name: 'Edilnord Spa', isSupplier: true, city: null })]),
+        ),
+    });
+    const { router } = renderApp('/parties');
+
+    const card = (await screen.findByRole('link', { name: 'Ferramenta Bruni Srl' })).closest('li')!;
+    expect(card).toHaveTextContent('Società · Milano (MI)');
+    expect(card).toHaveTextContent('Cliente');
+    // No city: no dangling separator.
+    expect(screen.getByRole('link', { name: 'Edilnord Spa' }).closest('li')).toHaveTextContent(
+      /Società(?! ·)/,
+    );
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('Ordina per'), 'Nome, decrescente');
+    await waitFor(() => expect(router.state.location.search).toBe('?sort=name%3Adesc'));
+
+    await user.click(screen.getByRole('button', { name: 'Filtri' }));
+    const panel = await screen.findByRole('dialog', { name: 'Filtri' });
+    await user.selectOptions(within(panel).getByRole('combobox', { name: /Mostra/ }), 'Fornitori');
+    await user.click(within(panel).getByRole('button', { name: 'Mostra i risultati' }));
+    await waitFor(() => expect(router.state.location.search).toContain('role=supplier'));
+    expect(await screen.findByRole('button', { name: 'Filtri (1)' })).toBeInTheDocument();
+    expect(query(api.calls.at(-1)!.request).get('role')).toBe('supplier');
+  });
+
+  it('on a phone: Save and Cancel appear at the bottom only with changes', async () => {
+    setScreenWidth(PHONE_WIDTH);
+    const user = userEvent.setup();
+    mockApi({ ...signedInWith(), 'GET /parties/p1': () => json(200, party()) });
+    renderApp('/parties/p1');
+
+    const city = await screen.findByLabelText('Città');
+    expect(screen.queryByRole('button', { name: 'Salva' })).not.toBeInTheDocument();
+    await user.type(city, ' centro');
+    expect(screen.getByRole('button', { name: 'Salva' })).toBeEnabled();
+    expect(screen.getByText('Modifiche non salvate')).toBeInTheDocument();
+    // Archive is an icon next to the title, still named for screen readers.
+    expect(screen.getByRole('button', { name: 'Archivia' })).toBeInTheDocument();
   });
 });

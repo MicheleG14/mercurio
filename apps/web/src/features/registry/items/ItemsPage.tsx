@@ -2,6 +2,7 @@ import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { DataTable } from '@/components/shared/DataTable';
+import { FilterBar } from '@/components/shared/FilterBar';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { buttonVariants } from '@/components/ui/button';
@@ -49,13 +50,17 @@ export function ItemsPage() {
           )
         }
       />
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-        <SearchInput
-          value={list.q}
-          onSearch={list.setQuery}
-          label={t('items.search')}
-          placeholder={t('items.search')}
-        />
+      <FilterBar
+        activeCount={(type ? 1 : 0) + (archived ? 1 : 0)}
+        search={
+          <SearchInput
+            value={list.q}
+            onSearch={list.setQuery}
+            label={t('items.search')}
+            placeholder={t('items.search')}
+          />
+        }
+      >
         <label className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">{t('items.filter.label')}</span>
           <NativeSelect
@@ -74,7 +79,7 @@ export function ItemsPage() {
           />
           {t('common.showArchived')}
         </label>
-      </div>
+      </FilterBar>
       <DataTable
         rows={items.data?.items}
         rowKey={(row) => row.id}
@@ -92,11 +97,12 @@ export function ItemsPage() {
             key: 'code',
             header: t('items.columns.code'),
             sortField: 'code',
+            card: 'title',
             cell: (row) => (
               <span className="flex items-center gap-2">
                 <Link
                   to={`/items/${row.id}`}
-                  className="font-mono font-medium underline-offset-4 hover:underline"
+                  className="font-mono font-medium underline-offset-4 after:absolute after:inset-0 hover:underline md:after:hidden"
                 >
                   {row.code}
                 </Link>
@@ -108,13 +114,20 @@ export function ItemsPage() {
             key: 'description',
             header: t('items.columns.description'),
             sortField: 'description',
+            card: 'subtitle',
             className: 'max-w-md truncate',
             cell: (row) => row.description,
           },
-          { key: 'unit', header: t('items.columns.unit'), cell: (row) => row.unit },
+          {
+            key: 'unit',
+            header: t('items.columns.unit'),
+            tablet: false,
+            cell: (row) => row.unit,
+          },
           {
             key: 'vatCode',
             header: t('items.columns.vatCode'),
+            tablet: false,
             cell: (row) => {
               const vat = reference?.vatCodes.find((v) => v.code === row.vatCode);
               return vat ? vatLabel(vat, t) : row.vatCode;
@@ -123,6 +136,7 @@ export function ItemsPage() {
           {
             key: 'salePrice',
             header: t('items.columns.salePrice'),
+            card: 'detail',
             className: 'text-right tabular-nums',
             cell: (row) =>
               row.salePrice === null ? (
