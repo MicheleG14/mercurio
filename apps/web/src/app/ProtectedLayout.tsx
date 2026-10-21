@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { companyStore, useCompanyId } from '@/lib/auth/company';
 import { signOut } from '@/lib/auth/client';
 import { useMe } from '@/lib/auth/me';
+import { unsavedChanges } from '@/lib/unsaved-changes';
 import { BrandMark } from '@/components/shared/BrandMark';
 import { LanguageToggle } from '@/components/shared/LanguageToggle';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
@@ -82,7 +83,11 @@ export function ProtectedLayout() {
                 <span className="text-muted-foreground">{t('context.tenant')}: </span>
                 <span className="font-medium">{me.tenant.name}</span>
                 {me.tenants.length > 1 && (
-                  <Button variant="link" size="sm" onClick={() => navigate('/select-tenant')}>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => unsavedChanges.requestLeave(() => navigate('/select-tenant'))}
+                  >
                     {t('context.switchTenant')}
                   </Button>
                 )}
@@ -98,9 +103,14 @@ export function ProtectedLayout() {
                   className="border-input bg-background h-8 rounded-lg border px-2 text-sm"
                   value={companyId ?? ''}
                   onChange={(event) => {
-                    companyStore.choose(me!.tenant!.id, event.target.value);
-                    // Data on screen belongs to the previous company.
-                    void queryClient.invalidateQueries();
+                    const chosen = event.target.value;
+                    // A form with unsaved changes asks first; the select shows the current
+                    // company until then, since its value comes from the store.
+                    unsavedChanges.requestLeave(() => {
+                      companyStore.choose(me!.tenant!.id, chosen);
+                      // Data on screen belongs to the previous company.
+                      void queryClient.invalidateQueries();
+                    });
                   }}
                 >
                   {companies.map((c) => (
@@ -123,7 +133,9 @@ export function ProtectedLayout() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => void signOut().then(() => navigate('/login'))}
+              onClick={() =>
+                unsavedChanges.requestLeave(() => void signOut().then(() => navigate('/login')))
+              }
             >
               {t('nav.signOut')}
             </Button>
