@@ -18,7 +18,27 @@ export default defineConfig({
     locale: 'it-IT',
     trace: 'retain-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  // The flows on a desktop; the responsive spec on a phone and on a tablet (docs/conventions.md
+  // F20). All in Chromium: CI installs only that browser.
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: /responsive\.spec\.ts/,
+    },
+    {
+      name: 'phone',
+      use: { ...devices['Pixel 7'] },
+      testMatch: /responsive\.spec\.ts/,
+      grep: /@phone/,
+    },
+    {
+      name: 'tablet',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 820, height: 1180 }, hasTouch: true },
+      testMatch: /responsive\.spec\.ts/,
+      grep: /@tablet/,
+    },
+  ],
   webServer: {
     command: 'node --env-file-if-exists=../../.env ../api/dist/main.js',
     url: `http://127.0.0.1:${PORT}/mercurio/api/health`,
