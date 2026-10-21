@@ -8,8 +8,8 @@
 A vertical ERP for warehouse and invoicing, built as a modular monolith with NestJS and React.
 Named after Mercury, the Roman god of commerce.
 
-> **Status: phase 2.** People sign in with mandatory two-factor authentication and work on the
-> registry: customers, suppliers and items, searched, edited, archived and restored, with Italian
+> **Status: phase 2c.** People sign in with mandatory two-factor authentication and work on the
+> registry, from a desktop, a tablet or a phone: customers, suppliers and items, searched, edited, archived and restored, with Italian
 > tax checks, edit conflicts detected and every change in the activity log. Every phase ships a
 > complete vertical slice (database → API → UI) to production. See the [roadmap](#roadmap).
 
@@ -58,6 +58,8 @@ Named after Mercury, the Roman god of commerce.
   cookie; reusing an old refresh token closes the session.
 - **Typed API contract**: the web client's types are generated from the API's OpenAPI document, and
   CI fails if they are out of date. Prices travel as decimal strings, never JSON numbers.
+- **Responsive**: one layout per screen size (sidebar on desktops, icons on tablets, a panel and
+  cards on phones), every screen usable on a phone.
 - **Edit conflicts and archiving**: records carry a version, so a change based on an old one is
   refused instead of overwriting someone else's; records are archived, never deleted.
 
@@ -89,16 +91,16 @@ The demo people (for example `anna.rossi@example.com`, see `apps/api/src/cli/see
 with the password `Demo-password-2026` and the authenticator secret `JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP`:
 add it to any authenticator app to get the codes. These credentials exist only outside production.
 
-| Command                                    | What it does                                     |
-| ------------------------------------------ | ------------------------------------------------ |
-| `pnpm test` / `pnpm test:e2e`              | Unit tests / API end-to-end tests                |
-| `pnpm --filter @mercurio/web test:browser` | Browser tests: sign-in and registry (Playwright) |
-| `pnpm lint` / `pnpm typecheck`             | Static checks                                    |
-| `pnpm check:boundaries`                    | Module boundary check                            |
-| `pnpm openapi`                             | Regenerate the OpenAPI document and client types |
-| `pnpm cli <command>`                       | Terminal commands (tenants, people, recovery)    |
-| `pnpm format`                              | Format the whole repository                      |
-| `pnpm build`                               | Production build of both apps                    |
+| Command                                    | What it does                                       |
+| ------------------------------------------ | -------------------------------------------------- |
+| `pnpm test` / `pnpm test:e2e`              | Unit tests / API end-to-end tests                  |
+| `pnpm --filter @mercurio/web test:browser` | Browser tests: sign-in, registry, phone and tablet |
+| `pnpm lint` / `pnpm typecheck`             | Static checks                                      |
+| `pnpm check:boundaries`                    | Module boundary check                              |
+| `pnpm openapi`                             | Regenerate the OpenAPI document and client types   |
+| `pnpm cli <command>`                       | Terminal commands (tenants, people, recovery)      |
+| `pnpm format`                              | Format the whole repository                        |
+| `pnpm build`                               | Production build of both apps                      |
 
 ## Production
 
@@ -140,6 +142,7 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 | 1a    | Tenancy: tenants, companies, people, modules, Row-Level Security | ✅     |
 | 1b    | Authentication: sign-in, TOTP two-factor, roles, audit log       | ✅     |
 | 2     | Registry: customers, suppliers, items                            | ✅     |
+| 2c    | Responsive interface: sidebar, layouts for tablet and phone      | ✅     |
 | 3     | Warehouse: movements, stock levels, goods receipt                |        |
 | 4     | Orders: purchase and sales orders, reservations, concurrency     |        |
 | 5     | Invoicing: invoices, credit notes, due dates, PDF                |        |

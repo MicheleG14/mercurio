@@ -5,6 +5,30 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [Unreleased]
+
+Phase 2c: responsive interface. The app works on desktops, tablets and phones, each with its own
+layout, and the menu moves to a sidebar grouped by module.
+
+### Added
+
+- Sidebar grouped by module (registry, administration), which can shrink to icons on a desktop
+  (remembered), stays icons only on a tablet and opens as a panel on a phone, together with the
+  customer and the company.
+- Lists as cards on phones, with the order chosen from a select and filters in a bottom panel;
+  secondary columns hidden on tablets.
+- On phones: Save and Cancel at the bottom of a record while there are changes, confirmations from
+  the bottom, archiving as an icon, 44 px controls.
+- Web app manifest with icons, so the app can be added to a home screen (no service worker, no
+  offline use).
+- Browser tests on a phone and a tablet, with screenshots of the three layouts kept by CI.
+- ADR 0020; conventions F20 (replaced), F8 (updated), F22.
+
+### Changed
+
+- The menu is no longer in the top bar; sign-out, account, language and theme are at the bottom of
+  the sidebar.
+
 ## [0.4.0] - 2026-10-21
 
 Phase 2: registry. Customers, suppliers and items, from the database to the browser.

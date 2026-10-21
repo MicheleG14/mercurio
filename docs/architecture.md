@@ -244,6 +244,20 @@ Rules that keep the modules independent:
 - Other modules import only from a module's `index.ts`; `pnpm check:boundaries` enforces it in CI.
 - Inside a module: controller (HTTP) → service (use cases, transactions) → repository (data access).
 
+## The web app's shell
+
+The signed-in app has one menu, described in `apps/web/src/app/navigation.ts`, and three layouts
+chosen by screen width ([ADR 0020](adr/0020-responsive-shell.md)):
+
+| Size                 | Menu                                              | Lists                                                 | Records                                   |
+| -------------------- | ------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------- |
+| Desktop (≥ 1024 px)  | Sidebar grouped by module, can shrink to icons    | Dense table, sortable headers                         | Sections in two columns                   |
+| Tablet (768-1023 px) | Icons-only sidebar; full menu in a panel          | Table without secondary columns                       | Two columns                               |
+| Phone (< 768 px)     | Panel from the top bar, with customer and company | Cards, order from a select, filters in a bottom panel | One column, Save and Cancel at the bottom |
+
+The web app ships a manifest (name, colours, icons) but no service worker: nothing is cached on
+the device.
+
 ## Registry: the list and record pattern
 
 The registry ([ADR 0018](adr/0018-registry-parties-and-items.md)) is the first business module, and
