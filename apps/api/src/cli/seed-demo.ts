@@ -3,6 +3,7 @@ import type { IdentityService } from '../modules/identity/index.js';
 import type { TenancyService } from '../modules/tenancy/index.js';
 import type { DbClient } from '../prisma/index.js';
 import { DomainException } from '../shared/errors/index.js';
+import { italianCheckDigit } from '../shared/italian-identifiers.js';
 
 /**
  * Fictitious demo data (S2, S8; docs/conventions.md B21): two tenants that show both the
@@ -110,10 +111,5 @@ export async function seedDemo(
 
 /** Appends the Italian VAT check digit to 10 digits, so demo numbers pass validation. */
 function withCheckDigit(first10: string): string {
-  let sum = 0;
-  first10.split('').forEach((char, i) => {
-    const digit = Number(char) * (i % 2 === 0 ? 1 : 2);
-    sum += digit > 9 ? digit - 9 : digit;
-  });
-  return first10 + String((10 - (sum % 10)) % 10);
+  return first10 + italianCheckDigit(first10);
 }
