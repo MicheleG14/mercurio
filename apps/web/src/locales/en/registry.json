@@ -1,0 +1,200 @@
+{
+  "common": {
+    "archived": "Archived",
+    "showArchived": "Show archived",
+    "archivedNotice": "This record is archived: it does not appear in lists. Restore it to change it.",
+    "readOnly": "Read only: you do not have permission to change this record.",
+    "conflict": "Someone else changed this record while you were editing it. Reload it to see the latest version: your unsaved changes will be lost.",
+    "saved": "Changes saved.",
+    "created": "Created.",
+    "notFound": "Record not found: it may not exist, or belong to another customer.",
+    "backToList": "Back to the list",
+    "createdAt": "Created on",
+    "archiveTitle": "Archive “{{name}}”?",
+    "archiveDescription": "It will no longer appear in lists or be usable in new documents. You can restore it at any time.",
+    "restoreTitle": "Restore “{{name}}”?",
+    "restoreDescription": "It will be back in the lists and can be changed and used again.",
+    "unsavedHint": "Unsaved changes"
+  },
+  "parties": {
+    "title": "Customers and suppliers",
+    "description": "The parties all the companies of this customer work with.",
+    "new": "New party",
+    "newTitle": "New customer or supplier",
+    "search": "Search by name, VAT number, tax code or city",
+    "empty": "No parties found.",
+    "filter": {
+      "label": "Show",
+      "all": "All",
+      "customer": "Customers",
+      "supplier": "Suppliers"
+    },
+    "columns": {
+      "name": "Name",
+      "kind": "Kind",
+      "roles": "Role",
+      "vatNumber": "VAT number",
+      "taxCode": "Tax code",
+      "city": "City",
+      "createdAt": "Created on",
+      "identifier": "VAT number or tax code"
+    },
+    "role": {
+      "customer": "Customer",
+      "supplier": "Supplier"
+    },
+    "kind": {
+      "PRIVATE": "Private person",
+      "SOLE_TRADER": "Sole trader or professional",
+      "COMPANY": "Company",
+      "ORGANIZATION": "Organization or association"
+    },
+    "legalForm": {
+      "none": "Not specified",
+      "SRL": "S.r.l. (limited company)",
+      "SRLS": "S.r.l.s. (simplified limited company)",
+      "SPA": "S.p.A. (joint-stock company)",
+      "SAPA": "S.a.p.a. (partnership limited by shares)",
+      "SNC": "S.n.c. (general partnership)",
+      "SAS": "S.a.s. (limited partnership)",
+      "SS": "Simple partnership",
+      "COOP": "Cooperative",
+      "CONSORTIUM": "Consortium",
+      "OTHER": "Other"
+    },
+    "legalCategory": {
+      "CAPITAL": "Capital company",
+      "PARTNERSHIP": "Partnership",
+      "COOPERATIVE": "Cooperative",
+      "CONSORTIUM": "Consortium"
+    },
+    "section": {
+      "main": "Main details",
+      "tax": "Tax details",
+      "address": "Registered office",
+      "contacts": "Contacts and e-invoicing",
+      "notes": "Notes"
+    },
+    "field": {
+      "kind": "Kind",
+      "roles": "Role",
+      "legalName": "Legal name",
+      "organizationName": "Name",
+      "tradeName": "Business name (optional)",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "legalForm": "Legal form",
+      "legalCategory": "Category",
+      "vatNumber": "VAT number",
+      "taxCode": "Tax code",
+      "country": "Country",
+      "address": "Address",
+      "postalCode": "Postal code",
+      "city": "City",
+      "province": "Province",
+      "email": "Email",
+      "phone": "Phone",
+      "pecEmail": "PEC (certified email)",
+      "sdiCode": "SdI recipient code",
+      "notes": "Notes"
+    },
+    "hint": {
+      "foreignIdentifier": "Foreign country: enter the tax identifier as it appears on documents.",
+      "sdiCode": "7 characters, assigned by the Italian exchange system (SdI). 0000000 if invoices go to the PEC.",
+      "province": "Two-letter code, for example MI.",
+      "taxCodeCompany": "11 digits, usually the same as the VAT number."
+    },
+    "lookup": {
+      "active": "“{{name}}” already has this identifier.",
+      "archived": "“{{name}}” has this identifier and is archived.",
+      "open": "Open it",
+      "openToRestore": "Open it to restore"
+    },
+    "existing": "Open the existing party"
+  },
+  "items": {
+    "title": "Items",
+    "description": "Goods and services sold or bought, shared by all the companies of this customer.",
+    "new": "New item",
+    "newTitle": "New item",
+    "search": "Search by code or description",
+    "empty": "No items found.",
+    "filter": {
+      "label": "Show",
+      "all": "All",
+      "goods": "Goods",
+      "services": "Services"
+    },
+    "columns": {
+      "code": "Code",
+      "description": "Description",
+      "unit": "Unit",
+      "vatCode": "VAT",
+      "salePrice": "Sale price",
+      "type": "Type"
+    },
+    "type": {
+      "good": "Good",
+      "service": "Service"
+    },
+    "section": {
+      "main": "Item",
+      "sale": "Sale and VAT",
+      "notes": "Notes"
+    },
+    "field": {
+      "code": "Code",
+      "description": "Description",
+      "unit": "Unit of measure",
+      "vatCode": "VAT code",
+      "salePrice": "Sale price (€)",
+      "stockManaged": "Stock managed",
+      "notes": "Notes"
+    },
+    "hint": {
+      "code": "Letters, digits and - . _ / (up to 35). It cannot change once created.",
+      "codeFixed": "The code never changes: documents print it.",
+      "stockManaged": "Untick for services, which have no stock.",
+      "salePrice": "Up to 4 decimals, with a dot: 12.50"
+    },
+    "noPrice": "No price"
+  },
+  "unit": {
+    "PZ": "Pieces",
+    "KG": "Kilograms",
+    "G": "Grams",
+    "L": "Litres",
+    "M": "Metres",
+    "M2": "Square metres",
+    "M3": "Cubic metres",
+    "H": "Hours",
+    "CF": "Packs",
+    "SET": "Sets"
+  },
+  "vat": {
+    "rate": "{{rate}}%",
+    "nature": {
+      "N1": "Excluded (art. 15)",
+      "N2_1": "Not subject, arts. 7 to 7-septies",
+      "N2_2": "Not subject, other cases",
+      "N3_1": "Not taxable, exports",
+      "N3_2": "Not taxable, intra-EU supplies",
+      "N3_3": "Not taxable, supplies to San Marino",
+      "N3_4": "Not taxable, treated as exports",
+      "N3_5": "Not taxable, declaration of intent",
+      "N3_6": "Not taxable, other operations outside the ceiling",
+      "N4": "Exempt",
+      "N5": "Margin scheme",
+      "N6_1": "Reverse charge, scrap and recovered materials",
+      "N6_2": "Reverse charge, gold and silver",
+      "N6_3": "Reverse charge, construction subcontracting",
+      "N6_4": "Reverse charge, sale of buildings",
+      "N6_5": "Reverse charge, mobile phones",
+      "N6_6": "Reverse charge, electronic products",
+      "N6_7": "Reverse charge, construction and related sectors",
+      "N6_8": "Reverse charge, energy sector",
+      "N6_9": "Reverse charge, other cases",
+      "N7": "VAT paid in another EU country"
+    }
+  }
+}

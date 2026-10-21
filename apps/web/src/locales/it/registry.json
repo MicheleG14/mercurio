@@ -1,0 +1,200 @@
+{
+  "common": {
+    "archived": "Archiviato",
+    "showArchived": "Mostra archiviati",
+    "archivedNotice": "Questa scheda è archiviata: non compare negli elenchi. Ripristinala per modificarla.",
+    "readOnly": "Sola lettura: non hai il permesso di modificare questa scheda.",
+    "conflict": "Qualcun altro ha modificato questa scheda mentre la stavi modificando. Ricaricala per vedere la versione aggiornata: le tue modifiche non salvate andranno perse.",
+    "saved": "Modifiche salvate.",
+    "created": "Creato.",
+    "notFound": "Scheda non trovata: forse non esiste, o appartiene a un altro cliente.",
+    "backToList": "Torna all'elenco",
+    "createdAt": "Creato il",
+    "archiveTitle": "Archiviare «{{name}}»?",
+    "archiveDescription": "Non comparirà più negli elenchi e non si potrà usare in nuovi documenti. Potrai ripristinarla in qualsiasi momento.",
+    "restoreTitle": "Ripristinare «{{name}}»?",
+    "restoreDescription": "Tornerà negli elenchi e si potrà di nuovo modificare e usare.",
+    "unsavedHint": "Modifiche non salvate"
+  },
+  "parties": {
+    "title": "Clienti e fornitori",
+    "description": "I soggetti con cui lavorano tutte le aziende di questo cliente.",
+    "new": "Nuovo soggetto",
+    "newTitle": "Nuovo cliente o fornitore",
+    "search": "Cerca per nome, partita IVA, codice fiscale o città",
+    "empty": "Nessun soggetto trovato.",
+    "filter": {
+      "label": "Mostra",
+      "all": "Tutti",
+      "customer": "Clienti",
+      "supplier": "Fornitori"
+    },
+    "columns": {
+      "name": "Nome",
+      "kind": "Tipologia",
+      "roles": "Ruolo",
+      "vatNumber": "Partita IVA",
+      "taxCode": "Codice fiscale",
+      "city": "Città",
+      "createdAt": "Creato il",
+      "identifier": "Partita IVA o codice fiscale"
+    },
+    "role": {
+      "customer": "Cliente",
+      "supplier": "Fornitore"
+    },
+    "kind": {
+      "PRIVATE": "Privato",
+      "SOLE_TRADER": "Ditta individuale o professionista",
+      "COMPANY": "Società",
+      "ORGANIZATION": "Ente o associazione"
+    },
+    "legalForm": {
+      "none": "Non indicata",
+      "SRL": "S.r.l.",
+      "SRLS": "S.r.l.s.",
+      "SPA": "S.p.A.",
+      "SAPA": "S.a.p.a.",
+      "SNC": "S.n.c.",
+      "SAS": "S.a.s.",
+      "SS": "Società semplice",
+      "COOP": "Cooperativa",
+      "CONSORTIUM": "Consorzio",
+      "OTHER": "Altra"
+    },
+    "legalCategory": {
+      "CAPITAL": "Società di capitali",
+      "PARTNERSHIP": "Società di persone",
+      "COOPERATIVE": "Cooperativa",
+      "CONSORTIUM": "Consorzio"
+    },
+    "section": {
+      "main": "Dati principali",
+      "tax": "Dati fiscali",
+      "address": "Sede",
+      "contacts": "Contatti e fatturazione elettronica",
+      "notes": "Note"
+    },
+    "field": {
+      "kind": "Tipologia",
+      "roles": "Ruolo",
+      "legalName": "Ragione sociale",
+      "organizationName": "Denominazione",
+      "tradeName": "Ragione sociale (facoltativa)",
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "legalForm": "Forma giuridica",
+      "legalCategory": "Categoria",
+      "vatNumber": "Partita IVA",
+      "taxCode": "Codice fiscale",
+      "country": "Paese",
+      "address": "Indirizzo",
+      "postalCode": "CAP",
+      "city": "Città",
+      "province": "Provincia",
+      "email": "Email",
+      "phone": "Telefono",
+      "pecEmail": "PEC",
+      "sdiCode": "Codice destinatario",
+      "notes": "Note"
+    },
+    "hint": {
+      "foreignIdentifier": "Paese estero: l'identificativo fiscale si inserisce come appare sui documenti.",
+      "sdiCode": "7 caratteri, assegnato dal Sistema di Interscambio. 0000000 se il cliente riceve le fatture via PEC.",
+      "province": "Sigla di due lettere, ad esempio MI.",
+      "taxCodeCompany": "11 cifre, di solito uguale alla partita IVA."
+    },
+    "lookup": {
+      "active": "Esiste già «{{name}}» con questo identificativo.",
+      "archived": "«{{name}}» ha questo identificativo ed è archiviata.",
+      "open": "Apri la scheda",
+      "openToRestore": "Apri per ripristinarla"
+    },
+    "existing": "Apri il soggetto esistente"
+  },
+  "items": {
+    "title": "Articoli",
+    "description": "Beni e servizi venduti o acquistati, comuni a tutte le aziende di questo cliente.",
+    "new": "Nuovo articolo",
+    "newTitle": "Nuovo articolo",
+    "search": "Cerca per codice o descrizione",
+    "empty": "Nessun articolo trovato.",
+    "filter": {
+      "label": "Mostra",
+      "all": "Tutti",
+      "goods": "Beni",
+      "services": "Servizi"
+    },
+    "columns": {
+      "code": "Codice",
+      "description": "Descrizione",
+      "unit": "U.M.",
+      "vatCode": "IVA",
+      "salePrice": "Prezzo di vendita",
+      "type": "Tipo"
+    },
+    "type": {
+      "good": "Bene",
+      "service": "Servizio"
+    },
+    "section": {
+      "main": "Articolo",
+      "sale": "Vendita e IVA",
+      "notes": "Note"
+    },
+    "field": {
+      "code": "Codice",
+      "description": "Descrizione",
+      "unit": "Unità di misura",
+      "vatCode": "Codice IVA",
+      "salePrice": "Prezzo di vendita (€)",
+      "stockManaged": "Gestito a magazzino",
+      "notes": "Note"
+    },
+    "hint": {
+      "code": "Lettere, cifre e - . _ / (massimo 35). Non si potrà cambiare dopo la creazione.",
+      "codeFixed": "Il codice non si cambia: i documenti lo riportano.",
+      "stockManaged": "Togli la spunta per i servizi, che non hanno giacenza.",
+      "salePrice": "Fino a 4 decimali, con la virgola: 12,50"
+    },
+    "noPrice": "Nessun prezzo"
+  },
+  "unit": {
+    "PZ": "Pezzi",
+    "KG": "Chilogrammi",
+    "G": "Grammi",
+    "L": "Litri",
+    "M": "Metri",
+    "M2": "Metri quadrati",
+    "M3": "Metri cubi",
+    "H": "Ore",
+    "CF": "Confezioni",
+    "SET": "Set"
+  },
+  "vat": {
+    "rate": "{{rate}}%",
+    "nature": {
+      "N1": "Escluse ex art. 15",
+      "N2_1": "Non soggette, artt. da 7 a 7-septies",
+      "N2_2": "Non soggette, altri casi",
+      "N3_1": "Non imponibili, esportazioni",
+      "N3_2": "Non imponibili, cessioni intracomunitarie",
+      "N3_3": "Non imponibili, cessioni verso San Marino",
+      "N3_4": "Non imponibili, operazioni assimilate alle esportazioni",
+      "N3_5": "Non imponibili, a seguito di dichiarazione d'intento",
+      "N3_6": "Non imponibili, altre operazioni fuori plafond",
+      "N4": "Esenti",
+      "N5": "Regime del margine",
+      "N6_1": "Inversione contabile, rottami e materiali di recupero",
+      "N6_2": "Inversione contabile, oro e argento",
+      "N6_3": "Inversione contabile, subappalto in edilizia",
+      "N6_4": "Inversione contabile, cessione di fabbricati",
+      "N6_5": "Inversione contabile, telefoni cellulari",
+      "N6_6": "Inversione contabile, prodotti elettronici",
+      "N6_7": "Inversione contabile, comparto edile e settori connessi",
+      "N6_8": "Inversione contabile, settore energetico",
+      "N6_9": "Inversione contabile, altri casi",
+      "N7": "IVA assolta in altro stato UE"
+    }
+  }
+}

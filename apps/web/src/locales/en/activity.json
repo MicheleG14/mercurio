@@ -15,6 +15,19 @@
     "MEMBER_ADDED": "Person added",
     "MEMBER_REMOVED": "Person removed",
     "MODULES_CHANGED": "Modules changed",
-    "COMPANY_ADDED": "Company added"
-  }
+    "COMPANY_ADDED": "Company added",
+    "PARTY_CREATED": "Party created",
+    "PARTY_UPDATED": "Party changed",
+    "PARTY_ARCHIVED": "Party archived",
+    "PARTY_RESTORED": "Party restored",
+    "ITEM_CREATED": "Item created",
+    "ITEM_UPDATED": "Item changed",
+    "ITEM_ARCHIVED": "Item archived",
+    "ITEM_RESTORED": "Item restored"
+  },
+  "subjectType": {
+    "party": "Party",
+    "item": "Item"
+  },
+  "fields": "Fields: {{fields}}"
 }

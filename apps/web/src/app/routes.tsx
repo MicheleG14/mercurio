@@ -8,6 +8,10 @@ import { LoginPage } from '@/features/auth/LoginPage';
 import { MfaPage } from '@/features/auth/MfaPage';
 import { SelectTenantPage } from '@/features/auth/SelectTenantPage';
 import { HomePage } from '@/features/home/HomePage';
+import { ItemPage } from '@/features/registry/items/ItemPage';
+import { ItemsPage } from '@/features/registry/items/ItemsPage';
+import { PartiesPage } from '@/features/registry/parties/PartiesPage';
+import { PartyPage } from '@/features/registry/parties/PartyPage';
 import { StatusPage } from '@/features/status/StatusPage';
 import { RequireAnonymous, RequireSession } from './AuthProvider';
 import { ProtectedLayout } from './ProtectedLayout';
@@ -40,6 +44,12 @@ export const routes = [
           { index: true, element: <HomePage /> },
           { path: 'account', element: <AccountPage /> },
           { path: 'activity', element: <ActivityPage /> },
+          { path: 'parties', element: <PartiesPage /> },
+          { path: 'parties/new', element: <PartyPage /> },
+          { path: 'parties/:id', element: <PartyPage /> },
+          { path: 'items', element: <ItemsPage /> },
+          { path: 'items/new', element: <ItemPage /> },
+          { path: 'items/:id', element: <ItemPage /> },
         ],
       },
     ],

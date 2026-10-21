@@ -13,13 +13,15 @@ import { ThemeToggle } from '@/components/shared/ThemeToggle';
 
 interface NavItem {
   to: string;
-  label: 'home' | 'activity' | 'account';
+  label: 'home' | 'parties' | 'items' | 'activity' | 'account';
   /** Shown only with this permission. The API still checks it on every call (F18). */
   permission?: string;
 }
 
 const NAVIGATION: NavItem[] = [
   { to: '/', label: 'home' },
+  { to: '/parties', label: 'parties', permission: 'parties:read' },
+  { to: '/items', label: 'items', permission: 'items:read' },
   { to: '/activity', label: 'activity', permission: 'audit:read' },
   { to: '/account', label: 'account' },
 ];

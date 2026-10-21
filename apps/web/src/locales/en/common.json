@@ -29,7 +29,9 @@
     "activity": "Activity",
     "status": "Status",
     "signOut": "Sign out",
-    "menu": "Main menu"
+    "menu": "Main menu",
+    "parties": "Customers and suppliers",
+    "items": "Items"
   },
   "actions": {
     "continue": "Continue",

@@ -11,7 +11,7 @@ void i18n
     supportedLngs: LANGUAGES,
     fallbackLng: DEFAULT_LANGUAGE,
     load: 'languageOnly', // "it-CH" uses the Italian files
-    ns: ['common', 'status', 'account', 'activity', 'auth', 'errors', 'home'],
+    ns: ['common', 'status', 'account', 'activity', 'auth', 'errors', 'home', 'registry'],
     defaultNS: 'common',
     // The user's choice wins, then the browser language (docs/conventions.md G2).
     detection: {

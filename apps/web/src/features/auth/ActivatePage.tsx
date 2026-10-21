@@ -8,7 +8,8 @@ import { FormField } from '@/components/shared/FormField';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { passwordField, passwordsMatch, requiredText, serverFieldErrors } from './forms';
+import { serverFieldErrors } from '@/lib/form-errors';
+import { passwordField, passwordsMatch, requiredText } from './forms';
 import { useActivate } from './queries';
 
 const schema = z
