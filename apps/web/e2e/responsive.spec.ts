@@ -19,6 +19,14 @@ async function signInAs(page: Page, email: string) {
   await expect(page.getByRole('heading', { name: /^Ciao/ })).toBeVisible();
 }
 
+/** A picture of the screen for the CI artifact "responsive-screens", to look at the layout. */
+async function snap(page: Page, name: string) {
+  await page.screenshot({
+    path: `screens/${test.info().project.name}-${name}.png`,
+    fullPage: true,
+  });
+}
+
 /** The page never scrolls sideways: everything fits the width of the screen. */
 async function expectNoHorizontalScroll(page: Page) {
   // A string runs in the page: this file is compiled without the DOM types.
@@ -37,6 +45,7 @@ test('@phone menu in a panel, cards, a record with the actions at the bottom', a
   await page.getByRole('button', { name: 'Apri il menu' }).click();
   const panel = page.getByRole('dialog', { name: 'Menu principale' });
   await expect(panel.getByLabel('Azienda:')).toBeVisible();
+  await snap(page, '1-menu');
   await panel.getByRole('link', { name: 'Clienti e fornitori' }).click();
   await expect(panel).toBeHidden();
 
@@ -44,6 +53,7 @@ test('@phone menu in a panel, cards, a record with the actions at the bottom', a
   await expect(page.getByRole('link', { name: 'Ferramenta Bruni Srl' })).toBeVisible();
   await expect(page.getByRole('table')).toHaveCount(0);
   await expectNoHorizontalScroll(page);
+  await snap(page, '2-list');
 
   // A new customer, then a change with the bar at the bottom.
   await page.getByRole('link', { name: 'Nuovo soggetto' }).click();
@@ -53,12 +63,15 @@ test('@phone menu in a panel, cards, a record with the actions at the bottom', a
   await expect(page.getByRole('heading', { name })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Salva' })).toHaveCount(0);
   await page.getByLabel('Città', { exact: true }).fill('Como');
+  await snap(page, '3-record-changed');
   await page.getByRole('button', { name: 'Salva' }).click();
   await expect(page.getByText('Modifiche salvate.')).toBeVisible();
   await expectNoHorizontalScroll(page);
 
   // Archive from the icon next to the title; the question rises from the bottom.
   await page.getByRole('button', { name: 'Archivia' }).click();
+  await expect(page.getByRole('alertdialog')).toBeVisible();
+  await snap(page, '4-confirm');
   await page.getByRole('alertdialog').getByRole('button', { name: 'Archivia' }).click();
   await expect(page.getByText(/Questa scheda è archiviata/)).toBeVisible();
 });
@@ -71,12 +84,21 @@ test('@tablet icons-only sidebar, the table without secondary columns', async ({
   await expect(page.getByRole('columnheader', { name: /Codice/ })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'U.M.' })).toHaveCount(0);
   await expectNoHorizontalScroll(page);
+  await snap(page, '1-list');
 
   // The whole menu opens over the content.
   await page.getByRole('button', { name: 'Apri il menu' }).click();
   await expect(
     page.getByRole('dialog', { name: 'Menu principale' }).getByText('Anagrafiche'),
   ).toBeVisible();
+  await snap(page, '2-menu');
+});
+
+test('@desktop the sidebar and the list on a desktop', async ({ page }) => {
+  await signInAs(page, 'giorgio.bianchi@example.com');
+  await page.getByRole('link', { name: 'Clienti e fornitori' }).click();
+  await expect(page.getByRole('table')).toBeVisible();
+  await snap(page, '1-list');
 });
 
 /** A made-up Italian VAT number with a valid check digit, different at every run. */
