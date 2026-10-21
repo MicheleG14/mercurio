@@ -31,7 +31,13 @@
     "signOut": "Esci",
     "menu": "Menu principale",
     "parties": "Clienti e fornitori",
-    "items": "Articoli"
+    "items": "Articoli",
+    "group": {
+      "registry": "Anagrafiche",
+      "administration": "Amministrazione"
+    },
+    "open": "Apri il menu",
+    "toggle": "Riduci o espandi il menu"
   },
   "actions": {
     "continue": "Continua",
@@ -45,7 +51,9 @@
     "edit": "Modifica",
     "archive": "Archivia",
     "restore": "Ripristina",
-    "reload": "Ricarica"
+    "reload": "Ricarica",
+    "close": "Chiudi",
+    "more": "Altre azioni"
   },
   "context": {
     "tenant": "Cliente",

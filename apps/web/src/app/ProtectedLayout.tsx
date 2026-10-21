@@ -1,44 +1,65 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { LogOutIcon, UserIcon, XIcon } from 'lucide-react';
+import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, Outlet, useNavigate } from 'react-router';
-import { Button } from '@/components/ui/button';
-import { companyStore, useCompanyId } from '@/lib/auth/company';
-import { signOut } from '@/lib/auth/client';
-import { useMe } from '@/lib/auth/me';
-import { unsavedChanges } from '@/lib/unsaved-changes';
+import { matchPath, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { BrandMark } from '@/components/shared/BrandMark';
 import { LanguageToggle } from '@/components/shared/LanguageToggle';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from '@/components/ui/sidebar';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { companyStore, useCompanyId } from '@/lib/auth/company';
+import { signOut } from '@/lib/auth/client';
+import { useMe } from '@/lib/auth/me';
+import { useBreakpoint } from '@/lib/breakpoint';
+import { unsavedChanges } from '@/lib/unsaved-changes';
+import { visibleNavigation } from './navigation';
 
-interface NavItem {
-  to: string;
-  label: 'home' | 'parties' | 'items' | 'activity' | 'account';
-  /** Shown only with this permission. The API still checks it on every call (F18). */
-  permission?: string;
+const SIDEBAR_STORAGE_KEY = 'mercurio.sidebar';
+
+function storedSidebarOpen(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_STORAGE_KEY) !== 'collapsed';
+  } catch {
+    return true;
+  }
 }
 
-const NAVIGATION: NavItem[] = [
-  { to: '/', label: 'home' },
-  { to: '/parties', label: 'parties', permission: 'parties:read' },
-  { to: '/items', label: 'items', permission: 'items:read' },
-  { to: '/activity', label: 'activity', permission: 'audit:read' },
-  { to: '/account', label: 'account' },
-];
+function storeSidebarOpen(open: boolean): void {
+  try {
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, open ? 'expanded' : 'collapsed');
+  } catch {
+    // private mode or blocked storage: the choice lasts until the page is reloaded
+  }
+}
 
 /**
- * The shell of the signed-in app: who and where (customer, company), the menu filtered by what
- * the person may do, theme, language and sign-out. The company is a working context chosen here,
- * not a field of the forms (docs/proposta-saas.md, azienda corrente).
+ * The shell of the signed-in app (docs/adr/0020): a sidebar with the menu on a desktop (it can
+ * shrink to icons, and the choice is remembered), icons only on a tablet, a panel opened from the
+ * top bar on a phone. The panel holds the same menu, so the app reads the same at every size.
+ * The company is a working context chosen here, not a field of the forms (proposta-saas.md).
  */
 export function ProtectedLayout() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const me = useMe().data;
-  const companyId = useCompanyId();
   const tenantId = me?.tenant?.id;
   const companies = me?.companies;
+  const [open, setOpen] = useState(storedSidebarOpen);
 
   useEffect(() => {
     if (tenantId && companies) {
@@ -49,107 +70,272 @@ export function ProtectedLayout() {
     }
   }, [tenantId, companies]);
 
-  const items = NAVIGATION.filter(
-    (item) => !item.permission || me?.permissions.includes(item.permission),
+  return (
+    <TooltipProvider>
+      <SidebarProvider
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          storeSidebarOpen(next);
+        }}
+      >
+        <AppSidebar />
+        <SidebarInset className="min-w-0">
+          <TopBar />
+          <main className="flex-1 px-4 py-6 md:px-6 lg:px-8 lg:py-8">
+            <div className="mx-auto w-full max-w-6xl">
+              <Outlet />
+            </div>
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   );
-  const company = companies?.find((c) => c.id === companyId);
+}
+
+function AppSidebar() {
+  const { t } = useTranslation();
+  return (
+    <Sidebar collapsible="icon" label={t('nav.menu')} panelChildren={<SidebarBody panel />}>
+      <SidebarBody />
+    </Sidebar>
+  );
+}
+
+/** What the sidebar holds; `panel` is the version opened over the content on phones and tablets. */
+function SidebarBody({ panel = false }: { panel?: boolean }) {
+  const { t } = useTranslation();
+  const { t: tAuth } = useTranslation('auth');
+  const me = useMe().data;
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { setOpenMobile } = useSidebar();
+  const closePanel = () => panel && setOpenMobile(false);
 
   return (
-    <div className="flex min-h-svh flex-col">
-      <header className="border-border bg-card/60 sticky top-0 z-10 border-b backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3">
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <div className="flex items-center gap-2.5">
-              <BrandMark />
-              <span className="font-semibold tracking-tight">{t('app.name')}</span>
-            </div>
-            <nav aria-label={t('nav.menu')} className="flex items-center gap-1">
-              {items.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/'}
-                  className={({ isActive }) =>
-                    `rounded-md px-2.5 py-1 text-sm ${isActive ? 'bg-muted font-medium' : 'text-muted-foreground hover:text-foreground'}`
-                  }
-                >
-                  {t(`nav.${item.label}`)}
-                </NavLink>
-              ))}
-            </nav>
-          </div>
+    <>
+      <SidebarHeader className="flex-row items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2.5 px-1 py-1">
+          <BrandMark />
+          <span className="truncate font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
+            {t('app.name')}
+          </span>
+        </div>
+        {panel ? (
+          <Button variant="ghost" size="icon" aria-label={t('actions.close')} onClick={closePanel}>
+            <XIcon />
+          </Button>
+        ) : (
+          <SidebarTrigger
+            label={t('nav.toggle')}
+            className="max-lg:hidden group-data-[collapsible=icon]:hidden"
+          />
+        )}
+      </SidebarHeader>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {me?.tenant && (
-              <div className="text-sm">
-                <span className="text-muted-foreground">{t('context.tenant')}: </span>
-                <span className="font-medium">{me.tenant.name}</span>
-                {me.tenants.length > 1 && (
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={() => unsavedChanges.requestLeave(() => navigate('/select-tenant'))}
-                  >
-                    {t('context.switchTenant')}
-                  </Button>
-                )}
-              </div>
-            )}
-            {companies && companies.length > 1 ? (
-              <div className="flex items-center gap-1.5 text-sm">
-                <label htmlFor="company-select" className="text-muted-foreground">
-                  {t('context.company')}:
-                </label>
-                <select
-                  id="company-select"
-                  className="border-input bg-background h-8 rounded-lg border px-2 text-sm"
-                  value={companyId ?? ''}
-                  onChange={(event) => {
-                    const chosen = event.target.value;
-                    // A form with unsaved changes asks first; the select shows the current
-                    // company until then, since its value comes from the store.
-                    unsavedChanges.requestLeave(() => {
-                      companyStore.choose(me!.tenant!.id, chosen);
-                      // Data on screen belongs to the previous company.
-                      void queryClient.invalidateQueries();
-                    });
-                  }}
-                >
-                  {companies.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.legalName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              company && (
-                <span className="text-sm">
-                  <span className="text-muted-foreground">{t('context.company')}: </span>
-                  <span className="font-medium">{company.legalName}</span>
-                </span>
-              )
-            )}
-            <LanguageToggle />
-            <ThemeToggle />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                unsavedChanges.requestLeave(() => void signOut().then(() => navigate('/login')))
-              }
+      {panel && (
+        <div className="bg-background mx-2 flex flex-col gap-2 rounded-lg p-3 text-sm">
+          <TenantContext onLeave={closePanel} />
+          <CompanySelect onChosen={closePanel} />
+        </div>
+      )}
+
+      <SidebarContent>
+        <nav aria-label={t('nav.menu')}>
+          {visibleNavigation(me).map((group) => (
+            <SidebarGroup key={group.label ?? 'top'}>
+              {group.label && (
+                <SidebarGroupLabel>{t(`nav.group.${group.label}`)}</SidebarGroupLabel>
+              )}
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const label = t(`nav.${item.label}`);
+                  return (
+                    <SidebarMenuItem key={item.to}>
+                      <SidebarMenuButton
+                        isActive={Boolean(
+                          matchPath({ path: item.to, end: item.to === '/' }, pathname),
+                        )}
+                        tooltip={label}
+                        size={panel ? 'lg' : 'default'}
+                        render={<NavLink to={item.to} end={item.to === '/'} onClick={closePanel} />}
+                      >
+                        <item.icon />
+                        <span>{label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          ))}
+        </nav>
+      </SidebarContent>
+
+      <SidebarFooter className="border-sidebar-border border-t">
+        {me && (
+          <div className="flex items-center gap-2.5 px-1 py-1">
+            <span
+              aria-hidden="true"
+              className="bg-highlight text-highlight-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
             >
-              {t('nav.signOut')}
-            </Button>
+              {initials(me.user.name)}
+            </span>
+            <span className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
+              <span className="truncate text-sm font-medium">{me.user.name}</span>
+              <span className="text-muted-foreground truncate text-xs">
+                {me.role && tAuth(`roles.${me.role as 'ADMIN'}`)}
+              </span>
+            </span>
           </div>
+        )}
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={pathname === '/account'}
+              tooltip={t('nav.account')}
+              size={panel ? 'lg' : 'default'}
+              render={<NavLink to="/account" onClick={closePanel} />}
+            >
+              <UserIcon />
+              <span>{t('nav.account')}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip={t('nav.signOut')}
+              size={panel ? 'lg' : 'default'}
+              onClick={() => {
+                closePanel();
+                unsavedChanges.requestLeave(() => void signOut().then(() => navigate('/login')));
+              }}
+            >
+              <LogOutIcon />
+              <span>{t('nav.signOut')}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        <div className="flex flex-wrap items-center gap-2 px-1 group-data-[collapsible=icon]:hidden">
+          <LanguageToggle />
+          <ThemeToggle />
         </div>
-      </header>
+      </SidebarFooter>
+    </>
+  );
+}
 
-      <main className="flex-1 px-4 py-8">
-        <div className="mx-auto w-full max-w-6xl">
-          <Outlet />
+/** The bar above the content: who and where on tablets and desktops, the menu button on phones. */
+function TopBar() {
+  const { t } = useTranslation();
+  const breakpoint = useBreakpoint();
+  const me = useMe().data;
+  const companyId = useCompanyId();
+  const company = me?.companies.find((c) => c.id === companyId);
+
+  return (
+    <header className="border-border bg-card/60 sticky top-0 z-10 flex min-h-13 items-center gap-2 border-b px-2 backdrop-blur md:px-4">
+      {breakpoint !== 'desktop' && <SidebarTrigger label={t('nav.open')} className="size-11" />}
+      {breakpoint === 'phone' ? (
+        <span className="text-muted-foreground min-w-0 truncate text-sm">
+          {[me?.tenant?.name, company?.legalName].filter(Boolean).join(' · ')}
+        </span>
+      ) : (
+        <div className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-1 py-2 text-sm">
+          <TenantContext />
+          <CompanySelect />
         </div>
-      </main>
+      )}
+    </header>
+  );
+}
+
+/** The current customer, with the way to switch when the person has several. */
+function TenantContext({ onLeave }: { onLeave?: () => void }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const me = useMe().data;
+  if (!me?.tenant) return null;
+
+  return (
+    <div className="flex items-center justify-between gap-1">
+      <span>
+        <span className="text-muted-foreground">{t('context.tenant')}: </span>
+        <span className="font-medium">{me.tenant.name}</span>
+      </span>
+      {me.tenants.length > 1 && (
+        <Button
+          variant="link"
+          size="sm"
+          onClick={() =>
+            unsavedChanges.requestLeave(() => {
+              onLeave?.();
+              void navigate('/select-tenant');
+            })
+          }
+        >
+          {t('context.switchTenant')}
+        </Button>
+      )}
     </div>
   );
+}
+
+/** The company the person works on: a select when there are several, its name otherwise. */
+function CompanySelect({ onChosen }: { onChosen?: () => void }) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const me = useMe().data;
+  const companyId = useCompanyId();
+  const companies = me?.companies;
+  const company = companies?.find((c) => c.id === companyId);
+  const id = useId();
+
+  if (companies && companies.length > 1) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <label htmlFor={id} className="text-muted-foreground">
+          {t('context.company')}:
+        </label>
+        <NativeSelect
+          id={id}
+          className="min-w-0 flex-1"
+          value={companyId ?? ''}
+          onChange={(event) => {
+            const chosen = event.target.value;
+            // A form with unsaved changes asks first; the select shows the current company
+            // until then, since its value comes from the store.
+            unsavedChanges.requestLeave(() => {
+              companyStore.choose(me!.tenant!.id, chosen);
+              // Data on screen belongs to the previous company.
+              void queryClient.invalidateQueries();
+              onChosen?.();
+            });
+          }}
+        >
+          {companies.map((c) => (
+            <NativeSelectOption key={c.id} value={c.id}>
+              {c.legalName}
+            </NativeSelectOption>
+          ))}
+        </NativeSelect>
+      </div>
+    );
+  }
+  if (!company) return null;
+  return (
+    <span>
+      <span className="text-muted-foreground">{t('context.company')}: </span>
+      <span className="font-medium">{company.legalName}</span>
+    </span>
+  );
+}
+
+/** "Anna Rossi" → "AR". */
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]!.toUpperCase())
+    .join('');
 }
