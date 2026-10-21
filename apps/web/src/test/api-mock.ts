@@ -49,7 +49,7 @@ export const me = (overrides: Record<string, unknown> = {}) => ({
   user: { id: 'u1', email: 'anna.rossi@example.com', name: 'Anna Rossi' },
   tenant: { id: 't-rossi', name: 'Gruppo Rossi', slug: 'rossi' },
   role: 'ADMIN',
-  permissions: ['registry:read', 'audit:read'],
+  permissions: ['parties:read', 'parties:write', 'items:read', 'items:write', 'audit:read'],
   modules: ['registry', 'warehouse'],
   companies: [
     { id: 'c1', legalName: 'Rossi Srl', vatNumber: '02746510960' },

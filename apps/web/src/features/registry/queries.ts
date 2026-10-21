@@ -79,15 +79,21 @@ export function useItem(id: string | undefined) {
   });
 }
 
-/** After a change: the detail gets the saved version, every list is asked again. */
+/**
+ * After a change: the record gets the saved version as it is (no need to ask again), lists and
+ * lookups of that entity are asked again.
+ */
 function useSaved<T extends { id: string }>(
   detailKey: (id: string) => readonly unknown[],
-  listKey: readonly unknown[],
+  entityKey: readonly unknown[],
 ) {
   const queryClient = useQueryClient();
   return (saved: T) => {
     queryClient.setQueryData(detailKey(saved.id), saved);
-    void queryClient.invalidateQueries({ queryKey: listKey });
+    void queryClient.invalidateQueries({
+      queryKey: entityKey,
+      predicate: (query) => query.queryKey[2] !== 'detail',
+    });
   };
 }
 

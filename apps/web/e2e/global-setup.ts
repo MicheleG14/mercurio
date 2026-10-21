@@ -24,11 +24,16 @@ function cli(...args: string[]): string {
 }
 
 /**
- * Two fictitious tenants made with the real terminal commands. The person is ADMIN of the first
+ * The fictitious demo (seed-demo, which also gives the demo people a known password and
+ * authenticator secret outside production), used by the registry test. Then two fictitious
+ * tenants made with the real terminal commands. The person is ADMIN of the first
  * (two companies) and READ_ONLY in the second, and receives an activation code, exactly as a new
  * customer would. Names are unique per run, so the database never needs cleaning between runs.
  */
 export default function globalSetup(): void {
+  // Adds only what is missing, so it can run against a database that already has the demo.
+  cli('seed-demo');
+
   const run = randomBytes(3).toString('hex');
   const email = `browser-${run}@example.com`;
   const first = { slug: `browser-a-${run}`, name: `Browser Alfa ${run}` };
