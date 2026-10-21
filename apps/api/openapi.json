@@ -87,7 +87,15 @@
                 "MEMBER_ADDED",
                 "MEMBER_REMOVED",
                 "MODULES_CHANGED",
-                "COMPANY_ADDED"
+                "COMPANY_ADDED",
+                "PARTY_CREATED",
+                "PARTY_UPDATED",
+                "PARTY_ARCHIVED",
+                "PARTY_RESTORED",
+                "ITEM_CREATED",
+                "ITEM_UPDATED",
+                "ITEM_ARCHIVED",
+                "ITEM_RESTORED"
               ]
             }
           },
@@ -556,6 +564,660 @@
         "summary": "The latest security events of the signed-in person",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/parties": {
+      "get": {
+        "operationId": "PartiesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "customer",
+                "supplier"
+              ]
+            }
+          },
+          {
+            "name": "archived",
+            "required": false,
+            "in": "query",
+            "description": "Archived parties instead of active ones",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Customers and suppliers, searched, filtered and paginated",
+        "tags": [
+          "registry"
+        ]
+      },
+      "post": {
+        "operationId": "PartiesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePartyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/parties/lookup": {
+      "get": {
+        "operationId": "PartiesController_lookup",
+        "parameters": [
+          {
+            "name": "vatNumber",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "12345678903",
+              "type": "string"
+            }
+          },
+          {
+            "name": "taxCode",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "RSSMRA80A01H501U",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyLookupDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Parties, archived ones too, with a VAT number or a tax code",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/parties/{id}": {
+      "get": {
+        "operationId": "PartiesController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      },
+      "patch": {
+        "operationId": "PartiesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePartyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change the fields sent; 409 EDIT_CONFLICT if the version is old",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/parties/{id}/archive": {
+      "post": {
+        "operationId": "PartiesController_archive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/parties/{id}/restore": {
+      "post": {
+        "operationId": "PartiesController_restore",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/items": {
+      "get": {
+        "operationId": "ItemsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "stockManaged",
+            "required": false,
+            "in": "query",
+            "description": "Goods (true) or services (false)",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "archived",
+            "required": false,
+            "in": "query",
+            "description": "Archived items instead of active ones",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Items, searched, filtered and paginated",
+        "tags": [
+          "registry"
+        ]
+      },
+      "post": {
+        "operationId": "ItemsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/items/{id}": {
+      "get": {
+        "operationId": "ItemsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      },
+      "patch": {
+        "operationId": "ItemsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change the fields sent; 409 EDIT_CONFLICT if the version is old",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/items/{id}/archive": {
+      "post": {
+        "operationId": "ItemsController_archive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/items/{id}/restore": {
+      "post": {
+        "operationId": "ItemsController_restore",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/registry/reference-data": {
+      "get": {
+        "operationId": "ReferenceDataController_referenceData",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceDataDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "VAT codes, units of measure and legal forms",
+        "tags": [
+          "registry"
         ]
       }
     }
@@ -1100,7 +1762,7 @@
           },
           "permissions": {
             "example": [
-              "registry:read"
+              "parties:read"
             ],
             "type": "array",
             "items": {
@@ -1193,6 +1855,778 @@
           "total",
           "page",
           "pageSize"
+        ]
+      },
+      "PartyKind": {
+        "type": "string",
+        "enum": [
+          "PRIVATE",
+          "SOLE_TRADER",
+          "COMPANY",
+          "ORGANIZATION"
+        ]
+      },
+      "PartySummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PartyKind"
+              }
+            ]
+          },
+          "isCustomer": {
+            "type": "boolean"
+          },
+          "isSupplier": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string",
+            "description": "Legal name, or \"Last First\" for people"
+          },
+          "vatNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "taxCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "example": "IT"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "province": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "number"
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "isCustomer",
+          "isSupplier",
+          "name",
+          "vatNumber",
+          "taxCode",
+          "country",
+          "city",
+          "province",
+          "version",
+          "archivedAt",
+          "createdAt"
+        ]
+      },
+      "PartyPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PartySummaryDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "PartyMatchDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "vatNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "taxCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "vatNumber",
+          "taxCode",
+          "archivedAt"
+        ]
+      },
+      "PartyLookupDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PartyMatchDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "PartyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PartyKind"
+              }
+            ]
+          },
+          "isCustomer": {
+            "type": "boolean"
+          },
+          "isSupplier": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string",
+            "description": "Legal name, or \"Last First\" for people"
+          },
+          "legalName": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "legalForm": {
+            "type": "string",
+            "nullable": true
+          },
+          "vatNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "taxCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "example": "IT"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "province": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "pecEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "sdiCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "number"
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "isCustomer",
+          "isSupplier",
+          "name",
+          "legalName",
+          "firstName",
+          "lastName",
+          "legalForm",
+          "vatNumber",
+          "taxCode",
+          "country",
+          "address",
+          "postalCode",
+          "city",
+          "province",
+          "email",
+          "phone",
+          "pecEmail",
+          "sdiCode",
+          "notes",
+          "version",
+          "archivedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreatePartyDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PartyKind"
+              }
+            ]
+          },
+          "isCustomer": {
+            "type": "boolean"
+          },
+          "isSupplier": {
+            "type": "boolean"
+          },
+          "legalName": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200,
+            "example": "Ferramenta Bruni Srl"
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "example": "Mario"
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "example": "Rossi"
+          },
+          "legalForm": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20,
+            "example": "SRL"
+          },
+          "vatNumber": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 40,
+            "example": "12345678903"
+          },
+          "taxCode": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 40
+          },
+          "country": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2,
+            "example": "IT"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20
+          },
+          "city": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100
+          },
+          "province": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2,
+            "example": "MI"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 320
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 40
+          },
+          "pecEmail": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 320
+          },
+          "sdiCode": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 7,
+            "example": "0000000"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "kind",
+          "isCustomer",
+          "isSupplier"
+        ]
+      },
+      "UpdatePartyDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PartyKind"
+              }
+            ]
+          },
+          "isCustomer": {
+            "type": "boolean"
+          },
+          "isSupplier": {
+            "type": "boolean"
+          },
+          "legalName": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200,
+            "example": "Ferramenta Bruni Srl"
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "example": "Mario"
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "example": "Rossi"
+          },
+          "legalForm": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20,
+            "example": "SRL"
+          },
+          "vatNumber": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 40,
+            "example": "12345678903"
+          },
+          "taxCode": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 40
+          },
+          "country": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2,
+            "example": "IT"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20
+          },
+          "city": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100
+          },
+          "province": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2,
+            "example": "MI"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 320
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 40
+          },
+          "pecEmail": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 320
+          },
+          "sdiCode": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 7,
+            "example": "0000000"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "VersionDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "ItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "vatCode": {
+            "type": "string"
+          },
+          "salePrice": {
+            "type": "string",
+            "nullable": true,
+            "example": "12.5000"
+          },
+          "stockManaged": {
+            "type": "boolean"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "number"
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "description",
+          "unit",
+          "vatCode",
+          "salePrice",
+          "stockManaged",
+          "notes",
+          "version",
+          "archivedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ItemPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "CreateItemDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "VT-M6-20",
+            "description": "1-35 letters, digits and - . _ /"
+          },
+          "description": {
+            "type": "string",
+            "example": "Vite a testa esagonale M6x20",
+            "maxLength": 1000
+          },
+          "unit": {
+            "type": "string",
+            "example": "PZ",
+            "description": "A unit of measure from the reference data"
+          },
+          "vatCode": {
+            "type": "string",
+            "example": "22",
+            "description": "A VAT code from the reference data"
+          },
+          "salePrice": {
+            "type": "string",
+            "nullable": true,
+            "example": "12.5",
+            "description": "Decimal string with a dot, up to 4 decimals (B30)"
+          },
+          "stockManaged": {
+            "type": "boolean",
+            "default": true,
+            "description": "True for goods, false for services"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "code",
+          "description",
+          "unit",
+          "vatCode"
+        ]
+      },
+      "UpdateItemDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Vite a testa esagonale M6x20",
+            "maxLength": 1000
+          },
+          "unit": {
+            "type": "string",
+            "example": "PZ",
+            "description": "A unit of measure from the reference data"
+          },
+          "vatCode": {
+            "type": "string",
+            "example": "22",
+            "description": "A VAT code from the reference data"
+          },
+          "salePrice": {
+            "type": "string",
+            "nullable": true,
+            "example": "12.5",
+            "description": "Decimal string with a dot, up to 4 decimals (B30)"
+          },
+          "stockManaged": {
+            "type": "boolean",
+            "default": true,
+            "description": "True for goods, false for services"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "VatCodeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "22"
+          },
+          "rate": {
+            "type": "string",
+            "example": "22.00",
+            "description": "Decimal string (B30)"
+          },
+          "nature": {
+            "type": "string",
+            "nullable": true,
+            "example": "N4",
+            "description": "Exemption nature of the e-invoice, for 0% codes"
+          }
+        },
+        "required": [
+          "code",
+          "rate",
+          "nature"
+        ]
+      },
+      "LegalFormDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "SRL"
+          },
+          "category": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "CAPITAL",
+              "PARTNERSHIP",
+              "COOPERATIVE",
+              "CONSORTIUM"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "category"
+        ]
+      },
+      "ReferenceDataDto": {
+        "type": "object",
+        "properties": {
+          "vatCodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VatCodeDto"
+            }
+          },
+          "units": {
+            "example": [
+              "PZ",
+              "KG"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "legalForms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegalFormDto"
+            }
+          }
+        },
+        "required": [
+          "vatCodes",
+          "units",
+          "legalForms"
         ]
       }
     }

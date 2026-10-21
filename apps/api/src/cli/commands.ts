@@ -3,6 +3,7 @@ import type { ParseArgsOptionsConfig } from 'node:util';
 import { AuditService } from '../modules/audit/index.js';
 import { AuthService } from '../modules/auth/index.js';
 import { IdentityService } from '../modules/identity/index.js';
+import { RegistryService } from '../modules/registry/index.js';
 import { MODULE_KEYS, TenancyService } from '../modules/tenancy/index.js';
 import { APP_CONFIG, type AppConfig } from '../config/app-config.js';
 import { PrismaService } from '../prisma/index.js';
@@ -27,6 +28,7 @@ interface Services {
   identity: IdentityService;
   audit: AuditService;
   auth: AuthService;
+  registry: RegistryService;
 }
 
 export interface Command {
@@ -280,17 +282,17 @@ export const COMMANDS: Record<string, Command> = {
 
   'seed-demo': {
     summary:
-      'Create the fictitious demo tenants (refused in production without --allow-production)',
+      'Create the fictitious demo tenants, or add what they miss (refused in production without --allow-production)',
     options: { 'allow-production': { type: 'boolean' } },
     required: [],
-    async run({ config, prisma, tenancy, identity, auth }, v, io) {
+    async run({ config, prisma, tenancy, identity, auth, registry }, v, io) {
       if (config.isProduction && v['allow-production'] !== 'true') {
         throw new DomainException('DEMO_IN_PRODUCTION', HttpStatus.CONFLICT, {
           detail: 'add --allow-production to seed a production database on purpose',
         });
       }
       const { tenants: seeded, userIds } = await prisma.$transaction(async (tx) => {
-        const result = await seedDemo(tx, { tenancy, identity });
+        const result = await seedDemo(tx, { tenancy, identity, registry });
         // Outside production the demo people can sign in; in production they activate with a code.
         if (!config.isProduction) {
           for (const userId of result.userIds) {
@@ -303,11 +305,15 @@ export const COMMANDS: Record<string, Command> = {
         return result;
       });
       for (const tenant of seeded) {
-        io.out(
-          `Demo tenant ${tenant.slug}: ${tenant.companies} companies, ${tenant.members} members`,
-        );
+        const people = tenant.created
+          ? `created with ${tenant.companies} companies and ${tenant.members} members`
+          : 'already present, companies and people unchanged';
+        io.out(`Demo tenant ${tenant.slug}: ${people}`);
+        io.out(`  registry: ${tenant.parties} parties and ${tenant.items} items added`);
       }
-      if (config.isProduction) {
+      if (userIds.length === 0) {
+        io.out('No new demo people.');
+      } else if (config.isProduction) {
         io.out('Fictitious data. No credentials were created: people activate with a code.');
       } else {
         io.out(`Fictitious data. Every demo person signs in with the password ${DEMO_PASSWORD}`);
@@ -319,6 +325,8 @@ export const COMMANDS: Record<string, Command> = {
         command: 'seed-demo',
         tenants: seeded.map((t) => t.slug),
         people: userIds.length,
+        parties: seeded.reduce((sum, t) => sum + t.parties, 0),
+        items: seeded.reduce((sum, t) => sum + t.items, 0),
       });
     },
   },
@@ -357,5 +365,6 @@ export function resolveServices(app: INestApplicationContext): Services {
     identity: app.get(IdentityService),
     audit: app.get(AuditService),
     auth: app.get(AuthService),
+    registry: app.get(RegistryService),
   };
 }

@@ -45,6 +45,20 @@ export class PartiesRepository {
     });
   }
 
+  /**
+   * A party of the tenant (archived ones too) that is the same subject: same VAT number, or same
+   * tax code, or, without identifiers, same name. The tenant is explicit because terminal
+   * commands run as the owner role, which Row-Level Security does not restrict.
+   */
+  findSame(db: DbClient, tenantId: string, party: PartyData) {
+    const same: Prisma.PartyWhereInput = party.vatNumber
+      ? { vatNumber: party.vatNumber }
+      : party.taxCode
+        ? { taxCode: party.taxCode }
+        : { name: party.name };
+    return db.party.findFirst({ where: { tenantId, ...same }, select: { id: true } });
+  }
+
   create(db: DbClient, tenantId: string, data: PartyData) {
     return db.party.create({ data: { tenantId, ...data } });
   }
