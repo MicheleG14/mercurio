@@ -5,7 +5,7 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
-## [Unreleased]
+## [0.4.0] - 2026-10-21
 
 Phase 2: registry. Customers, suppliers and items, from the database to the browser.
 
@@ -136,6 +136,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[0.4.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.3.0
 [0.2.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.2.0
 [0.1.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.1.0
