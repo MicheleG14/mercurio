@@ -257,6 +257,172 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/parties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Customers and suppliers, searched, filtered and paginated */
+        get: operations["PartiesController_list"];
+        put?: never;
+        post: operations["PartiesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/parties/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Parties, archived ones too, with a VAT number or a tax code */
+        get: operations["PartiesController_lookup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/parties/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PartiesController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change the fields sent; 409 EDIT_CONFLICT if the version is old */
+        patch: operations["PartiesController_update"];
+        trace?: never;
+    };
+    "/parties/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PartiesController_archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/parties/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PartiesController_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Items, searched, filtered and paginated */
+        get: operations["ItemsController_list"];
+        put?: never;
+        post: operations["ItemsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ItemsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change the fields sent; 409 EDIT_CONFLICT if the version is old */
+        patch: operations["ItemsController_update"];
+        trace?: never;
+    };
+    "/items/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ItemsController_archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/items/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ItemsController_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/registry/reference-data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** VAT codes, units of measure and legal forms */
+        get: operations["ReferenceDataController_referenceData"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -430,7 +596,7 @@ export interface components {
             role?: string | null;
             /**
              * @example [
-             *       "registry:read"
+             *       "parties:read"
              *     ]
              */
             permissions: string[];
@@ -459,6 +625,243 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+        };
+        /** @enum {string} */
+        PartyKind: "PRIVATE" | "SOLE_TRADER" | "COMPANY" | "ORGANIZATION";
+        PartySummaryDto: {
+            id: string;
+            kind: components["schemas"]["PartyKind"];
+            isCustomer: boolean;
+            isSupplier: boolean;
+            /** @description Legal name, or "Last First" for people */
+            name: string;
+            vatNumber: string | null;
+            taxCode: string | null;
+            /** @example IT */
+            country: string;
+            city: string | null;
+            province: string | null;
+            version: number;
+            archivedAt: string | null;
+            createdAt: string;
+        };
+        PartyPageDto: {
+            items: components["schemas"]["PartySummaryDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        PartyMatchDto: {
+            id: string;
+            name: string;
+            vatNumber: string | null;
+            taxCode: string | null;
+            archivedAt: string | null;
+        };
+        PartyLookupDto: {
+            items: components["schemas"]["PartyMatchDto"][];
+        };
+        PartyDto: {
+            id: string;
+            kind: components["schemas"]["PartyKind"];
+            isCustomer: boolean;
+            isSupplier: boolean;
+            /** @description Legal name, or "Last First" for people */
+            name: string;
+            legalName: string | null;
+            firstName: string | null;
+            lastName: string | null;
+            legalForm: string | null;
+            vatNumber: string | null;
+            taxCode: string | null;
+            /** @example IT */
+            country: string;
+            address: string | null;
+            postalCode: string | null;
+            city: string | null;
+            province: string | null;
+            email: string | null;
+            phone: string | null;
+            pecEmail: string | null;
+            sdiCode: string | null;
+            notes: string | null;
+            version: number;
+            archivedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
+        CreatePartyDto: {
+            kind: components["schemas"]["PartyKind"];
+            isCustomer: boolean;
+            isSupplier: boolean;
+            /** @example Ferramenta Bruni Srl */
+            legalName?: string | null;
+            /** @example Mario */
+            firstName?: string | null;
+            /** @example Rossi */
+            lastName?: string | null;
+            /** @example SRL */
+            legalForm?: string | null;
+            /** @example 12345678903 */
+            vatNumber?: string | null;
+            taxCode?: string | null;
+            /** @example IT */
+            country?: string | null;
+            address?: string | null;
+            postalCode?: string | null;
+            city?: string | null;
+            /** @example MI */
+            province?: string | null;
+            email?: string | null;
+            phone?: string | null;
+            pecEmail?: string | null;
+            /** @example 0000000 */
+            sdiCode?: string | null;
+            notes?: string | null;
+        };
+        UpdatePartyDto: {
+            kind?: components["schemas"]["PartyKind"];
+            isCustomer?: boolean;
+            isSupplier?: boolean;
+            /** @example Ferramenta Bruni Srl */
+            legalName?: string | null;
+            /** @example Mario */
+            firstName?: string | null;
+            /** @example Rossi */
+            lastName?: string | null;
+            /** @example SRL */
+            legalForm?: string | null;
+            /** @example 12345678903 */
+            vatNumber?: string | null;
+            taxCode?: string | null;
+            /** @example IT */
+            country?: string | null;
+            address?: string | null;
+            postalCode?: string | null;
+            city?: string | null;
+            /** @example MI */
+            province?: string | null;
+            email?: string | null;
+            phone?: string | null;
+            pecEmail?: string | null;
+            /** @example 0000000 */
+            sdiCode?: string | null;
+            notes?: string | null;
+            /** @example 1 */
+            version: number;
+        };
+        VersionDto: {
+            /** @example 1 */
+            version: number;
+        };
+        ItemDto: {
+            id: string;
+            code: string;
+            description: string;
+            unit: string;
+            vatCode: string;
+            /** @example 12.5000 */
+            salePrice: string | null;
+            stockManaged: boolean;
+            notes: string | null;
+            version: number;
+            archivedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
+        ItemPageDto: {
+            items: components["schemas"]["ItemDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CreateItemDto: {
+            /**
+             * @description 1-35 letters, digits and - . _ /
+             * @example VT-M6-20
+             */
+            code: string;
+            /** @example Vite a testa esagonale M6x20 */
+            description: string;
+            /**
+             * @description A unit of measure from the reference data
+             * @example PZ
+             */
+            unit: string;
+            /**
+             * @description A VAT code from the reference data
+             * @example 22
+             */
+            vatCode: string;
+            /**
+             * @description Decimal string with a dot, up to 4 decimals (B30)
+             * @example 12.5
+             */
+            salePrice?: string | null;
+            /**
+             * @description True for goods, false for services
+             * @default true
+             */
+            stockManaged: boolean;
+            notes?: string | null;
+        };
+        UpdateItemDto: {
+            /** @example Vite a testa esagonale M6x20 */
+            description?: string;
+            /**
+             * @description A unit of measure from the reference data
+             * @example PZ
+             */
+            unit?: string;
+            /**
+             * @description A VAT code from the reference data
+             * @example 22
+             */
+            vatCode?: string;
+            /**
+             * @description Decimal string with a dot, up to 4 decimals (B30)
+             * @example 12.5
+             */
+            salePrice?: string | null;
+            /**
+             * @description True for goods, false for services
+             * @default true
+             */
+            stockManaged: boolean;
+            notes?: string | null;
+            /** @example 1 */
+            version: number;
+        };
+        VatCodeDto: {
+            /** @example 22 */
+            code: string;
+            /**
+             * @description Decimal string (B30)
+             * @example 22.00
+             */
+            rate: string;
+            /**
+             * @description Exemption nature of the e-invoice, for 0% codes
+             * @example N4
+             */
+            nature: string | null;
+        };
+        LegalFormDto: {
+            /** @example SRL */
+            code: string;
+            /** @enum {string|null} */
+            category: "CAPITAL" | "PARTNERSHIP" | "COOPERATIVE" | "CONSORTIUM" | null;
+        };
+        ReferenceDataDto: {
+            vatCodes: components["schemas"]["VatCodeDto"][];
+            /**
+             * @example [
+             *       "PZ",
+             *       "KG"
+             *     ]
+             */
+            units: string[];
+            legalForms: components["schemas"]["LegalFormDto"][];
         };
     };
     responses: never;
@@ -506,7 +909,7 @@ export interface operations {
                 sort?: string;
                 /** @description Text to search for */
                 q?: string;
-                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED";
+                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED";
                 /** @description From this instant (ISO 8601), inclusive */
                 from?: string;
                 /** @description Until this instant (ISO 8601), exclusive */
@@ -804,6 +1207,342 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthEventPageDto"];
+                };
+            };
+        };
+    };
+    PartiesController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                role?: "customer" | "supplier";
+                /** @description Archived parties instead of active ones */
+                archived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyPageDto"];
+                };
+            };
+        };
+    };
+    PartiesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePartyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDto"];
+                };
+            };
+        };
+    };
+    PartiesController_lookup: {
+        parameters: {
+            query?: {
+                vatNumber?: string;
+                taxCode?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyLookupDto"];
+                };
+            };
+        };
+    };
+    PartiesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDto"];
+                };
+            };
+        };
+    };
+    PartiesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePartyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDto"];
+                };
+            };
+        };
+    };
+    PartiesController_archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDto"];
+                };
+            };
+        };
+    };
+    PartiesController_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDto"];
+                };
+            };
+        };
+    };
+    ItemsController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                /** @description Goods (true) or services (false) */
+                stockManaged?: boolean;
+                /** @description Archived items instead of active ones */
+                archived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemPageDto"];
+                };
+            };
+        };
+    };
+    ItemsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateItemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"];
+                };
+            };
+        };
+    };
+    ItemsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"];
+                };
+            };
+        };
+    };
+    ItemsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateItemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"];
+                };
+            };
+        };
+    };
+    ItemsController_archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"];
+                };
+            };
+        };
+    };
+    ItemsController_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"];
+                };
+            };
+        };
+    };
+    ReferenceDataController_referenceData: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceDataDto"];
                 };
             };
         };

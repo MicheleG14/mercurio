@@ -22,6 +22,13 @@ export class ItemsRepository {
     return db.item.findUnique({ where: { id } });
   }
 
+  /** Whether the tenant has an item with this code, in any case (the unique index's rule). */
+  async codeExists(db: DbClient, tenantId: string, code: string): Promise<boolean> {
+    const rows = await db.$queryRaw<unknown[]>`
+      SELECT 1 FROM items WHERE tenant_id = ${tenantId}::uuid AND lower(code) = lower(${code})`;
+    return rows.length > 0;
+  }
+
   create(db: DbClient, data: Prisma.ItemUncheckedCreateInput) {
     return db.item.create({ data });
   }

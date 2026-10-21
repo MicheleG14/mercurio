@@ -10,6 +10,7 @@ import {
   IdentityModule,
   IdentityService,
 } from '../src/modules/identity/index.js';
+import { RegistryModule, RegistryService } from '../src/modules/registry/index.js';
 import { TenancyModule, TenancyService } from '../src/modules/tenancy/index.js';
 import { PrismaModule, TenantDatabase } from '../src/prisma/index.js';
 import { adminClient, deleteTenantsAndUsers, uniqueSuffix } from './support/database.js';
@@ -21,6 +22,7 @@ describe('demo seed (e2e)', () => {
   let db: TenantDatabase;
   let tenancy: TenancyService;
   let identity: IdentityService;
+  let registry: RegistryService;
   let close: () => Promise<void>;
   const suffix = uniqueSuffix();
   const email = (local: string) => `${local}.${suffix}@example.com`;
@@ -30,15 +32,16 @@ describe('demo seed (e2e)', () => {
   beforeAll(async () => {
     admin = adminClient();
     const moduleRef = await Test.createTestingModule({
-      imports: [AppConfigModule, PrismaModule, TenancyModule, IdentityModule],
+      imports: [AppConfigModule, PrismaModule, TenancyModule, IdentityModule, RegistryModule],
     }).compile();
     await moduleRef.init();
     db = moduleRef.get(TenantDatabase);
     tenancy = moduleRef.get(TenancyService);
     identity = moduleRef.get(IdentityService);
+    registry = moduleRef.get(RegistryService);
     close = () => moduleRef.close();
 
-    await admin.$transaction((tx) => seedDemo(tx, { tenancy, identity }, suffix));
+    await admin.$transaction((tx) => seedDemo(tx, { tenancy, identity, registry }, suffix));
     const tenants = await admin.tenant.findMany({
       where: { slug: { in: [`rossi-${suffix}`, `bianchi-${suffix}`] } },
       include: { companies: { orderBy: { legalName: 'asc' } } },
@@ -116,10 +119,54 @@ describe('demo seed (e2e)', () => {
     expect(canAccessCompany(access('anna.rossi'), logistica!.id)).toBe(true);
   });
 
-  it('refuses to run twice', async () => {
-    await expect(
-      admin.$transaction((tx) => seedDemo(tx, { tenancy, identity }, suffix)),
-    ).rejects.toMatchObject({ code: 'DEMO_ALREADY_PRESENT' });
+  it('fills each registry with every kind of party, goods and services', async () => {
+    const parties = await admin.party.findMany({ where: { tenantId: rossi.id } });
+    expect(parties).toHaveLength(8);
+    expect(new Set(parties.map((p) => p.kind))).toEqual(
+      new Set(['PRIVATE', 'SOLE_TRADER', 'COMPANY', 'ORGANIZATION']),
+    );
+    expect(parties.filter((p) => p.archivedAt !== null)).toHaveLength(1);
+    expect(parties.filter((p) => p.country !== 'IT')).toHaveLength(1);
+    expect(parties.some((p) => p.isCustomer && p.isSupplier)).toBe(true);
+
+    const items = await admin.item.findMany({ where: { tenantId: rossi.id } });
+    expect(items).toHaveLength(15);
+    expect(items.some((i) => !i.stockManaged)).toBe(true);
+    expect(items.some((i) => i.vatCode.startsWith('N'))).toBe(true);
+    expect(await admin.party.count({ where: { tenantId: bianchi.id } })).toBe(2);
+    expect(await admin.item.count({ where: { tenantId: bianchi.id } })).toBe(3);
+  });
+
+  it('shows each tenant only its own registry, as the API role', async () => {
+    const seen = await db.runAs({ tenantId: bianchi.id }, async (tx) => ({
+      parties: await tx.party.findMany({ where: { tenantId: { in: [rossi.id, bianchi.id] } } }),
+      items: await tx.item.findMany({ where: { tenantId: { in: [rossi.id, bianchi.id] } } }),
+    }));
+    expect(seen.parties).toHaveLength(2);
+    expect(seen.items).toHaveLength(3);
+  });
+
+  it('adds only what is missing when run again', async () => {
+    const people = await admin.user.count({
+      where: { email: { endsWith: `.${suffix}@example.com` } },
+    });
+    // An item that went missing (deleted by the owner role, never by the API) comes back alone.
+    await admin.item.deleteMany({ where: { tenantId: rossi.id, code: 'DD-M6' } });
+
+    const again = await admin.$transaction((tx) =>
+      seedDemo(tx, { tenancy, identity, registry }, suffix),
+    );
+
+    expect(again.userIds).toEqual([]);
+    expect(again.tenants).toEqual([
+      expect.objectContaining({ created: false, parties: 0, items: 1 }),
+      expect.objectContaining({ created: false, parties: 0, items: 0 }),
+    ]);
+    expect(await admin.item.count({ where: { tenantId: rossi.id } })).toBe(15);
+    expect(await admin.party.count({ where: { tenantId: rossi.id } })).toBe(8);
+    expect(
+      await admin.user.count({ where: { email: { endsWith: `.${suffix}@example.com` } } }),
+    ).toBe(people);
   });
 
   it('refuses a production database unless asked explicitly', async () => {

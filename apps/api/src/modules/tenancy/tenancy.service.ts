@@ -66,6 +66,11 @@ export class TenancyService {
     return this.repository.listModules(db, tenantId);
   }
 
+  /** A tenant by its slug, or null. */
+  findTenantBySlug(db: DbClient, slug: string) {
+    return this.repository.findTenantBySlug(db, normalizeSlug(slug));
+  }
+
   async requireTenant(db: DbClient, slug: string) {
     const tenant = await this.repository.findTenantBySlug(db, normalizeSlug(slug));
     if (!tenant)
