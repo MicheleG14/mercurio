@@ -5,7 +5,7 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
-## [Unreleased]
+## [0.5.0] - 2026-10-21
 
 Phase 2c: responsive interface. The app works on desktops, tablets and phones, each with its own
 layout, and the menu moves to a sidebar grouped by module.
@@ -160,6 +160,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[0.5.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.5.0
 [0.4.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.3.0
 [0.2.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.2.0
