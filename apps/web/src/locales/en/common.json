@@ -31,7 +31,13 @@
     "signOut": "Sign out",
     "menu": "Main menu",
     "parties": "Customers and suppliers",
-    "items": "Items"
+    "items": "Items",
+    "group": {
+      "registry": "Registry",
+      "administration": "Administration"
+    },
+    "open": "Open the menu",
+    "toggle": "Collapse or expand the menu"
   },
   "actions": {
     "continue": "Continue",
@@ -45,7 +51,9 @@
     "edit": "Edit",
     "archive": "Archive",
     "restore": "Restore",
-    "reload": "Reload"
+    "reload": "Reload",
+    "close": "Close",
+    "more": "More actions"
   },
   "context": {
     "tenant": "Customer",
