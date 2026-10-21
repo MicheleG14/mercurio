@@ -36,8 +36,10 @@ describe('tenant tables (guard)', () => {
     expect(tables.map((t) => t.table)).toEqual(
       expect.arrayContaining([
         'companies',
+        'items',
         'membership_companies',
         'memberships',
+        'parties',
         'tenant_modules',
       ]),
     );
@@ -73,6 +75,14 @@ describe('tenant tables (guard)', () => {
   // Every write privilege of the API role is listed here, so a new grant is a deliberate change
   // (conventions B26). Reading is granted more freely and is not listed.
   it('gives the API role exactly the write privileges it needs', async () => {
+    const columnsOf = async (table: string) =>
+      (
+        await admin.$queryRaw<{ column: string }[]>`
+          SELECT column_name AS column FROM information_schema.columns
+          WHERE table_schema = 'public' AND table_name = ${table}`
+      ).map((c) => c.column);
+    const [partyColumns, itemColumns] = [await columnsOf('parties'), await columnsOf('items')];
+
     const tableWrites = await admin.$queryRaw<{ table: string; privilege: string }[]>`
       SELECT table_name AS table, privilege_type AS privilege
       FROM information_schema.role_table_grants
@@ -82,6 +92,8 @@ describe('tenant tables (guard)', () => {
     expect(tableWrites).toEqual([
       { table: 'audit_events', privilege: 'INSERT' },
       { table: 'auth_events', privilege: 'INSERT' },
+      { table: 'items', privilege: 'INSERT' },
+      { table: 'parties', privilege: 'INSERT' },
       { table: 'recovery_codes', privilege: 'INSERT' },
       { table: 'sessions', privilege: 'INSERT' },
     ]);
@@ -107,8 +119,19 @@ describe('tenant tables (guard)', () => {
     ]);
     expect(byTable('recovery_codes')).toEqual(['used_at']);
     expect(byTable('sessions')).toEqual(['last_used_at', 'revoked_at', 'selected_tenant_id']);
+    // Registry rows: never the id or the tenant, and never an item's code (it is never reused,
+    // so it never changes either). No DELETE at all: they are archived (B31).
+    const identity = ['created_at', 'id', 'tenant_id'];
+    expect(byTable('parties')).toEqual(
+      partyColumns.filter((column) => !identity.includes(column)).sort(),
+    );
+    expect(byTable('items')).toEqual(
+      itemColumns.filter((column) => ![...identity, 'code'].includes(column)).sort(),
+    );
     expect([...new Set(columnUpdates.map((c) => c.table))].sort()).toEqual([
       'credentials',
+      'items',
+      'parties',
       'recovery_codes',
       'sessions',
     ]);

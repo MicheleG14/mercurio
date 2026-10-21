@@ -91,6 +91,8 @@ export async function deleteTenantsAndUsers(
   await admin.session.deleteMany({ where: { userId } });
   await admin.recoveryCode.deleteMany({ where: { userId } });
   await admin.credential.deleteMany({ where: { userId } });
+  await admin.party.deleteMany({ where: { tenantId } });
+  await admin.item.deleteMany({ where: { tenantId } });
   await admin.membershipCompany.deleteMany({ where: { tenantId } });
   await admin.membership.deleteMany({ where: { tenantId } });
   await admin.tenantModule.deleteMany({ where: { tenantId } });
