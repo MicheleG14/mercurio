@@ -20,6 +20,7 @@ describe('web app served by the API (e2e)', () => {
     mkdirSync(join(webDist, 'assets'));
     writeFileSync(join(webDist, 'index.html'), '<!doctype html><title>Mercurio</title>');
     writeFileSync(join(webDist, 'assets', 'index-abc123.js'), 'console.log(1)');
+    writeFileSync(join(webDist, 'manifest.webmanifest'), '{"name":"Mercurio"}');
     process.env.WEB_DIST_PATH = webDist;
     process.env.APP_BASE_PATH = '/mercurio';
 
@@ -54,6 +55,15 @@ describe('web app served by the API (e2e)', () => {
       .expect(200);
 
     expect(res.headers['cache-control']).toBe('public, max-age=31536000, immutable');
+  });
+
+  it('serves the web app manifest with its media type, revalidated like index.html', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/mercurio/manifest.webmanifest')
+      .expect(200);
+
+    expect(res.headers['content-type']).toMatch(/^application\/manifest\+json/);
+    expect(res.headers['cache-control']).toBe('no-cache');
   });
 
   it('keeps API routes out of the fallback', async () => {
