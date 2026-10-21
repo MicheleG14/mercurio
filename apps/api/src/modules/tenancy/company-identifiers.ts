@@ -1,5 +1,12 @@
 import { HttpStatus } from '@nestjs/common';
 import { DomainException } from '../../shared/errors/index.js';
+import {
+  compactIdentifier,
+  isValidCompanyTaxCode,
+  isValidPersonalTaxCode,
+  italianVatNumberProblem,
+  stripItalianPrefix,
+} from '../../shared/italian-identifiers.js';
 
 /**
  * Normalizes and validates a VAT number. Italian numbers (country IT) must have 11 digits and a
@@ -7,43 +14,26 @@ import { DomainException } from '../../shared/errors/index.js';
  * stored as typed (trimmed, uppercase), since their formats vary.
  */
 export function normalizeVatNumber(country: string, value: string): string {
-  const vat = value.replace(/\s+/g, '').toUpperCase();
   if (country !== 'IT') {
+    const vat = compactIdentifier(value);
     if (vat.length === 0) throw invalid('VAT_NUMBER_INVALID', 'empty VAT number');
     return vat;
   }
-  const digits = vat.startsWith('IT') ? vat.slice(2) : vat;
-  if (!/^\d{11}$/.test(digits)) throw invalid('VAT_NUMBER_INVALID', 'expected 11 digits');
-  // All zeros passes the check digit but is never assigned.
-  if (/^0+$/.test(digits)) throw invalid('VAT_NUMBER_INVALID', 'not an assigned number');
-  if (!hasValidItalianCheckDigit(digits)) throw invalid('VAT_NUMBER_INVALID', 'wrong check digit');
+  const digits = stripItalianPrefix(value);
+  const problem = italianVatNumberProblem(digits);
+  if (problem) throw invalid('VAT_NUMBER_INVALID', problem);
   return digits;
 }
 
 /**
- * Italian VAT check digit: odd positions (1st, 3rd…) are summed; even positions are doubled,
- * minus 9 when above 9, and summed; the 11th digit makes the total a multiple of 10.
+ * Italian tax code of a company: 11 digits, or 16 characters for sole proprietorships, with
+ * the right check character in both cases.
  */
-export function hasValidItalianCheckDigit(digits: string): boolean {
-  let sum = 0;
-  for (let i = 0; i < 10; i++) {
-    const digit = Number(digits[i]);
-    if (i % 2 === 0) {
-      sum += digit;
-    } else {
-      const doubled = digit * 2;
-      sum += doubled > 9 ? doubled - 9 : doubled;
-    }
-  }
-  return (10 - (sum % 10)) % 10 === Number(digits[10]);
-}
-
-/** Italian tax code of a company: 11 digits, or 16 characters for sole proprietorships. */
 export function normalizeTaxCode(value: string | undefined): string | undefined {
   if (value === undefined || value.trim() === '') return undefined;
-  const code = value.replace(/\s+/g, '').toUpperCase();
-  if (!/^(\d{11}|[A-Z0-9]{16})$/.test(code)) {
-    throw invalid('TAX_CODE_INVALID', 'expected 11 digits or 16 characters');
+  const code = compactIdentifier(value);
+  if (!isValidCompanyTaxCode(code) && !isValidPersonalTaxCode(code)) {
+    throw invalid('TAX_CODE_INVALID', 'expected 11 digits or 16 characters with a check character');
   }
   return code;
 }
