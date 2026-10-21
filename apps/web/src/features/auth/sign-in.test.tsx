@@ -129,7 +129,7 @@ describe('the signed-in shell', () => {
           200,
           me({
             role: 'READ_ONLY',
-            permissions: ['registry:read'],
+            permissions: ['parties:read'],
             companies: [{ id: 'c1', legalName: 'Rossi Srl', vatNumber: '02746510960' }],
           }),
         ),
