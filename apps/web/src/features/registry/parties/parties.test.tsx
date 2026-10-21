@@ -265,7 +265,10 @@ describe('party record', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Archivia' }));
 
     expect(await screen.findByText(/Questa scheda è archiviata/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ripristina' })).toBeInTheDocument();
+    // Only the record's own button: the closing dialog keeps the words of the archive action.
+    await waitFor(() =>
+      expect(screen.getAllByRole('button', { name: 'Ripristina' })).toHaveLength(1),
+    );
     expect(screen.getByLabelText('Ragione sociale')).toBeDisabled();
     const sent = (await api.calls
       .find((c) => c.path === '/parties/p1/archive')!

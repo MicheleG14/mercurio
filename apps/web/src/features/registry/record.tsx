@@ -76,9 +76,18 @@ export function ArchiveButton({
   const { t } = useTranslation('registry');
   const { t: tc } = useTranslation();
   const [open, setOpen] = useState(false);
+  // The action chosen when the dialog opened: once it succeeds `archived` flips, and the closing
+  // dialog must not change its words to the opposite action.
+  const [restoring, setRestoring] = useState(archived);
   return (
     <>
-      <Button variant={archived ? 'outline' : 'destructive'} onClick={() => setOpen(true)}>
+      <Button
+        variant={archived ? 'outline' : 'destructive'}
+        onClick={() => {
+          setRestoring(archived);
+          setOpen(true);
+        }}
+      >
         {archived ? (
           <ArchiveRestoreIcon data-icon="inline-start" />
         ) : (
@@ -88,10 +97,10 @@ export function ArchiveButton({
       </Button>
       <ConfirmDialog
         open={open}
-        title={t(archived ? 'common.restoreTitle' : 'common.archiveTitle', { name })}
-        description={t(archived ? 'common.restoreDescription' : 'common.archiveDescription')}
-        confirmLabel={tc(archived ? 'actions.restore' : 'actions.archive')}
-        destructive={!archived}
+        title={t(restoring ? 'common.restoreTitle' : 'common.archiveTitle', { name })}
+        description={t(restoring ? 'common.restoreDescription' : 'common.archiveDescription')}
+        confirmLabel={tc(restoring ? 'actions.restore' : 'actions.archive')}
+        destructive={!restoring}
         pending={pending}
         onCancel={() => setOpen(false)}
         onConfirm={() => void onConfirm().finally(() => setOpen(false))}
