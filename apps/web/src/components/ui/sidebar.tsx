@@ -258,6 +258,7 @@ function SidebarTrigger({
   className,
   onClick,
   label,
+  children,
   ...props
 }: React.ComponentProps<typeof Button> & { label: string }) {
   const { toggleSidebar } = useSidebar();
@@ -275,7 +276,8 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      {/* Mercurio: an icon of the caller's choice (the menu icon on phones and tablets). */}
+      {children ?? <PanelLeftIcon />}
       <span className="sr-only">{label}</span>
     </Button>
   );
