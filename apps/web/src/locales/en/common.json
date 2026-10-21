@@ -37,12 +37,23 @@
     "copy": "Copy",
     "copied": "Copied",
     "download": "Download",
-    "save": "Save"
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "New",
+    "edit": "Edit",
+    "archive": "Archive",
+    "restore": "Restore",
+    "reload": "Reload"
   },
   "context": {
     "tenant": "Customer",
     "company": "Company",
     "switchTenant": "Switch customer",
     "switchCompany": "Switch company"
+  },
+  "unsaved": {
+    "title": "Leave without saving?",
+    "description": "Changes you have not saved will be lost.",
+    "discard": "Leave without saving"
   }
 }

@@ -1,3 +1,4 @@
+import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,14 @@ export interface Column<T> {
   header: string;
   cell: (row: T) => ReactNode;
   className?: string;
+  /** The field the server sorts on when this header is chosen; absent = not sortable. */
+  sortField?: string;
+}
+
+/** Order of a server-side list, as in `?sort=name:asc` (B16). */
+export interface SortOrder {
+  field: string;
+  direction: 'asc' | 'desc';
 }
 
 interface DataTableProps<T> {
@@ -32,11 +41,14 @@ interface DataTableProps<T> {
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
+  sort?: SortOrder;
+  onSortChange?: (sort: SortOrder) => void;
 }
 
 /**
  * The one table of the application (F16): handles the four states every screen must have
- * (loading, empty, error, content, F17) and the controls of a server-side paged list.
+ * (loading, empty, error, content, F17) and the controls of a server-side paged and sorted list.
+ * Sortable headers are buttons (keyboard and screen readers, F5) and carry `aria-sort`.
  */
 export function DataTable<T>({
   columns,
@@ -49,6 +61,8 @@ export function DataTable<T>({
   pageSize,
   total,
   onPageChange,
+  sort,
+  onSortChange,
 }: DataTableProps<T>) {
   const { t } = useTranslation();
   const pages = Math.max(1, Math.ceil(total / pageSize));
@@ -70,11 +84,33 @@ export function DataTable<T>({
       <Table>
         <TableHeader>
           <TableRow>
-            {columns.map((column) => (
-              <TableHead key={column.key} className={column.className}>
-                {column.header}
-              </TableHead>
-            ))}
+            {columns.map((column) => {
+              const active = column.sortField !== undefined && sort?.field === column.sortField;
+              return (
+                <TableHead
+                  key={column.key}
+                  className={column.className}
+                  aria-sort={
+                    active ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined
+                  }
+                >
+                  {column.sortField && onSortChange ? (
+                    <SortButton
+                      label={column.header}
+                      direction={active ? sort.direction : undefined}
+                      onClick={() =>
+                        onSortChange({
+                          field: column.sortField!,
+                          direction: active && sort.direction === 'asc' ? 'desc' : 'asc',
+                        })
+                      }
+                    />
+                  ) : (
+                    column.header
+                  )}
+                </TableHead>
+              );
+            })}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -111,5 +147,31 @@ export function DataTable<T>({
         </div>
       </div>
     </div>
+  );
+}
+
+function SortButton({
+  label,
+  direction,
+  onClick,
+}: {
+  label: string;
+  direction?: 'asc' | 'desc';
+  onClick: () => void;
+}) {
+  const Icon =
+    direction === 'asc' ? ArrowUpIcon : direction === 'desc' ? ArrowDownIcon : ArrowUpDownIcon;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="hover:text-foreground focus-visible:ring-ring/50 -mx-1 inline-flex items-center gap-1 rounded px-1 outline-none focus-visible:ring-3"
+    >
+      {label}
+      <Icon
+        aria-hidden="true"
+        className={direction ? 'size-3.5' : 'text-muted-foreground size-3.5'}
+      />
+    </button>
   );
 }

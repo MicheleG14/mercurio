@@ -37,12 +37,23 @@
     "copy": "Copia",
     "copied": "Copiato",
     "download": "Scarica",
-    "save": "Salva"
+    "save": "Salva",
+    "cancel": "Annulla",
+    "create": "Nuovo",
+    "edit": "Modifica",
+    "archive": "Archivia",
+    "restore": "Ripristina",
+    "reload": "Ricarica"
   },
   "context": {
     "tenant": "Cliente",
     "company": "Azienda",
     "switchTenant": "Cambia cliente",
     "switchCompany": "Cambia azienda"
+  },
+  "unsaved": {
+    "title": "Uscire senza salvare?",
+    "description": "Le modifiche non salvate andranno perse.",
+    "discard": "Esci senza salvare"
   }
 }
