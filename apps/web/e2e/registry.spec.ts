@@ -46,7 +46,7 @@ test('an administrator creates, finds, changes, archives and restores a customer
   await page.getByRole('link', { name: 'Nuovo soggetto' }).click();
   await page.getByLabel('Ragione sociale').fill(name);
   await page.getByLabel('Partita IVA').fill(newVat());
-  await page.getByLabel('Città').fill('Milano');
+  await page.getByLabel('Città', { exact: true }).fill('Milano');
   await page.getByRole('button', { name: 'Salva' }).click();
   await expect(page.getByRole('heading', { name })).toBeVisible();
   await expect(page).toHaveURL(/\/mercurio\/parties\/[0-9a-f-]{36}$/);
@@ -56,19 +56,21 @@ test('an administrator creates, finds, changes, archives and restores a customer
   await page.getByRole('searchbox', { name: /Cerca per nome/ }).fill(run);
   await expect(page).toHaveURL(new RegExp(`q=${run}`));
   await page.getByRole('link', { name }).click();
+  // Labels match by substring: wait for the record, or "Città" would also find the search box.
+  await expect(page.getByRole('heading', { name })).toBeVisible();
 
   // Changed, archived and restored.
-  await page.getByLabel('Città').fill('Bergamo');
+  await page.getByLabel('Città', { exact: true }).fill('Bergamo');
   await page.getByRole('button', { name: 'Salva' }).click();
   await expect(page.getByText('Modifiche salvate.')).toBeVisible();
   await page.getByRole('button', { name: 'Archivia' }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Archivia' }).click();
   await expect(page.getByText(/Questa scheda è archiviata/)).toBeVisible();
-  await expect(page.getByLabel('Città')).toBeDisabled();
+  await expect(page.getByLabel('Città', { exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Ripristina' }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Ripristina' }).click();
   await expect(page.getByText(/Questa scheda è archiviata/)).toHaveCount(0);
-  await expect(page.getByLabel('Città')).toHaveValue('Bergamo');
+  await expect(page.getByLabel('Città', { exact: true })).toHaveValue('Bergamo');
 
   // An item with a price typed in Italian, shown as an amount in euro.
   const code = `PW-${run}`;
