@@ -28,14 +28,25 @@ term; the interface uses the term of the selected language.
 
 ## Registry
 
-| Code (English)  | Italiano        | Meaning                                         |
-| --------------- | --------------- | ----------------------------------------------- |
-| customer        | cliente         | A business or person Mercurio sells to          |
-| supplier        | fornitore       | A business Mercurio buys from                   |
-| item            | articolo        | A product kept in stock and sold                |
-| item code (SKU) | codice articolo | Unique identifier of an item                    |
-| unit of measure | unità di misura | How an item is counted: pieces, kg, metres…     |
-| VAT rate        | aliquota IVA    | Percentage of VAT applied to an item (e.g. 22%) |
+| Code (English)     | Italiano            | Meaning                                                                                       |
+| ------------------ | ------------------- | --------------------------------------------------------------------------------------------- |
+| registry           | anagrafiche         | The module of parties and items, shared by the companies of a tenant                          |
+| party              | soggetto            | A customer, a supplier or both: one record per business or person                             |
+| customer           | cliente             | A party the tenant sells to (role)                                                            |
+| supplier           | fornitore           | A party the tenant buys from (role)                                                           |
+| kind (of party)    | tipologia           | Private person, sole trader or professional, company, organization: decides fields and checks |
+| legal form         | forma giuridica     | S.r.l., S.p.A., S.n.c.… of an Italian company; its category is derived from it                |
+| item               | articolo            | A good or a service the tenant sells or buys                                                  |
+| item code          | codice articolo     | Identifier of an item, unique regardless of case, never reused or changed                     |
+| stock managed      | gestito a magazzino | True for goods, which have a stock level; false for services                                  |
+| unit of measure    | unità di misura     | How an item is counted: pieces, kg, metres…                                                   |
+| VAT code           | codice IVA          | A VAT rate (22%, 10%…) or a zero-rated operation with its nature                              |
+| VAT rate           | aliquota IVA        | Percentage of VAT applied to an item (e.g. 22%)                                               |
+| nature (of VAT)    | natura IVA          | Why an operation has no VAT, as coded by the e-invoice: N1 to N7 (e.g. N4 exempt)             |
+| SdI recipient code | codice destinatario | 7 characters that route e-invoices to a customer; `0000000` when they arrive by PEC           |
+| PEC                | PEC                 | Certified email, with legal value in Italy; can receive e-invoices                            |
+| archiving          | archiviazione       | Hiding a record from lists and new documents without deleting it; it can be restored          |
+| version            | versione            | Counter of the changes of a record: a change based on an older version is refused             |
 
 ## Warehouse
 
@@ -65,21 +76,21 @@ term; the interface uses the term of the selected language.
 
 ## Invoicing
 
-| Code (English)   | Italiano          | Meaning                                                                  |
-| ---------------- | ----------------- | ------------------------------------------------------------------------ |
-| invoice          | fattura           | Fiscal document requesting payment from a customer                       |
-| draft            | bozza             | An invoice that can still be changed; it has no fiscal number            |
-| issue            | emissione         | Making an invoice final: it gets its number and can no longer change     |
-| invoice number   | numero di fattura | Progressive number per year, without gaps                                |
-| credit note      | nota di credito   | Document that corrects or cancels an issued invoice, in whole or in part |
-| taxable amount   | imponibile        | Amount before VAT                                                        |
-| VAT              | IVA               | Value-added tax                                                          |
-| VAT summary      | riepilogo IVA     | Taxable amount and VAT grouped by rate                                   |
-| due date         | scadenza          | Date by which a payment is expected                                      |
-| payment schedule | scadenziario      | List of due dates, paid and unpaid                                       |
-| payment received | incasso           | A recorded customer payment against one or more due dates                |
-| SdI              | SdI               | Sistema di Interscambio: the Italian e-invoicing exchange (out of scope) |
-| FatturaPA        | FatturaPA         | The Italian XML e-invoice format                                         |
+| Code (English)   | Italiano          | Meaning                                                                               |
+| ---------------- | ----------------- | ------------------------------------------------------------------------------------- |
+| invoice          | fattura           | Fiscal document requesting payment from a customer                                    |
+| draft            | bozza             | An invoice that can still be changed; it has no fiscal number                         |
+| issue            | emissione         | Making an invoice final: it gets its number and can no longer change                  |
+| invoice number   | numero di fattura | Progressive number per year, without gaps                                             |
+| credit note      | nota di credito   | Document that corrects or cancels an issued invoice, in whole or in part              |
+| taxable amount   | imponibile        | Amount before VAT                                                                     |
+| VAT              | IVA               | Value-added tax                                                                       |
+| VAT summary      | riepilogo IVA     | Taxable amount and VAT grouped by rate                                                |
+| due date         | scadenza          | Date by which a payment is expected                                                   |
+| payment schedule | scadenziario      | List of due dates, paid and unpaid                                                    |
+| payment received | incasso           | A recorded customer payment against one or more due dates                             |
+| SdI              | SdI               | Sistema di Interscambio: the Italian e-invoicing exchange (transmission out of scope) |
+| FatturaPA        | FatturaPA         | The Italian XML e-invoice format                                                      |
 
 ## Status codes
 

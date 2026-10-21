@@ -100,6 +100,8 @@ erDiagram
     users ||--o{ sessions : opens
     users ||--o{ auth_events : "security events"
     tenants ||--o{ audit_events : records
+    tenants ||--o{ parties : "trades with"
+    tenants ||--o{ items : sells
 ```
 
 | Table                  | Kind     | Holds                                                                    |
@@ -116,6 +118,8 @@ erDiagram
 | `sessions`             | platform | Signed-in browsers: refresh token hash, chosen tenant, expiry            |
 | `auth_events`          | platform | Security events of a person (append-only)                                |
 | `audit_events`         | tenant   | What happened in a tenant, who did it (append-only)                      |
+| `parties`              | tenant   | Customers and suppliers, shared by the companies; one active per VAT no. |
+| `items`                | tenant   | Goods and services; code unique regardless of case and never changed     |
 
 **How isolation works**
 
@@ -202,11 +206,11 @@ flowchart TB
         identity[identity<br/>people · memberships]
         auth[auth<br/>sign-in · sessions · guards]
         audit[audit<br/>security and tenant events]
-        registry[registry]
+        registry[registry<br/>parties · items · catalogs]
         warehouse[warehouse]
         orders[orders]
         invoicing[invoicing]
-        shared[shared<br/>errors · text · money]
+        shared[shared<br/>errors · text · decimals · Italian identifiers]
     end
 
     ui -- REST + OpenAPI client --> api
@@ -214,18 +218,19 @@ flowchart TB
     auth -- public services --> identity
     auth -- public services --> tenancy
     auth -- public service --> audit
+    registry -- public service --> audit
     orders -- public service --> registry
     orders -- public service --> warehouse
     orders -. OrderFulfilledEvent .-> invoicing
     invoicing -- public service --> registry
 
     classDef planned stroke-dasharray: 5 5
-    class registry,warehouse,orders,invoicing planned
+    class warehouse,orders,invoicing planned
 ```
 
 Dashed boxes are planned (see the roadmap in the [README](../README.md#roadmap)). Today the API has
-the business modules `tenancy`, `identity`, `auth` and `audit` (in `src/modules/`), `health`, the technical modules
-`config`, `prisma` and `web`, and the terminal commands in `src/cli/`.
+the modules `tenancy`, `identity`, `auth`, `audit` and `registry` (in `src/modules/`), `health`, the
+technical modules `config`, `prisma` and `web`, and the terminal commands in `src/cli/`.
 
 Each module can be sold on its own: the catalog in `tenancy` lists modules and their requirements,
 and `@RequiresModule('warehouse')` on a controller answers `403 MODULE_NOT_ENABLED` to tenants that
@@ -238,6 +243,26 @@ Rules that keep the modules independent:
   queries another module's tables.
 - Other modules import only from a module's `index.ts`; `pnpm check:boundaries` enforces it in CI.
 - Inside a module: controller (HTTP) → service (use cases, transactions) → repository (data access).
+
+## Registry: the list and record pattern
+
+The registry ([ADR 0018](adr/0018-registry-parties-and-items.md)) is the first business module, and
+sets the pattern the next ones follow for anything people search, open and edit.
+
+| Concern           | API                                                                   | Web app                                                         |
+| ----------------- | --------------------------------------------------------------------- | --------------------------------------------------------------- |
+| List              | `GET /parties?q=&role=&archived=&sort=name:asc&page=` (B16)           | `DataTable` with sortable headers; state in the address         |
+| Search            | "contains" on a few columns, trigram indexes, wildcards escaped       | `SearchInput` waits for typing to stop                          |
+| Record            | `GET /parties/:id` with `version`; `404` also for other tenants' ids  | Form in sections, two columns; read only without the permission |
+| Rules             | One function per entity (`party-rules.ts`), all errors on their field | The main rules again in the Zod schema, while typing            |
+| Change            | `PATCH` with the fields sent and the `version` (B29)                  | Conflict banner with "Reload"; unsaved-changes guard            |
+| Archive / restore | `POST /:id/archive`, `/:id/restore` with `version`; no `DELETE` (B31) | `ConfirmDialog` repeating the name                              |
+| Audit             | One event per change, with the names of the changed fields            | Activity page links the event to the record                     |
+| Decimals          | Strings with the column's scale (B30)                                 | `lib/decimal.ts` formats and parses in the person's language    |
+
+The catalogs (VAT codes with their natures, units of measure, legal forms) are constants in the
+module, served by `GET /registry/reference-data`. Terminal commands (the demo seed) go through
+`RegistryService`, the module's public service, with the same rules as the API.
 
 ## Request lifecycle
 
@@ -294,6 +319,7 @@ apps/
     prisma/migrations/ migrations, Row-Level Security written by hand in SQL
     scripts/           database role provisioning
     src/modules/       business modules, one folder each (public surface: index.ts)
+    src/shared/        errors, pagination, text, decimals, Italian identifiers
     src/cli/           terminal commands and demo seed
     src/<technical>/   config, prisma (TenantDatabase), shared, health, web
     test/              end-to-end tests (real database, API role)

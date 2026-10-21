@@ -8,16 +8,19 @@
 A vertical ERP for warehouse and invoicing, built as a modular monolith with NestJS and React.
 Named after Mercury, the Roman god of commerce.
 
-> **Status: phase 1b.** People sign in with a password and mandatory two-factor authentication,
-> choose a customer and a company, and see only what their role allows; every route is closed by
-> default and every security event is recorded. Business modules start with phase 2. Every phase
-> ships a complete vertical slice (database → API → UI) to production. See the [roadmap](#roadmap).
+> **Status: phase 2.** People sign in with mandatory two-factor authentication and work on the
+> registry: customers, suppliers and items, searched, edited, archived and restored, with Italian
+> tax checks, edit conflicts detected and every change in the activity log. Every phase ships a
+> complete vertical slice (database → API → UI) to production. See the [roadmap](#roadmap).
 
 ## What it will do
 
 - **Multi-tenant**: several customers on one installation, each with one or more companies and only
   the modules it bought; one identity per person across customers. Isolation is enforced by the
   database, not only by the code.
+- **Registry**: customers and suppliers as one party with roles and four kinds (private person, sole
+  trader, company, organization), Italian VAT number and tax code checks, items with codes that are
+  never reused, VAT codes with the natures of the e-invoice.
 - **Warehouse**: stock movements, stock levels computed from movements (never edited by hand),
   goods receipt, reorder thresholds.
 - **Orders**: purchase and sales orders, partial fulfilment, stock reservation, safe concurrency.
@@ -54,7 +57,9 @@ Named after Mercury, the Roman god of commerce.
 - **Sessions**: a short-lived access token in memory and a rotating refresh token in an `HttpOnly`
   cookie; reusing an old refresh token closes the session.
 - **Typed API contract**: the web client's types are generated from the API's OpenAPI document, and
-  CI fails if they are out of date.
+  CI fails if they are out of date. Prices travel as decimal strings, never JSON numbers.
+- **Edit conflicts and archiving**: records carry a version, so a change based on an old one is
+  refused instead of overwriting someone else's; records are archived, never deleted.
 
 ## Documentation
 
@@ -74,7 +79,7 @@ docker compose up -d db          # PostgreSQL on 127.0.0.1:5432
 pnpm install
 pnpm generate                    # Prisma client
 pnpm db:setup                    # migrations, then the login of the API's database role
-pnpm seed:demo                   # optional: two fictitious tenants to explore (see below)
+pnpm seed:demo                   # optional: two fictitious tenants with their registry (see below)
 
 pnpm dev:api                     # API on http://127.0.0.1:3000/api (docs at /api/docs)
 pnpm dev:web                     # web app on http://127.0.0.1:5173
@@ -87,7 +92,7 @@ add it to any authenticator app to get the codes. These credentials exist only o
 | Command                                    | What it does                                     |
 | ------------------------------------------ | ------------------------------------------------ |
 | `pnpm test` / `pnpm test:e2e`              | Unit tests / API end-to-end tests                |
-| `pnpm --filter @mercurio/web test:browser` | Browser test of the sign-in flow (Playwright)    |
+| `pnpm --filter @mercurio/web test:browser` | Browser tests: sign-in and registry (Playwright) |
 | `pnpm lint` / `pnpm typecheck`             | Static checks                                    |
 | `pnpm check:boundaries`                    | Module boundary check                            |
 | `pnpm openapi`                             | Regenerate the OpenAPI document and client types |
@@ -134,7 +139,7 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 | 0     | Walking skeleton: monorepo, CI, Docker, status page              | ✅     |
 | 1a    | Tenancy: tenants, companies, people, modules, Row-Level Security | ✅     |
 | 1b    | Authentication: sign-in, TOTP two-factor, roles, audit log       | ✅     |
-| 2     | Registry: customers, suppliers, items                            |        |
+| 2     | Registry: customers, suppliers, items                            | ✅     |
 | 3     | Warehouse: movements, stock levels, goods receipt                |        |
 | 4     | Orders: purchase and sales orders, reservations, concurrency     |        |
 | 5     | Invoicing: invoices, credit notes, due dates, PDF                |        |
@@ -142,6 +147,9 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 
 ## Out of scope, by choice
 
+- Rules of other countries and other currencies: Mercurio follows Italian tax rules and works in
+  euro. Foreign customers and suppliers are supported; amounts in another currency are converted by
+  hand ([ADR 0017](docs/adr/0017-italian-rules-euro-only.md)).
 - Self-service sign-up, subscriptions and billing, one subdomain per customer: tenants are created
   with terminal commands ([ADR 0010](docs/adr/0010-identity-and-memberships.md)).
 - General ledger, production planning, purchase invoices.
