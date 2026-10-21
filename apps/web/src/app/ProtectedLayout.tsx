@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { LogOutIcon, UserIcon, XIcon } from 'lucide-react';
+import { LogOutIcon, MenuIcon, UserIcon, XIcon } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { matchPath, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
@@ -234,7 +234,11 @@ function TopBar() {
 
   return (
     <header className="border-border bg-card/60 sticky top-0 z-10 flex min-h-13 items-center gap-2 border-b px-2 backdrop-blur md:px-4">
-      {breakpoint !== 'desktop' && <SidebarTrigger label={t('nav.open')} className="size-11" />}
+      {breakpoint !== 'desktop' && (
+        <SidebarTrigger label={t('nav.open')} className="size-11">
+          <MenuIcon />
+        </SidebarTrigger>
+      )}
       {breakpoint === 'phone' ? (
         <span className="text-muted-foreground min-w-0 truncate text-sm">
           {[me?.tenant?.name, company?.legalName].filter(Boolean).join(' · ')}
