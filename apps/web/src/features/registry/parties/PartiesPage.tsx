@@ -2,6 +2,7 @@ import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { DataTable } from '@/components/shared/DataTable';
+import { FilterBar } from '@/components/shared/FilterBar';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { Badge } from '@/components/ui/badge';
@@ -45,13 +46,17 @@ export function PartiesPage() {
           )
         }
       />
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-        <SearchInput
-          value={list.q}
-          onSearch={list.setQuery}
-          label={t('parties.search')}
-          placeholder={t('parties.search')}
-        />
+      <FilterBar
+        activeCount={(role ? 1 : 0) + (archived ? 1 : 0)}
+        search={
+          <SearchInput
+            value={list.q}
+            onSearch={list.setQuery}
+            label={t('parties.search')}
+            placeholder={t('parties.search')}
+          />
+        }
+      >
         <label className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">{t('parties.filter.label')}</span>
           <NativeSelect
@@ -73,7 +78,7 @@ export function PartiesPage() {
           />
           {t('common.showArchived')}
         </label>
-      </div>
+      </FilterBar>
       <DataTable
         rows={parties.data?.items}
         rowKey={(row) => row.id}
@@ -91,11 +96,12 @@ export function PartiesPage() {
             key: 'name',
             header: t('parties.columns.name'),
             sortField: 'name',
+            card: 'title',
             cell: (row) => (
               <span className="flex items-center gap-2">
                 <Link
                   to={`/parties/${row.id}`}
-                  className="font-medium underline-offset-4 hover:underline"
+                  className="font-medium underline-offset-4 after:absolute after:inset-0 hover:underline md:after:hidden"
                 >
                   {row.name}
                 </Link>
@@ -106,6 +112,7 @@ export function PartiesPage() {
           {
             key: 'roles',
             header: t('parties.columns.roles'),
+            card: 'detail',
             cell: (row) => (
               <span className="flex gap-1">
                 {row.isCustomer && <Badge variant="secondary">{t('parties.role.customer')}</Badge>}
@@ -116,17 +123,21 @@ export function PartiesPage() {
           {
             key: 'kind',
             header: t('parties.columns.kind'),
+            card: 'subtitle',
+            tablet: false,
             cell: (row) => t(`parties.kind.${row.kind}`),
           },
           {
             key: 'identifier',
             header: t('parties.columns.identifier'),
+            tablet: false,
             className: 'font-mono',
             cell: (row) => row.vatNumber ?? row.taxCode ?? '',
           },
           {
             key: 'city',
             header: t('parties.columns.city'),
+            card: 'subtitle',
             cell: (row) =>
               [
                 row.city && (row.province ? `${row.city} (${row.province})` : row.city),

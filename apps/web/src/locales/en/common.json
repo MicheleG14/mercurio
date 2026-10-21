@@ -21,7 +21,10 @@
   "table": {
     "page": "Page {{page}} of {{pages}} ({{total}} items)",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "sortBy": "Sort by",
+    "asc": "{{column}}, ascending",
+    "desc": "{{column}}, descending"
   },
   "nav": {
     "home": "Overview",
@@ -65,5 +68,10 @@
     "title": "Leave without saving?",
     "description": "Changes you have not saved will be lost.",
     "discard": "Leave without saving"
+  },
+  "filters": {
+    "open": "Filters",
+    "active": "Filters ({{count}})",
+    "show": "Show results"
   }
 }

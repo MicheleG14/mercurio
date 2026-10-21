@@ -11,7 +11,6 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { UnsavedChangesDialog } from '@/components/shared/UnsavedChangesGuard';
 import { useUnsavedChanges } from '@/components/shared/useUnsavedChanges';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
@@ -21,7 +20,7 @@ import { ApiError } from '@/lib/api';
 import { useMe } from '@/lib/auth/me';
 import { serverFieldErrors } from '@/lib/form-errors';
 import { type Item, useArchiveItem, useItem, useReferenceData, useSaveItem } from '../queries';
-import { ArchiveButton, ArchivedBadge, FormSection, RecordNotices } from '../record';
+import { ArchiveButton, ArchivedBadge, FormSection, RecordActions, RecordNotices } from '../record';
 import { vatLabel } from '../vat';
 import {
   emptyItem,
@@ -57,7 +56,6 @@ export function ItemPage() {
 
 function ItemForm({ item }: { item?: Item }) {
   const { t, i18n } = useTranslation('registry');
-  const { t: tc } = useTranslation();
   const { t: tError } = useTranslation('errors');
   const language = i18n.language;
   const navigate = useNavigate();
@@ -228,22 +226,12 @@ function ItemForm({ item }: { item?: Item }) {
         </fieldset>
 
         {!readOnly && (
-          <div className="border-border flex flex-wrap items-center justify-end gap-3 border-t pt-4">
-            {isDirty && (
-              <span className="text-muted-foreground text-sm">{t('common.unsavedHint')}</span>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => (item ? form.reset() : navigate('/items'))}
-              disabled={item ? !isDirty : false}
-            >
-              {tc('actions.cancel')}
-            </Button>
-            <Button type="submit" disabled={save.isPending || (item ? !isDirty : false)}>
-              {tc('actions.save')}
-            </Button>
-          </div>
+          <RecordActions
+            isNew={!item}
+            isDirty={isDirty}
+            saving={save.isPending}
+            onCancel={() => (item ? form.reset() : void navigate('/items'))}
+          />
         )}
       </form>
       <UnsavedChangesDialog blocker={blocker} />

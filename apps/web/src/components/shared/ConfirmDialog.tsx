@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useBreakpoint } from '@/lib/breakpoint';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +26,8 @@ interface ConfirmDialogProps {
 
 /**
  * Asks before an action that is hard to undo (F12). Focus moves into the dialog and Escape
- * cancels, as with every alert dialog of Base UI.
+ * cancels, as with every alert dialog of Base UI. On a phone it rises from the bottom, with
+ * buttons as wide as the screen, within reach of the thumb (F20).
  */
 export function ConfirmDialog({
   open,
@@ -38,9 +40,16 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
+  const phone = useBreakpoint() === 'phone';
   return (
     <AlertDialog open={open} onOpenChange={(next) => !next && onCancel()}>
-      <AlertDialogContent>
+      <AlertDialogContent
+        className={
+          phone
+            ? 'top-auto bottom-0 translate-y-0 rounded-b-none data-[size=default]:max-w-none data-[size=default]:sm:max-w-none'
+            : undefined
+        }
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           {description && <AlertDialogDescription>{description}</AlertDialogDescription>}
