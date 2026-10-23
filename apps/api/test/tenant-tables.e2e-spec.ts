@@ -40,7 +40,13 @@ describe('tenant tables (guard)', () => {
         'membership_companies',
         'memberships',
         'parties',
+        'reorder_levels',
+        'stock_balances',
+        'stock_document_counters',
+        'stock_documents',
+        'stock_movements',
         'tenant_modules',
+        'warehouses',
       ]),
     );
     const unprotected = tables.filter((t) => !(t.enabled && t.forced && t.isolated));
@@ -89,13 +95,21 @@ describe('tenant tables (guard)', () => {
       WHERE grantee = 'mercurio_app' AND privilege_type IN ('INSERT', 'UPDATE', 'DELETE', 'TRUNCATE')
         AND table_name NOT LIKE 'test\\_%'
       ORDER BY table_name, privilege_type`;
+    // Stock documents and movements: insert only (B32). Reorder levels are settings: deletable.
     expect(tableWrites).toEqual([
       { table: 'audit_events', privilege: 'INSERT' },
       { table: 'auth_events', privilege: 'INSERT' },
       { table: 'items', privilege: 'INSERT' },
       { table: 'parties', privilege: 'INSERT' },
       { table: 'recovery_codes', privilege: 'INSERT' },
+      { table: 'reorder_levels', privilege: 'DELETE' },
+      { table: 'reorder_levels', privilege: 'INSERT' },
       { table: 'sessions', privilege: 'INSERT' },
+      { table: 'stock_balances', privilege: 'INSERT' },
+      { table: 'stock_document_counters', privilege: 'INSERT' },
+      { table: 'stock_documents', privilege: 'INSERT' },
+      { table: 'stock_movements', privilege: 'INSERT' },
+      { table: 'warehouses', privilege: 'INSERT' },
     ]);
 
     // Updates are granted per column; the refresh hashes are not among them (only the rotation
@@ -128,12 +142,27 @@ describe('tenant tables (guard)', () => {
     expect(byTable('items')).toEqual(
       itemColumns.filter((column) => ![...identity, 'code'].includes(column)).sort(),
     );
+    // Warehouse: a balance changes only in quantity, a warehouse never in code or company, a
+    // counter only in its last number.
+    expect(byTable('stock_balances')).toEqual(['quantity', 'updated_at']);
+    expect(byTable('warehouses')).toEqual(['archived_at', 'name', 'updated_at', 'version']);
+    expect(byTable('reorder_levels')).toEqual([
+      'reorder_point',
+      'reorder_quantity',
+      'updated_at',
+      'version',
+    ]);
+    expect(byTable('stock_document_counters')).toEqual(['last_number']);
     expect([...new Set(columnUpdates.map((c) => c.table))].sort()).toEqual([
       'credentials',
       'items',
       'parties',
       'recovery_codes',
+      'reorder_levels',
       'sessions',
+      'stock_balances',
+      'stock_document_counters',
+      'warehouses',
     ]);
   });
 });

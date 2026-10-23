@@ -91,6 +91,14 @@ export async function deleteTenantsAndUsers(
   await admin.session.deleteMany({ where: { userId } });
   await admin.recoveryCode.deleteMany({ where: { userId } });
   await admin.credential.deleteMany({ where: { userId } });
+  await admin.stockMovement.deleteMany({ where: { tenantId } });
+  await admin.stockBalance.deleteMany({ where: { tenantId } });
+  await admin.reorderLevel.deleteMany({ where: { tenantId } });
+  await admin.stockDocumentCounter.deleteMany({ where: { tenantId } });
+  // Reversals point to the documents they reverse: they go first.
+  await admin.stockDocument.deleteMany({ where: { tenantId, reversesId: { not: null } } });
+  await admin.stockDocument.deleteMany({ where: { tenantId } });
+  await admin.warehouse.deleteMany({ where: { tenantId } });
   await admin.party.deleteMany({ where: { tenantId } });
   await admin.item.deleteMany({ where: { tenantId } });
   await admin.membershipCompany.deleteMany({ where: { tenantId } });
@@ -101,6 +109,9 @@ export async function deleteTenantsAndUsers(
   await admin.user.deleteMany({ where: { id: { in: [...userIds] } } });
   await admin.tenant.deleteMany({ where: { id: tenantId } });
 }
+
+/** A UUID version 7 (B7), as a client makes one for a new document (B33). */
+export { uuidv7 } from '../../src/shared/uuid.js';
 
 /** A random suffix for names, so test files running in parallel never collide. */
 export function uniqueSuffix(): string {

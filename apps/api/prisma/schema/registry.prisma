@@ -51,7 +51,8 @@ model Party {
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
+  tenant         Tenant          @relation(fields: [tenantId], references: [id])
+  stockDocuments StockDocument[]
 
   /// Target of composite foreign keys: a reference can never cross tenants (B25).
   @@unique([tenantId, id])
@@ -84,7 +85,10 @@ model Item {
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
+  tenant         Tenant          @relation(fields: [tenantId], references: [id])
+  stockMovements StockMovement[]
+  stockBalances  StockBalance[]
+  reorderLevels  ReorderLevel[]
 
   @@unique([tenantId, id])
   @@index([code(ops: raw("gin_trgm_ops"))], type: Gin, map: "items_code_trgm_idx")
