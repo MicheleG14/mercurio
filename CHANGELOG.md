@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [0.6.1] - 2026-10-23
+
+### Fixed
+
+- On a desktop, a sidebar collapsed to icons can be opened again: its button stays in the icon
+  strip, under the brand (before, only Ctrl+B brought it back).
+
 ## [0.6.0] - 2026-10-23
 
 Phase 3: warehouse. Goods in and out of the warehouses of each company, from the database to the
@@ -188,6 +195,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[0.6.1]: https://github.com/MicheleG14/mercurio/releases/tag/v0.6.1
 [0.6.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.5.0
 [0.4.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.4.0

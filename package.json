@@ -1,6 +1,6 @@
 {
   "name": "mercurio",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "description": "Mercurio: warehouse and invoicing modular monolith (NestJS + React)",
   "license": "MIT",
