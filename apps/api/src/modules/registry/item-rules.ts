@@ -1,5 +1,5 @@
 import { isUnit, isVatCode } from './catalogs.js';
-import { FieldErrors, optionalText } from './field-errors.js';
+import { FieldErrors, optionalText } from '../../shared/errors/index.js';
 
 /** What a person fills in for an item. The code is given only on creation: it never changes. */
 export interface ItemInput {

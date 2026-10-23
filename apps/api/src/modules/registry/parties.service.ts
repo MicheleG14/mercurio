@@ -22,7 +22,12 @@ import type {
 } from './parties.dto.js';
 import { PartiesRepository } from './parties.repository.js';
 import { legalNameOf, normalizeParty, type PartyData, type PartyInput } from './party-rules.js';
-import { assertVersion, changedFields, definedOnly, editConflict } from './versioning.js';
+import {
+  assertVersion,
+  changedFields,
+  definedOnly,
+  editConflict,
+} from '../../shared/versioning.js';
 
 /**
  * Customers and suppliers of the current tenant, shared by all its companies (S3). Every change

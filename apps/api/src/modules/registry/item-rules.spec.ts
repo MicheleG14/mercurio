@@ -1,4 +1,4 @@
-import { FieldErrors } from './field-errors.js';
+import { FieldErrors } from '../../shared/errors/index.js';
 import { normalizeItem, normalizeItemCode } from './item-rules.js';
 
 const fieldErrors = (fn: () => unknown) => {

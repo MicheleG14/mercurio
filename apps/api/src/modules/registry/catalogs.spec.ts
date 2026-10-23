@@ -1,4 +1,12 @@
-import { isLegalForm, isUnit, isVatCode, LEGAL_FORMS, UNITS, VAT_CODES } from './catalogs.js';
+import {
+  isLegalForm,
+  isUnit,
+  isVatCode,
+  LEGAL_FORMS,
+  unitDecimals,
+  UNITS,
+  VAT_CODES,
+} from './catalogs.js';
 
 describe('registry catalogs', () => {
   it('gives every exemption nature a zero rate', () => {
@@ -18,7 +26,7 @@ describe('registry catalogs', () => {
   it('has no duplicate codes', () => {
     for (const codes of [
       VAT_CODES.map((v) => v.code),
-      [...UNITS],
+      UNITS.map((u) => u.code),
       LEGAL_FORMS.map((f) => f.code),
     ]) {
       expect(new Set(codes).size).toBe(codes.length);
@@ -34,5 +42,12 @@ describe('registry catalogs', () => {
     expect(isUnit('pz')).toBe(false);
     expect(isLegalForm('SRL')).toBe(true);
     expect(isLegalForm('LTD')).toBe(false);
+  });
+
+  it('allows whole quantities for countable units and at most three decimals', () => {
+    expect(unitDecimals('PZ')).toBe(0);
+    expect(unitDecimals('KG')).toBe(3);
+    expect(unitDecimals('H')).toBe(2);
+    for (const unit of UNITS) expect(unit.decimals).toBeLessThanOrEqual(3);
   });
 });

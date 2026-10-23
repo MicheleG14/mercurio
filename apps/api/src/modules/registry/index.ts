@@ -2,4 +2,5 @@
 export { type ItemInput } from './item-rules.js';
 export { type PartyInput } from './party-rules.js';
 export { RegistryModule } from './registry.module.js';
-export { RegistryService } from './registry.service.js';
+export { type ItemRef, type PartyRef, RegistryService } from './registry.service.js';
+export { unitDecimals } from './catalogs.js';

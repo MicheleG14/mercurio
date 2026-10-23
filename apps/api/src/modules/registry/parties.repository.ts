@@ -19,6 +19,10 @@ export class PartiesRepository {
     return { items, total };
   }
 
+  findMany(db: DbClient, ids: string[]) {
+    return db.party.findMany({ where: { id: { in: ids } } });
+  }
+
   findById(db: DbClient, id: string) {
     return db.party.findUnique({ where: { id } });
   }
@@ -29,6 +33,11 @@ export class PartiesRepository {
       where: { vatNumber, archivedAt: null, ...(exceptId ? { id: { not: exceptId } } : {}) },
       select: { id: true },
     });
+  }
+
+  /** The active party of the tenant with this VAT number (explicit tenant: see findSame). */
+  findActiveInTenantByVat(db: DbClient, tenantId: string, vatNumber: string) {
+    return db.party.findFirst({ where: { tenantId, vatNumber, archivedAt: null } });
   }
 
   /** Parties, archived ones too, with one of these VAT numbers or this tax code. */

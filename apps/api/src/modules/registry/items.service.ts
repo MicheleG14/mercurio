@@ -7,15 +7,19 @@ import {
   type TenantTransaction,
 } from '../../prisma/index.js';
 import { fromDecimal, PRICE, toDecimal } from '../../shared/decimal.js';
-import { DomainException } from '../../shared/errors/index.js';
+import { DomainException, FieldErrors } from '../../shared/errors/index.js';
 import { type Page, parseSort, skipAndTake } from '../../shared/pagination.js';
 import { escapeLike } from '../../shared/text.js';
 import { type AuditEventType, AuditService } from '../audit/index.js';
-import { FieldErrors } from './field-errors.js';
 import { type ItemData, normalizeItem, normalizeItemCode } from './item-rules.js';
 import type { CreateItemDto, ItemDto, ItemsQuery, UpdateItemDto } from './items.dto.js';
 import { ItemsRepository } from './items.repository.js';
-import { assertVersion, changedFields, definedOnly, editConflict } from './versioning.js';
+import {
+  assertVersion,
+  changedFields,
+  definedOnly,
+  editConflict,
+} from '../../shared/versioning.js';
 
 /**
  * Items of the current tenant: the same rules as parties (one transaction with its audit event,

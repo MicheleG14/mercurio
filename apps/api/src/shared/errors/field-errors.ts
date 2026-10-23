@@ -1,5 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
-import { DomainException, type FieldError } from '../../shared/errors/index.js';
+import { DomainException } from './domain.exception.js';
+import type { FieldError } from './problem-details.js';
 
 /**
  * Collects every broken rule of a form before answering, so the person sees all of them at once,

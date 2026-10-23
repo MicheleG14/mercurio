@@ -18,7 +18,7 @@ export class ReferenceDataController {
   referenceData(): ReferenceDataDto {
     return {
       vatCodes: VAT_CODES.map((vat) => ({ ...vat })),
-      units: [...UNITS],
+      units: UNITS.map((unit) => ({ ...unit })),
       legalForms: LEGAL_FORMS.map((form) => ({ ...form })),
     };
   }

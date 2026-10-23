@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { DomainException } from '../../shared/errors/index.js';
+import { DomainException } from './errors/index.js';
 
 /**
  * Optimistic concurrency (docs/conventions.md B29): every change carries the version it was based
