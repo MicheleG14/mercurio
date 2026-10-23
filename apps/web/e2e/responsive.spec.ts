@@ -87,7 +87,9 @@ test('@phone a receipt recorded from the phone, the stock as cards', async ({ pa
   await activateAndEnter(page, state.warehousePhone.code);
   const go = async (name: string) => {
     await page.getByRole('button', { name: 'Apri il menu' }).click();
-    await page.getByRole('dialog', { name: 'Menu principale' }).getByRole('link', { name }).click();
+    const panel = page.getByRole('dialog', { name: 'Menu principale' });
+    await panel.getByRole('link', { name }).click();
+    await expect(panel).toBeHidden();
   };
 
   await go('Magazzini');

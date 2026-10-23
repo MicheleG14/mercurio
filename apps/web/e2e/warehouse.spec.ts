@@ -50,7 +50,7 @@ test('receive goods, refuse a shortage, reverse, see what to reorder', async ({ 
     await page.getByLabel('Codice').fill(code!);
     await page.getByLabel('Nome').fill(name!);
     await page.getByRole('button', { name: 'Salva' }).click();
-    await expect(page.getByRole('cell', { name: code!.toUpperCase() })).toBeVisible();
+    await expect(page.getByRole('cell', { name: code!.toUpperCase(), exact: true })).toBeVisible();
   }
 
   // Two items and a supplier, in the registry.
