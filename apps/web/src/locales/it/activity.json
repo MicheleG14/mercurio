@@ -23,11 +23,21 @@
     "ITEM_CREATED": "Articolo creato",
     "ITEM_UPDATED": "Articolo modificato",
     "ITEM_ARCHIVED": "Articolo archiviato",
-    "ITEM_RESTORED": "Articolo ripristinato"
+    "ITEM_RESTORED": "Articolo ripristinato",
+    "WAREHOUSE_CREATED": "Magazzino creato",
+    "WAREHOUSE_UPDATED": "Magazzino modificato",
+    "WAREHOUSE_ARCHIVED": "Magazzino archiviato",
+    "WAREHOUSE_RESTORED": "Magazzino ripristinato",
+    "STOCK_DOCUMENT_POSTED": "Documento di magazzino registrato",
+    "STOCK_DOCUMENT_REVERSED": "Documento di magazzino stornato",
+    "REORDER_LEVEL_SET": "Soglia di riordino impostata",
+    "REORDER_LEVEL_REMOVED": "Soglia di riordino tolta"
   },
   "subjectType": {
     "party": "Soggetto",
-    "item": "Articolo"
+    "item": "Articolo",
+    "warehouse": "Magazzino",
+    "stock_document": "Documento di magazzino"
   },
   "fields": "Campi: {{fields}}"
 }

@@ -1,4 +1,14 @@
-import { ActivityIcon, HouseIcon, PackageIcon, UsersIcon, type LucideIcon } from 'lucide-react';
+import {
+  ActivityIcon,
+  ArrowLeftRightIcon,
+  BoxesIcon,
+  HouseIcon,
+  PackageIcon,
+  TriangleAlertIcon,
+  UsersIcon,
+  WarehouseIcon,
+  type LucideIcon,
+} from 'lucide-react';
 
 /**
  * The menu, described once (docs/conventions.md F22): the sidebar, its icons-only form and the
@@ -8,7 +18,15 @@ import { ActivityIcon, HouseIcon, PackageIcon, UsersIcon, type LucideIcon } from
 export interface NavItem {
   to: string;
   /** Key under `nav.` in the common translations. */
-  label: 'home' | 'parties' | 'items' | 'activity';
+  label:
+    | 'home'
+    | 'parties'
+    | 'items'
+    | 'stock'
+    | 'stockDocuments'
+    | 'belowReorder'
+    | 'warehouses'
+    | 'activity';
   icon: LucideIcon;
   /** Shown only with this permission. The API still checks it on every call (F18). */
   permission?: string;
@@ -18,7 +36,7 @@ export interface NavItem {
 
 export interface NavGroup {
   /** Key under `nav.group.` in the common translations; none for the top items. */
-  label?: 'registry' | 'administration';
+  label?: 'registry' | 'warehouse' | 'administration';
   items: NavItem[];
 }
 
@@ -40,6 +58,39 @@ export const NAVIGATION: NavGroup[] = [
         icon: PackageIcon,
         permission: 'items:read',
         module: 'registry',
+      },
+    ],
+  },
+  {
+    label: 'warehouse',
+    items: [
+      {
+        to: '/stock',
+        label: 'stock',
+        icon: BoxesIcon,
+        permission: 'stock:read',
+        module: 'warehouse',
+      },
+      {
+        to: '/stock/documents',
+        label: 'stockDocuments',
+        icon: ArrowLeftRightIcon,
+        permission: 'stock:read',
+        module: 'warehouse',
+      },
+      {
+        to: '/stock/below-reorder',
+        label: 'belowReorder',
+        icon: TriangleAlertIcon,
+        permission: 'stock:read',
+        module: 'warehouse',
+      },
+      {
+        to: '/warehouses',
+        label: 'warehouses',
+        icon: WarehouseIcon,
+        permission: 'warehouses:manage',
+        module: 'warehouse',
       },
     ],
   },

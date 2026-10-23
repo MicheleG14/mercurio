@@ -13,6 +13,12 @@ import { ItemsPage } from '@/features/registry/items/ItemsPage';
 import { PartiesPage } from '@/features/registry/parties/PartiesPage';
 import { PartyPage } from '@/features/registry/parties/PartyPage';
 import { StatusPage } from '@/features/status/StatusPage';
+import { DocumentPage } from '@/features/warehouse/DocumentPage';
+import { DocumentsPage } from '@/features/warehouse/DocumentsPage';
+import { ItemStockPage } from '@/features/warehouse/ItemStockPage';
+import { NewDocumentPage } from '@/features/warehouse/NewDocumentPage';
+import { StockPage } from '@/features/warehouse/StockPage';
+import { WarehousesPage } from '@/features/warehouse/WarehousesPage';
 import { RequireAnonymous, RequireSession } from './AuthProvider';
 import { ProtectedLayout } from './ProtectedLayout';
 
@@ -50,6 +56,13 @@ export const routes = [
           { path: 'items', element: <ItemsPage /> },
           { path: 'items/new', element: <ItemPage /> },
           { path: 'items/:id', element: <ItemPage /> },
+          { path: 'stock', element: <StockPage /> },
+          { path: 'stock/below-reorder', element: <StockPage below /> },
+          { path: 'stock/items/:itemId', element: <ItemStockPage /> },
+          { path: 'stock/documents', element: <DocumentsPage /> },
+          { path: 'stock/documents/new', element: <NewDocumentPage /> },
+          { path: 'stock/documents/:id', element: <DocumentPage /> },
+          { path: 'warehouses', element: <WarehousesPage /> },
         ],
       },
     ],

@@ -1,0 +1,196 @@
+{
+  "reason": {
+    "OPENING": "Opening stock",
+    "PURCHASE_RECEIPT": "Receipt from supplier",
+    "CUSTOMER_RETURN": "Return from customer",
+    "SALE_ISSUE": "Issue for sale",
+    "INTERNAL_USE": "Internal use",
+    "LOSS": "Breakage or loss",
+    "INVENTORY_ADJUSTMENT": "Inventory adjustment",
+    "TRANSFER": "Transfer",
+    "REVERSAL": "Reversal"
+  },
+  "type": {
+    "receipt": "Receipt",
+    "issue": "Issue",
+    "adjustment": "Adjustment",
+    "transfer": "Transfer"
+  },
+  "newType": {
+    "receipt": "New receipt",
+    "issue": "New issue",
+    "adjustment": "New adjustment",
+    "transfer": "New transfer"
+  },
+  "common": {
+    "allWarehouses": "All warehouses",
+    "warehouse": "Warehouse",
+    "below": "Below reorder",
+    "itemArchived": "Archived item",
+    "noWarehouses": "This company has no warehouses yet.",
+    "createWarehouse": "Create the first warehouse",
+    "askAdmin": "Ask an administrator to create one."
+  },
+  "stock": {
+    "title": "Stock",
+    "description": "What is in stock, computed from the movements.",
+    "search": "Search by code or description",
+    "showZero": "Show at zero",
+    "asOf": "Stock on",
+    "asOfHint": "On the chosen day: the sum of the movements up to it, without reorder levels.",
+    "empty": "No items in stock.",
+    "columns": {
+      "code": "Code",
+      "description": "Description",
+      "quantity": "Stock",
+      "reorderPoint": "Reorder point",
+      "state": "State"
+    }
+  },
+  "below": {
+    "title": "Below reorder",
+    "description": "Items at or below their reorder point: time to order.",
+    "empty": "No items below reorder.",
+    "reorderQuantity": "To order"
+  },
+  "item": {
+    "byWarehouse": "Stock by warehouse",
+    "total": "Company total",
+    "history": "Movements",
+    "historyEmpty": "No movements.",
+    "openRegistry": "Item record",
+    "notStockManaged": "This item is a service: it has no stock.",
+    "columns": {
+      "warehouse": "Warehouse",
+      "quantity": "Stock",
+      "reorderPoint": "Reorder point",
+      "reorderQuantity": "Reorder quantity",
+      "date": "Date",
+      "document": "Document",
+      "reason": "Reason",
+      "movement": "Movement",
+      "balance": "Stock after"
+    },
+    "reorder": {
+      "title": "Reorder level in {{warehouse}}",
+      "point": "Reorder point",
+      "quantity": "Reorder quantity",
+      "hint": "Below reorder when stock falls to the reorder point or under.",
+      "set": "Set the level",
+      "edit": "Change the level",
+      "remove": "Remove the level",
+      "none": "No level"
+    }
+  },
+  "documents": {
+    "title": "Movements",
+    "description": "The company's stock documents: never changed, only reversed.",
+    "search": "Search by number or supplier's delivery note",
+    "empty": "No documents.",
+    "filter": {
+      "type": "Type",
+      "all": "All",
+      "from": "From",
+      "to": "To"
+    },
+    "columns": {
+      "reference": "Number",
+      "date": "Date",
+      "reason": "Reason",
+      "warehouse": "Warehouse",
+      "party": "Party",
+      "lines": "Lines"
+    },
+    "reversed": "Reversed",
+    "lineCount_one": "{{count}} line",
+    "lineCount_other": "{{count}} lines"
+  },
+  "document": {
+    "title": "Document {{reference}}",
+    "newTitle": {
+      "receipt": "New receipt",
+      "issue": "New issue",
+      "adjustment": "New inventory adjustment",
+      "transfer": "New transfer"
+    },
+    "section": {
+      "header": "Document",
+      "party": "Supplier or customer",
+      "lines": "Lines",
+      "notes": "Notes"
+    },
+    "fields": {
+      "reason": "Reason",
+      "date": "Date",
+      "warehouse": "Warehouse",
+      "source": "From warehouse",
+      "target": "To warehouse",
+      "supplier": "Supplier",
+      "customer": "Customer",
+      "party": "Party",
+      "partyDocumentRef": "Delivery note number",
+      "partyDocumentDate": "Delivery note date",
+      "notes": "Notes",
+      "createdBy": "Recorded by",
+      "createdAt": "Recorded on"
+    },
+    "hint": {
+      "date": "Today, or up to 30 days ago.",
+      "partyDocumentRef": "The delivery note that comes with the goods.",
+      "notes": "Required for breakage and loss.",
+      "counted": "Enter what you counted: the difference from the stock becomes the movement.",
+      "partyOptional": "Optional."
+    },
+    "lines": {
+      "item": "Item",
+      "quantity": "Quantity",
+      "counted": "Counted",
+      "difference": "Difference",
+      "stock": "In stock: {{quantity}}",
+      "add": "Add line",
+      "remove": "Remove line {{n}}",
+      "line": "Line {{n}}",
+      "searchItem": "Search an item",
+      "searchParty": "Search by name or VAT number",
+      "none": "None"
+    },
+    "post": "Record",
+    "posting": "Recording…",
+    "immutable": "A recorded document never changes: to correct it, reverse it and record a new one.",
+    "reverse": {
+      "action": "Reverse",
+      "title": "Reverse {{reference}}?",
+      "description": "A document moving the goods back will be recorded, dated today. The reversal cannot be undone.",
+      "confirm": "Reverse the document"
+    },
+    "reversedBy": "Reversed by {{reference}}",
+    "reverses": "Reversal of {{reference}}",
+    "reversedReason": "Reason reversed"
+  },
+  "warehouses": {
+    "title": "Warehouses",
+    "description": "The places where the company keeps goods.",
+    "empty": "No warehouses.",
+    "new": "New warehouse",
+    "newTitle": "New warehouse",
+    "renameTitle": "Rename {{code}}",
+    "rename": "Rename",
+    "showArchived": "Show archived",
+    "columns": {
+      "code": "Code",
+      "name": "Name"
+    },
+    "fields": {
+      "code": "Code",
+      "name": "Name"
+    },
+    "hint": {
+      "code": "Short, printed on documents: it never changes."
+    },
+    "archiveTitle": "Archive {{name}}?",
+    "archiveDescription": "Only an empty warehouse can be archived. You can restore it.",
+    "restoreTitle": "Restore {{name}}?",
+    "restoreDescription": "The warehouse will be usable in documents again.",
+    "archived": "Archived"
+  }
+}

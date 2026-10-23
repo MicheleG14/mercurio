@@ -12,5 +12,11 @@
     "warehouse": "Warehouse",
     "orders": "Orders",
     "invoicing": "Invoicing"
+  },
+  "warehouse": {
+    "title": "Warehouse",
+    "belowReorder": "Items below reorder",
+    "documentsToday": "Today's documents",
+    "open": "See the stock"
   }
 }

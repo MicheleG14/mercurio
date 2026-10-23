@@ -1,6 +1,9 @@
 import { randomInt } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { expect, type Page, test } from '@playwright/test';
 import { Secret, TOTP } from 'otpauth';
+import { activateAndEnter } from './activation.js';
 
 // The interface on a phone and on a tablet (docs/conventions.md F20), with demo people other
 // than those of registry.spec.ts, so no two tests spend the same one-time code.
@@ -74,6 +77,52 @@ test('@phone menu in a panel, cards, a record with the actions at the bottom', a
   await snap(page, '4-confirm');
   await page.getByRole('alertdialog').getByRole('button', { name: 'Archivia' }).click();
   await expect(page.getByText(/Questa scheda è archiviata/)).toBeVisible();
+});
+
+test('@phone a receipt recorded from the phone, the stock as cards', async ({ page }) => {
+  const state = JSON.parse(readFileSync(resolve(import.meta.dirname, '.state.json'), 'utf8')) as {
+    warehousePhone: { code: string };
+  };
+  const code = `PH-${randomInt(100_000, 1_000_000)}`;
+  await activateAndEnter(page, state.warehousePhone.code);
+  const go = async (name: string) => {
+    await page.getByRole('button', { name: 'Apri il menu' }).click();
+    await page.getByRole('dialog', { name: 'Menu principale' }).getByRole('link', { name }).click();
+  };
+
+  await go('Magazzini');
+  await page.getByRole('button', { name: 'Nuovo magazzino' }).click();
+  await page.getByLabel('Codice').fill('SEDE');
+  await page.getByLabel('Nome').fill('Magazzino della sede');
+  await page.getByRole('button', { name: 'Salva' }).click();
+  await expect(page.getByText('Magazzino della sede')).toBeVisible();
+
+  await go('Articoli');
+  await page.getByRole('link', { name: 'Nuovo articolo' }).click();
+  await page.getByLabel('Codice', { exact: true }).fill(code);
+  await page.getByLabel('Descrizione').fill('Articolo dal telefono');
+  await page.getByRole('button', { name: 'Salva' }).click();
+  await expect(page.getByRole('heading', { name: new RegExp(code) })).toBeVisible();
+
+  // The receipt: lines as cards, Record at the bottom of the screen.
+  await go('Movimenti');
+  await page.getByRole('link', { name: 'Nuovo carico' }).click();
+  await page.getByLabel('Causale').selectOption({ label: 'Giacenza iniziale' });
+  const item = page.getByRole('combobox', { name: /Riga 1/ });
+  await item.click();
+  await item.fill(code);
+  await page.getByRole('option', { name: new RegExp(code) }).click();
+  await page.getByLabel(/Quantità/).fill('3');
+  await expectNoHorizontalScroll(page);
+  await snap(page, '5-new-receipt');
+  await page.getByRole('button', { name: 'Registra' }).click();
+  await expect(page.getByRole('heading', { name: /^Documento CA-/ })).toBeVisible();
+
+  await go('Giacenze');
+  await expect(page.getByRole('link', { name: code })).toBeVisible();
+  await expect(page.getByRole('table')).toHaveCount(0);
+  await expectNoHorizontalScroll(page);
+  await snap(page, '6-stock');
 });
 
 test('@tablet icons-only sidebar, the table without secondary columns', async ({ page }) => {

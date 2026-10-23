@@ -23,11 +23,21 @@
     "ITEM_CREATED": "Item created",
     "ITEM_UPDATED": "Item changed",
     "ITEM_ARCHIVED": "Item archived",
-    "ITEM_RESTORED": "Item restored"
+    "ITEM_RESTORED": "Item restored",
+    "WAREHOUSE_CREATED": "Warehouse created",
+    "WAREHOUSE_UPDATED": "Warehouse changed",
+    "WAREHOUSE_ARCHIVED": "Warehouse archived",
+    "WAREHOUSE_RESTORED": "Warehouse restored",
+    "STOCK_DOCUMENT_POSTED": "Stock document recorded",
+    "STOCK_DOCUMENT_REVERSED": "Stock document reversed",
+    "REORDER_LEVEL_SET": "Reorder level set",
+    "REORDER_LEVEL_REMOVED": "Reorder level removed"
   },
   "subjectType": {
     "party": "Party",
-    "item": "Item"
+    "item": "Item",
+    "warehouse": "Warehouse",
+    "stock_document": "Stock document"
   },
   "fields": "Fields: {{fields}}"
 }

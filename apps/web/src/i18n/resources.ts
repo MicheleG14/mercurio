@@ -6,6 +6,7 @@ import enHome from '@/locales/en/home.json';
 import enRegistry from '@/locales/en/registry.json';
 import enCommon from '@/locales/en/common.json';
 import enStatus from '@/locales/en/status.json';
+import enWarehouse from '@/locales/en/warehouse.json';
 import itAccount from '@/locales/it/account.json';
 import itActivity from '@/locales/it/activity.json';
 import itAuth from '@/locales/it/auth.json';
@@ -14,6 +15,7 @@ import itHome from '@/locales/it/home.json';
 import itRegistry from '@/locales/it/registry.json';
 import itCommon from '@/locales/it/common.json';
 import itStatus from '@/locales/it/status.json';
+import itWarehouse from '@/locales/it/warehouse.json';
 
 /**
  * One JSON file per language and per area (docs/conventions.md F21).
@@ -29,6 +31,7 @@ export const resources = {
     errors: itErrors,
     home: itHome,
     registry: itRegistry,
+    warehouse: itWarehouse,
   },
   en: {
     common: enCommon,
@@ -39,6 +42,7 @@ export const resources = {
     errors: enErrors,
     home: enHome,
     registry: enRegistry,
+    warehouse: enWarehouse,
   },
 } as const;
 
