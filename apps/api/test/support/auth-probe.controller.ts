@@ -29,7 +29,7 @@ export class AuthProbeController {
   }
 
   @Get('stock')
-  @RequiresPermission('warehouse:write')
+  @RequiresPermission('stock:write')
   stock() {
     return { ok: true };
   }

@@ -1,16 +1,16 @@
 import { MembershipRole } from '../../generated/prisma/client.js';
 import { PERMISSIONS, type Permission, permissionsFor } from './permissions.js';
 
-// The matrix, row by row: a change here must be a deliberate decision (docs/adr/0014, and 0018
-// for the registry), not a side effect.
+// The matrix, row by row: a change here must be a deliberate decision (docs/adr/0014, 0018
+// for the registry, 0021 for the warehouse), not a side effect.
 const EXPECTED: Record<MembershipRole, Permission[]> = {
   ADMIN: [...PERMISSIONS],
   WAREHOUSE_KEEPER: [
     'parties:read',
     'items:read',
     'items:write',
-    'warehouse:read',
-    'warehouse:write',
+    'stock:read',
+    'stock:write',
     'orders:read',
     'orders:write',
   ],
@@ -18,13 +18,13 @@ const EXPECTED: Record<MembershipRole, Permission[]> = {
     'parties:read',
     'parties:write',
     'items:read',
-    'warehouse:read',
+    'stock:read',
     'orders:read',
     'invoicing:read',
     'invoicing:write',
     'invoicing:issue',
   ],
-  READ_ONLY: ['parties:read', 'items:read', 'warehouse:read', 'orders:read', 'invoicing:read'],
+  READ_ONLY: ['parties:read', 'items:read', 'stock:read', 'orders:read', 'invoicing:read'],
 };
 
 describe('role permissions', () => {
@@ -41,5 +41,11 @@ describe('role permissions', () => {
 
   it('never lets a read-only person write', () => {
     expect(permissionsFor('READ_ONLY').every((p) => p.endsWith(':read'))).toBe(true);
+  });
+
+  it('lets only administrators set up warehouses', () => {
+    for (const role of Object.values(MembershipRole)) {
+      expect(permissionsFor(role).includes('warehouses:manage')).toBe(role === 'ADMIN');
+    }
   });
 });

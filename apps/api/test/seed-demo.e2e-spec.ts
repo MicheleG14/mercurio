@@ -12,6 +12,7 @@ import {
 } from '../src/modules/identity/index.js';
 import { RegistryModule, RegistryService } from '../src/modules/registry/index.js';
 import { TenancyModule, TenancyService } from '../src/modules/tenancy/index.js';
+import { WarehouseModule, WarehouseService } from '../src/modules/warehouse/index.js';
 import { PrismaModule, TenantDatabase } from '../src/prisma/index.js';
 import { adminClient, deleteTenantsAndUsers, uniqueSuffix } from './support/database.js';
 
@@ -23,6 +24,7 @@ describe('demo seed (e2e)', () => {
   let tenancy: TenancyService;
   let identity: IdentityService;
   let registry: RegistryService;
+  let warehouse: WarehouseService;
   let close: () => Promise<void>;
   const suffix = uniqueSuffix();
   const email = (local: string) => `${local}.${suffix}@example.com`;
@@ -32,16 +34,26 @@ describe('demo seed (e2e)', () => {
   beforeAll(async () => {
     admin = adminClient();
     const moduleRef = await Test.createTestingModule({
-      imports: [AppConfigModule, PrismaModule, TenancyModule, IdentityModule, RegistryModule],
+      imports: [
+        AppConfigModule,
+        PrismaModule,
+        TenancyModule,
+        IdentityModule,
+        RegistryModule,
+        WarehouseModule,
+      ],
     }).compile();
     await moduleRef.init();
     db = moduleRef.get(TenantDatabase);
     tenancy = moduleRef.get(TenancyService);
     identity = moduleRef.get(IdentityService);
     registry = moduleRef.get(RegistryService);
+    warehouse = moduleRef.get(WarehouseService);
     close = () => moduleRef.close();
 
-    await admin.$transaction((tx) => seedDemo(tx, { tenancy, identity, registry }, suffix));
+    await admin.$transaction((tx) =>
+      seedDemo(tx, { tenancy, identity, registry, warehouse }, suffix),
+    );
     const tenants = await admin.tenant.findMany({
       where: { slug: { in: [`rossi-${suffix}`, `bianchi-${suffix}`] } },
       include: { companies: { orderBy: { legalName: 'asc' } } },
@@ -146,21 +158,63 @@ describe('demo seed (e2e)', () => {
     expect(seen.items).toHaveLength(3);
   });
 
+  it('fills the warehouses of Rossi through the same rules as the API', async () => {
+    const [logistica, srl] = rossi.companies;
+    const warehouses = await admin.warehouse.findMany({
+      where: { tenantId: rossi.id },
+      orderBy: { code: 'asc' },
+    });
+    expect(warehouses.map((w) => [w.code, w.companyId])).toEqual([
+      ['DEP', srl!.id],
+      ['HUB', logistica!.id],
+      ['SEDE', srl!.id],
+    ]);
+    // Nine documents and a reversal in Rossi Srl, two in Rossi Logistica.
+    expect(await admin.stockDocument.count({ where: { companyId: srl!.id } })).toBe(10);
+    expect(await admin.stockDocument.count({ where: { companyId: logistica!.id } })).toBe(2);
+    expect(
+      await admin.stockDocument.count({ where: { tenantId: rossi.id, reason: 'REVERSAL' } }),
+    ).toBe(1);
+    expect(await warehouse.verifyStock(admin)).toEqual([]);
+
+    const below = await admin.$queryRaw<{ code: string }[]>`
+      SELECT i.code FROM reorder_levels l
+      JOIN items i ON i.id = l.item_id
+      LEFT JOIN stock_balances b ON b.warehouse_id = l.warehouse_id AND b.item_id = l.item_id
+      WHERE l.tenant_id = ${rossi.id}::uuid AND coalesce(b.quantity, 0) <= l.reorder_point
+      ORDER BY i.code`;
+    expect(below.map((r) => r.code)).toEqual(['CM-PORT', 'GU-NIT', 'SM-125', 'TR-18V']);
+    expect(await admin.warehouse.count({ where: { tenantId: bianchi.id } })).toBe(0);
+  });
+
   it('adds only what is missing when run again', async () => {
     const people = await admin.user.count({
       where: { email: { endsWith: `.${suffix}@example.com` } },
     });
     // An item that went missing (deleted by the owner role, never by the API) comes back alone.
-    await admin.item.deleteMany({ where: { tenantId: rossi.id, code: 'DD-M6' } });
+    // A service: goods have stock movements, which keep them.
+    await admin.item.deleteMany({ where: { tenantId: rossi.id, code: 'MDO-ORA' } });
 
     const again = await admin.$transaction((tx) =>
-      seedDemo(tx, { tenancy, identity, registry }, suffix),
+      seedDemo(tx, { tenancy, identity, registry, warehouse }, suffix),
     );
 
     expect(again.userIds).toEqual([]);
     expect(again.tenants).toEqual([
-      expect.objectContaining({ created: false, parties: 0, items: 1 }),
-      expect.objectContaining({ created: false, parties: 0, items: 0 }),
+      expect.objectContaining({
+        created: false,
+        parties: 0,
+        items: 1,
+        warehouses: 0,
+        documents: 0,
+      }),
+      expect.objectContaining({
+        created: false,
+        parties: 0,
+        items: 0,
+        warehouses: 0,
+        documents: 0,
+      }),
     ]);
     expect(await admin.item.count({ where: { tenantId: rossi.id } })).toBe(15);
     expect(await admin.party.count({ where: { tenantId: rossi.id } })).toBe(8);

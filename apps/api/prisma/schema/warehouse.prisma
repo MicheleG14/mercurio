@@ -1,0 +1,177 @@
+// Module `warehouse`: the warehouses of each company, stock documents and the movements they
+// generate, the stock that follows from them and the reorder levels. Per company (S2): every row
+// carries company_id, and composite foreign keys keep a document, its warehouses and its
+// movements inside one company. See docs/adr/0021.
+// Documents and movements are append-only for the API role (B32): an error is corrected by a
+// reversal document, never by changing a row. Stock balances are a projection of the movements,
+// kept in the same transaction (B11). Written by hand in the migration: checks and grants.
+
+/// Why stock moves. The catalog in code gives each reason its series, sign and party rule.
+enum StockReason {
+  OPENING
+  PURCHASE_RECEIPT
+  CUSTOMER_RETURN
+  SALE_ISSUE
+  INTERNAL_USE
+  LOSS
+  INVENTORY_ADJUSTMENT
+  TRANSFER
+  REVERSAL
+
+  @@map("stock_reason")
+}
+
+/// A place where a company keeps goods.
+model Warehouse {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  tenantId   String    @map("tenant_id") @db.Uuid
+  companyId  String    @map("company_id") @db.Uuid
+  /// Short, uppercase, unique in the company and never changed: documents print it.
+  code       String
+  name       String
+  version    Int       @default(1)
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant            Tenant          @relation(fields: [tenantId], references: [id])
+  company           Company         @relation(fields: [tenantId, companyId], references: [tenantId, id])
+  documents         StockDocument[] @relation("DocumentWarehouse")
+  incomingTransfers StockDocument[] @relation("DocumentTargetWarehouse")
+  movements         StockMovement[]
+  balances          StockBalance[]
+  reorderLevels     ReorderLevel[]
+
+  @@unique([tenantId, id])
+  /// Target of the foreign keys of documents and movements: they stay in the same company.
+  @@unique([tenantId, companyId, id])
+  @@unique([tenantId, companyId, code])
+  @@map("warehouses")
+}
+
+/// A stock document: one reason, one date, one or two warehouses, its lines as movements.
+model StockDocument {
+  /// Chosen by the client that creates it (B33): sending the same id again is not a second document.
+  id                String      @id @default(uuid(7)) @db.Uuid
+  tenantId          String      @map("tenant_id") @db.Uuid
+  companyId         String      @map("company_id") @db.Uuid
+  reason            StockReason
+  /// Numbering series (CA receipts, SC issues, RE adjustments, TR transfers).
+  series            String
+  year              Int
+  number            Int
+  /// The day the goods moved (B9: a date, apart from the timestamps).
+  documentDate      DateTime    @map("document_date") @db.Date
+  warehouseId       String      @map("warehouse_id") @db.Uuid
+  /// Destination of a transfer (and of its reversal).
+  targetWarehouseId String?     @map("target_warehouse_id") @db.Uuid
+  /// Supplier of a receipt, customer of a return or a sale.
+  partyId           String?     @map("party_id") @db.Uuid
+  /// The supplier's delivery note (DDT): its number and date.
+  partyDocumentRef  String?     @map("party_document_ref")
+  partyDocumentDate DateTime?   @map("party_document_date") @db.Date
+  /// The document this one reverses. Unique: a document is reversed at most once.
+  reversesId        String?     @map("reverses_id") @db.Uuid
+  notes             String?
+  /// Empty for the platform operator working from the terminal (the demo seed).
+  createdById       String?     @map("created_by_id") @db.Uuid
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  warehouse       Warehouse       @relation("DocumentWarehouse", fields: [tenantId, companyId, warehouseId], references: [tenantId, companyId, id])
+  targetWarehouse Warehouse?      @relation("DocumentTargetWarehouse", fields: [tenantId, companyId, targetWarehouseId], references: [tenantId, companyId, id])
+  party           Party?          @relation(fields: [tenantId, partyId], references: [tenantId, id])
+  reverses        StockDocument?  @relation("Reversal", fields: [tenantId, companyId, reversesId], references: [tenantId, companyId, id])
+  reversedBy      StockDocument?  @relation("Reversal")
+  createdBy       User?           @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  movements       StockMovement[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, companyId, id])
+  @@unique([tenantId, companyId, series, year, number])
+  @@unique([tenantId, companyId, reversesId])
+  @@index([tenantId, companyId, documentDate(sort: Desc)])
+  @@map("stock_documents")
+}
+
+/// One line of a document in one warehouse; a transfer line has two (out, then in).
+model StockMovement {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  companyId       String   @map("company_id") @db.Uuid
+  documentId      String   @map("document_id") @db.Uuid
+  lineNo          Int      @map("line_no")
+  warehouseId     String   @map("warehouse_id") @db.Uuid
+  itemId          String   @map("item_id") @db.Uuid
+  /// Signed: positive in, negative out. Quantity precision (B8).
+  quantity        Decimal  @db.Decimal(14, 3)
+  /// What was counted, for an inventory adjustment: quantity is the difference.
+  countedQuantity Decimal? @map("counted_quantity") @db.Decimal(14, 3)
+  /// The document's date, copied so stock at a date is a sum over this table alone.
+  movementDate    DateTime @map("movement_date") @db.Date
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  tenant    Tenant        @relation(fields: [tenantId], references: [id])
+  document  StockDocument @relation(fields: [tenantId, companyId, documentId], references: [tenantId, companyId, id])
+  warehouse Warehouse     @relation(fields: [tenantId, companyId, warehouseId], references: [tenantId, companyId, id])
+  item      Item          @relation(fields: [tenantId, itemId], references: [tenantId, id])
+
+  @@unique([documentId, lineNo, warehouseId])
+  @@index([tenantId, warehouseId, itemId, movementDate])
+  @@index([tenantId, itemId, movementDate])
+  @@map("stock_movements")
+}
+
+/// Stock of an item in a warehouse now: the sum of its movements, kept with them (B11).
+model StockBalance {
+  tenantId    String   @map("tenant_id") @db.Uuid
+  companyId   String   @map("company_id") @db.Uuid
+  warehouseId String   @map("warehouse_id") @db.Uuid
+  itemId      String   @map("item_id") @db.Uuid
+  quantity    Decimal  @default(0) @db.Decimal(14, 3)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  warehouse Warehouse @relation(fields: [tenantId, companyId, warehouseId], references: [tenantId, companyId, id])
+  item      Item      @relation(fields: [tenantId, itemId], references: [tenantId, id])
+
+  @@id([warehouseId, itemId])
+  @@index([tenantId, itemId])
+  @@map("stock_balances")
+}
+
+/// Below the reorder point an item is "below reorder"; the quantity is what to order then.
+model ReorderLevel {
+  tenantId        String   @map("tenant_id") @db.Uuid
+  companyId       String   @map("company_id") @db.Uuid
+  warehouseId     String   @map("warehouse_id") @db.Uuid
+  itemId          String   @map("item_id") @db.Uuid
+  reorderPoint    Decimal  @map("reorder_point") @db.Decimal(14, 3)
+  reorderQuantity Decimal? @map("reorder_quantity") @db.Decimal(14, 3)
+  version         Int      @default(1)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  warehouse Warehouse @relation(fields: [tenantId, companyId, warehouseId], references: [tenantId, companyId, id])
+  item      Item      @relation(fields: [tenantId, itemId], references: [tenantId, id])
+
+  @@id([warehouseId, itemId])
+  @@map("reorder_levels")
+}
+
+/// Last number used per company, series and year. Taken in the document's transaction: a failed
+/// document gives its number back, so there are no gaps (B32).
+model StockDocumentCounter {
+  tenantId   String @map("tenant_id") @db.Uuid
+  companyId  String @map("company_id") @db.Uuid
+  series     String
+  year       Int
+  lastNumber Int    @map("last_number")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  company Company @relation(fields: [tenantId, companyId], references: [tenantId, id])
+
+  @@id([companyId, series, year])
+  @@map("stock_document_counters")
+}

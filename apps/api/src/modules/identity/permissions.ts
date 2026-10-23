@@ -5,15 +5,16 @@ import type { MembershipRole } from '../../generated/prisma/client.js';
  * What a person may do, as `area:action`. Roles are bundles of permissions; the code checks
  * permissions, never roles, so a role can change without touching the routes
  * (docs/adr/0014). The matrix is provisional for the areas not built yet: the phase that builds
- * an area refines its actions, as phase 2 did for the registry (parties and items apart).
+ * an area refines its actions, as phase 2 did for the registry (parties and items apart) and phase 3 for the warehouse.
  */
 export const PERMISSIONS = [
   'parties:read',
   'parties:write',
   'items:read',
   'items:write',
-  'warehouse:read',
-  'warehouse:write',
+  'stock:read',
+  'stock:write',
+  'warehouses:manage',
   'orders:read',
   'orders:write',
   'invoicing:read',
@@ -28,20 +29,21 @@ export type Permission = (typeof PERMISSIONS)[number];
 const READ: readonly Permission[] = [
   'parties:read',
   'items:read',
-  'warehouse:read',
+  'stock:read',
   'orders:read',
   'invoicing:read',
 ];
 
 export const ROLE_PERMISSIONS: Record<MembershipRole, readonly Permission[]> = {
   ADMIN: PERMISSIONS,
-  // The warehouse keeper maintains the item catalog, the accountant customers and suppliers.
+  // The warehouse keeper maintains the item catalog and records stock documents; the accountant
+  // maintains customers and suppliers. Only administrators set up warehouses (phase 3).
   WAREHOUSE_KEEPER: [
     'parties:read',
     'items:read',
     'items:write',
-    'warehouse:read',
-    'warehouse:write',
+    'stock:read',
+    'stock:write',
     'orders:read',
     'orders:write',
   ],

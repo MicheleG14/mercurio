@@ -18,6 +18,7 @@ model User {
   sessions         Session[]
   authEvents       AuthEvent[]
   auditEvents      AuditEvent[]
+  stockDocuments   StockDocument[]
 
   @@map("users")
 }

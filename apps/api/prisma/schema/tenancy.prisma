@@ -19,6 +19,13 @@ model Tenant {
   parties     Party[]
   items       Item[]
 
+  warehouses            Warehouse[]
+  stockDocuments        StockDocument[]
+  stockMovements        StockMovement[]
+  stockBalances         StockBalance[]
+  reorderLevels         ReorderLevel[]
+  stockDocumentCounters StockDocumentCounter[]
+
   @@map("tenants")
 }
 
@@ -42,8 +49,10 @@ model Company {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  tenant              Tenant              @relation(fields: [tenantId], references: [id])
+  tenant              Tenant                 @relation(fields: [tenantId], references: [id])
   membershipCompanies MembershipCompany[]
+  warehouses          Warehouse[]
+  stockCounters       StockDocumentCounter[]
 
   /// Target of composite foreign keys: a reference can never cross tenants (B25).
   @@unique([tenantId, id])
