@@ -8,6 +8,30 @@ function intlLocale(language: string): string {
   return INTL_LOCALES[language as Language] ?? INTL_LOCALES.it;
 }
 
+/** A calendar date of the API ("2026-10-23", no time zone) as people read it: "23/10/2026". */
+export function formatDate(value: string, language: string): string {
+  const [year, month, day] = value.split('-').map(Number) as [number, number, number];
+  return new Intl.DateTimeFormat(intlLocale(language), {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
+/**
+ * Today in Italian time as YYYY-MM-DD, the day stock documents are dated by default: at 00:30 in
+ * Rome it is already tomorrow, whatever the device's time zone.
+ */
+export function businessToday(now = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Rome',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
+}
+
 export function formatTime(value: Date | string, language: string): string {
   return new Intl.DateTimeFormat(intlLocale(language), {
     hour: '2-digit',

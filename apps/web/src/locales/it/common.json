@@ -37,10 +37,15 @@
     "items": "Articoli",
     "group": {
       "registry": "Anagrafiche",
-      "administration": "Amministrazione"
+      "administration": "Amministrazione",
+      "warehouse": "Magazzino"
     },
     "open": "Apri il menu",
-    "toggle": "Riduci o espandi il menu"
+    "toggle": "Riduci o espandi il menu",
+    "stock": "Giacenze",
+    "stockDocuments": "Movimenti",
+    "belowReorder": "Sotto scorta",
+    "warehouses": "Magazzini"
   },
   "actions": {
     "continue": "Continua",
@@ -73,5 +78,11 @@
     "open": "Filtri",
     "active": "Filtri ({{count}})",
     "show": "Mostra i risultati"
+  },
+  "combobox": {
+    "open": "Mostra le scelte",
+    "error": "Ricerca non riuscita.",
+    "noMatch": "Nessun risultato per «{{text}}».",
+    "empty": "Nessun elemento."
   }
 }

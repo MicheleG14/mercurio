@@ -37,10 +37,15 @@
     "items": "Items",
     "group": {
       "registry": "Registry",
-      "administration": "Administration"
+      "administration": "Administration",
+      "warehouse": "Warehouse"
     },
     "open": "Open the menu",
-    "toggle": "Collapse or expand the menu"
+    "toggle": "Collapse or expand the menu",
+    "stock": "Stock",
+    "stockDocuments": "Movements",
+    "belowReorder": "Below reorder",
+    "warehouses": "Warehouses"
   },
   "actions": {
     "continue": "Continue",
@@ -73,5 +78,11 @@
     "open": "Filters",
     "active": "Filters ({{count}})",
     "show": "Show results"
+  },
+  "combobox": {
+    "open": "Show the choices",
+    "error": "The search failed.",
+    "noMatch": "No results for “{{text}}”.",
+    "empty": "Nothing to choose."
   }
 }

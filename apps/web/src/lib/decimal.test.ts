@@ -1,4 +1,11 @@
-import { decimalToInput, formatMoney, parseDecimalInput } from './decimal';
+import {
+  decimalToInput,
+  formatMoney,
+  formatQuantity,
+  parseDecimalInput,
+  quantityLimits,
+  subtractQuantities,
+} from './decimal';
 
 // Intl may use a narrow no-break space before the euro sign: compare with plain spaces.
 const plain = (text: string) => text.replace(/\s/g, ' ');
@@ -44,5 +51,30 @@ describe('decimals', () => {
     ['1e3', 'en', 'exponent'],
   ])('refuses %j in %s (%s)', (text, language) => {
     expect(parseDecimalInput(text, language)).toBeUndefined();
+  });
+});
+
+describe('quantities', () => {
+  it('shows only the decimals that matter, up to the unit', () => {
+    expect(formatQuantity('12.000', 'it', 0)).toBe('12');
+    expect(formatQuantity('1250.500', 'it', 3)).toBe('1250,5');
+    expect(formatQuantity('12500.250', 'en', 3)).toBe('12,500.25');
+    expect(formatQuantity('-4.000', 'it', 0)).toBe('-4');
+  });
+
+  it('reads quantities with the decimals of the unit', () => {
+    expect(parseDecimalInput('3', 'it', quantityLimits(0))).toBe('3');
+    expect(parseDecimalInput('1,5', 'it', quantityLimits(0))).toBeUndefined();
+    expect(parseDecimalInput('1,250', 'it', quantityLimits(3))).toBe('1.250');
+    expect(parseDecimalInput('1,2505', 'it', quantityLimits(3))).toBeUndefined();
+  });
+});
+
+describe('subtractQuantities', () => {
+  it('subtracts exactly, signs included', () => {
+    expect(subtractQuantities('4', '7.000')).toBe('-3.000');
+    expect(subtractQuantities('0.3', '0.1')).toBe('0.200');
+    expect(subtractQuantities('12.5', '-0.25')).toBe('12.750');
+    expect(subtractQuantities('5.000', '5')).toBe('0.000');
   });
 });
