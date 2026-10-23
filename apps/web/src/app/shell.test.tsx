@@ -45,7 +45,7 @@ describe('app shell', () => {
     expect(screen.queryByRole('button', { name: 'Apri il menu' })).not.toBeInTheDocument();
   });
 
-  it('remembers a collapsed sidebar', async () => {
+  it('remembers a collapsed sidebar, and opens it again from the same button', async () => {
     const user = userEvent.setup();
     mockApi(signedIn());
     const { unmount } = renderApp('/');
@@ -57,10 +57,16 @@ describe('app shell', () => {
     mockApi(signedIn());
     const { container } = renderApp('/');
     await screen.findByRole('navigation', { name: 'Menu principale' });
-    expect(container.querySelector('[data-slot="sidebar"]')).toHaveAttribute(
-      'data-state',
-      'collapsed',
-    );
+    const sidebar = container.querySelector('[data-slot="sidebar"]');
+    expect(sidebar).toHaveAttribute('data-state', 'collapsed');
+
+    // Collapsed, the button is still there (it is the only way back) and says the menu is closed.
+    const toggle = screen.getByRole('button', { name: 'Riduci o espandi il menu' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await user.click(toggle);
+    expect(sidebar).toHaveAttribute('data-state', 'expanded');
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(localStorage.getItem('mercurio.sidebar')).toBe('expanded');
   });
 
   it('on a tablet: icons only, and the whole menu in a panel over the content', async () => {

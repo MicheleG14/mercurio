@@ -150,6 +150,15 @@ test('@desktop the sidebar and the list on a desktop', async ({ page }) => {
   await page.getByRole('link', { name: 'Clienti e fornitori' }).click();
   await expect(page.getByRole('table')).toBeVisible();
   await snap(page, '1-list');
+
+  // Collapsed to icons and opened again from the same button.
+  const toggle = page.getByRole('button', { name: 'Riduci o espandi il menu' });
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await snap(page, '2-collapsed');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByRole('link', { name: 'Clienti e fornitori' })).toBeVisible();
 });
 
 /** A made-up Italian VAT number with a valid check digit, different at every run. */

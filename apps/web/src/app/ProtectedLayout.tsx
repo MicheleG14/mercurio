@@ -109,12 +109,13 @@ function SidebarBody({ panel = false }: { panel?: boolean }) {
   const me = useMe().data;
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { setOpenMobile } = useSidebar();
+  const { open, setOpenMobile } = useSidebar();
   const closePanel = () => panel && setOpenMobile(false);
 
   return (
     <>
-      <SidebarHeader className="flex-row items-center justify-between gap-2">
+      {/* Collapsed to icons on a desktop, the toggle goes under the brand: it is the way back. */}
+      <SidebarHeader className="flex-row items-center justify-between gap-2 group-data-[collapsible=icon]:flex-col">
         <div className="flex min-w-0 items-center gap-2.5 px-1 py-1">
           <BrandMark />
           <span className="truncate font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
@@ -126,10 +127,7 @@ function SidebarBody({ panel = false }: { panel?: boolean }) {
             <XIcon />
           </Button>
         ) : (
-          <SidebarTrigger
-            label={t('nav.toggle')}
-            className="max-lg:hidden group-data-[collapsible=icon]:hidden"
-          />
+          <SidebarTrigger label={t('nav.toggle')} aria-expanded={open} className="max-lg:hidden" />
         )}
       </SidebarHeader>
 
