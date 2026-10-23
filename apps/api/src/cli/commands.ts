@@ -5,6 +5,7 @@ import { AuthService } from '../modules/auth/index.js';
 import { IdentityService } from '../modules/identity/index.js';
 import { RegistryService } from '../modules/registry/index.js';
 import { MODULE_KEYS, TenancyService } from '../modules/tenancy/index.js';
+import { WarehouseService } from '../modules/warehouse/index.js';
 import { APP_CONFIG, type AppConfig } from '../config/app-config.js';
 import { PrismaService } from '../prisma/index.js';
 import { DomainException } from '../shared/errors/index.js';
@@ -29,6 +30,7 @@ interface Services {
   audit: AuditService;
   auth: AuthService;
   registry: RegistryService;
+  warehouse: WarehouseService;
 }
 
 export interface Command {
@@ -285,14 +287,14 @@ export const COMMANDS: Record<string, Command> = {
       'Create the fictitious demo tenants, or add what they miss (refused in production without --allow-production)',
     options: { 'allow-production': { type: 'boolean' } },
     required: [],
-    async run({ config, prisma, tenancy, identity, auth, registry }, v, io) {
+    async run({ config, prisma, tenancy, identity, auth, registry, warehouse }, v, io) {
       if (config.isProduction && v['allow-production'] !== 'true') {
         throw new DomainException('DEMO_IN_PRODUCTION', HttpStatus.CONFLICT, {
           detail: 'add --allow-production to seed a production database on purpose',
         });
       }
       const { tenants: seeded, userIds } = await prisma.$transaction(async (tx) => {
-        const result = await seedDemo(tx, { tenancy, identity, registry });
+        const result = await seedDemo(tx, { tenancy, identity, registry, warehouse });
         // Outside production the demo people can sign in; in production they activate with a code.
         if (!config.isProduction) {
           for (const userId of result.userIds) {
@@ -310,6 +312,9 @@ export const COMMANDS: Record<string, Command> = {
           : 'already present, companies and people unchanged';
         io.out(`Demo tenant ${tenant.slug}: ${people}`);
         io.out(`  registry: ${tenant.parties} parties and ${tenant.items} items added`);
+        io.out(
+          `  warehouse: ${tenant.warehouses} warehouses and ${tenant.documents} stock documents added`,
+        );
       }
       if (userIds.length === 0) {
         io.out('No new demo people.');
@@ -327,6 +332,29 @@ export const COMMANDS: Record<string, Command> = {
         people: userIds.length,
         parties: seeded.reduce((sum, t) => sum + t.parties, 0),
         items: seeded.reduce((sum, t) => sum + t.items, 0),
+        stockDocuments: seeded.reduce((sum, t) => sum + t.documents, 0),
+      });
+    },
+  },
+
+  'verify-stock': {
+    summary:
+      'Check that every stock balance equals the sum of its movements (reports, never fixes)',
+    options: {},
+    required: [],
+    async run({ prisma, warehouse }, _v, io) {
+      const differences = await warehouse.verifyStock(prisma);
+      if (differences.length === 0) {
+        io.out('Stock is consistent: every balance equals the sum of its movements.');
+        return;
+      }
+      for (const d of differences) {
+        io.err(
+          `tenant ${d.tenantId} warehouse ${d.warehouseId} item ${d.itemId}: balance ${d.balance.toString()}, movements ${d.movements.toString()}`,
+        );
+      }
+      throw new DomainException('STOCK_INCONSISTENT', HttpStatus.CONFLICT, {
+        detail: `${differences.length} balance(s) differ from their movements`,
       });
     },
   },
@@ -366,5 +394,6 @@ export function resolveServices(app: INestApplicationContext): Services {
     audit: app.get(AuditService),
     auth: app.get(AuthService),
     registry: app.get(RegistryService),
+    warehouse: app.get(WarehouseService),
   };
 }

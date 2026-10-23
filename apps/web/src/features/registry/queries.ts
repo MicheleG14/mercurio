@@ -131,8 +131,8 @@ export function useSaveItem(id: string | undefined) {
   return useMutation({
     mutationFn: (body: ItemBody & { version?: number }) => {
       if (!id) return unwrap(api.POST('/items', { body }));
-      // The code never changes once created: it is not part of a change.
-      const { code: _code, ...change } = body;
+      // Code and "stock managed" never change once created: they are not part of a change.
+      const { code: _code, stockManaged: _stockManaged, ...change } = body;
       return unwrap(
         api.PATCH('/items/{id}', {
           params: { path: { id } },
