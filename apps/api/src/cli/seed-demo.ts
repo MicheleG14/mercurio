@@ -1,6 +1,8 @@
 import type { IdentityService } from '../modules/identity/index.js';
 import type { PartyInput, RegistryService } from '../modules/registry/index.js';
 import type { TenancyService } from '../modules/tenancy/index.js';
+import type { CreateStockDocumentDto, WarehouseService } from '../modules/warehouse/index.js';
+import { uuidv7 } from '../shared/uuid.js';
 import type { DbClient } from '../prisma/index.js';
 import { italianCheckDigit, personalTaxCodeCheckChar } from '../shared/italian-identifiers.js';
 
@@ -137,6 +139,105 @@ export const DEMO = {
         service('MDO-ORA', 'Manodopera specializzata', 'H', '35.00', '22'),
         service('CORSO-SIC', 'Corso di formazione sulla sicurezza', 'H', '50.00', 'N4'),
       ],
+      // Per company (by position in `companies`): warehouses, documents in date order, reorder
+      // levels. Parties are named by the first 10 digits of their VAT number, as above.
+      warehouse: [
+        {
+          warehouses: [
+            { code: 'SEDE', name: 'Magazzino della sede' },
+            { code: 'DEP', name: 'Deposito Nord' },
+          ],
+          documents: [
+            doc('OPENING', '2026-09-01', 'SEDE', [
+              ['VT-M6-20', '2000'],
+              ['VT-M8-30', '1500'],
+              ['DD-M6', '3000'],
+              ['RN-M6', '3000'],
+              ['TS-8', '40'],
+              ['CH-BRU', '12'],
+              ['TR-18V', '6'],
+              ['SM-125', '4'],
+              ['CV-3G15', '250'],
+              ['CM-PORT', '500'],
+              ['VR-BIA', '60'],
+              ['GU-NIT', '30'],
+              ['MAN-INST', '10'],
+            ]),
+            doc(
+              'PURCHASE_RECEIPT',
+              '2026-09-15',
+              'SEDE',
+              [
+                ['VT-M6-20', '1000'],
+                ['DD-M6', '1000'],
+              ],
+              {
+                party: '0834567890',
+                ref: 'VL-2026/0815',
+                refDate: '2026-09-14',
+              },
+            ),
+            doc(
+              'SALE_ISSUE',
+              '2026-09-22',
+              'SEDE',
+              [
+                ['VT-M6-20', '1800'],
+                ['DD-M6', '1200'],
+                ['TR-18V', '4'],
+              ],
+              {
+                party: '0612345678',
+              },
+            ),
+            doc('INTERNAL_USE', '2026-09-25', 'SEDE', [['GU-NIT', '4']], {
+              notes: 'Uso in officina',
+            }),
+            doc(
+              'TRANSFER',
+              '2026-09-29',
+              'SEDE',
+              [
+                ['CM-PORT', '200'],
+                ['VR-BIA', '20'],
+              ],
+              { target: 'DEP' },
+            ),
+            // Recorded with the wrong supplier and reversed the next day.
+            doc('PURCHASE_RECEIPT', '2026-10-02', 'SEDE', [['CM-PORT', '300']], {
+              party: '0723456789',
+              ref: 'EN 4471',
+              reverseOn: '2026-10-03',
+            }),
+            doc('INVENTORY_ADJUSTMENT', '2026-10-05', 'SEDE', [['TS-8', '37']]),
+            doc('LOSS', '2026-10-08', 'SEDE', [['SM-125', '1']], { notes: 'Caduta dal bancale' }),
+            doc('CUSTOMER_RETURN', '2026-10-12', 'SEDE', [['TR-18V', '1']], {
+              party: '0612345678',
+            }),
+          ],
+          // TR-18V (3 left), SM-125 (3) and GU-NIT (26) end up below their reorder point.
+          reorderLevels: [
+            { warehouse: 'SEDE', item: 'TR-18V', reorderPoint: '5', reorderQuantity: '10' },
+            { warehouse: 'SEDE', item: 'SM-125', reorderPoint: '3', reorderQuantity: '5' },
+            { warehouse: 'SEDE', item: 'GU-NIT', reorderPoint: '30', reorderQuantity: '50' },
+            { warehouse: 'SEDE', item: 'VT-M6-20', reorderPoint: '500', reorderQuantity: '2000' },
+          ],
+        },
+        {
+          warehouses: [{ code: 'HUB', name: 'Hub logistico' }],
+          documents: [
+            doc('OPENING', '2026-09-01', 'HUB', [
+              ['CV-3G15', '1000'],
+              ['CM-PORT', '2000'],
+              ['GU-NIT', '50'],
+            ]),
+            doc('SALE_ISSUE', '2026-10-06', 'HUB', [['CM-PORT', '1200']], { party: '0723456789' }),
+          ],
+          reorderLevels: [
+            { warehouse: 'HUB', item: 'CM-PORT', reorderPoint: '1000', reorderQuantity: '2000' },
+          ],
+        },
+      ],
     },
     {
       slug: 'bianchi',
@@ -175,6 +276,9 @@ export interface SeedSummary {
   /** Parties and items added by this run. */
   parties: number;
   items: number;
+  /** Warehouses and stock documents added by this run. */
+  warehouses: number;
+  documents: number;
 }
 
 /**
@@ -186,7 +290,12 @@ export interface SeedSummary {
  */
 export async function seedDemo(
   db: DbClient,
-  services: { tenancy: TenancyService; identity: IdentityService; registry: RegistryService },
+  services: {
+    tenancy: TenancyService;
+    identity: IdentityService;
+    registry: RegistryService;
+    warehouse: WarehouseService;
+  },
   suffix = '',
 ) {
   const slug = (base: string) => (suffix ? `${base}-${suffix}` : base);
@@ -233,6 +342,10 @@ export async function seedDemo(
     for (const item of tenant.items) {
       if (await services.registry.addItemIfMissing(db, tenantId, item)) items++;
     }
+    const stock =
+      'warehouse' in tenant
+        ? await seedWarehouse(db, services, tenantId, tenant)
+        : { warehouses: 0, documents: 0 };
     summary.push({
       slug: slug(tenant.slug),
       created,
@@ -240,9 +353,102 @@ export async function seedDemo(
       members: tenant.members.length,
       parties,
       items,
+      ...stock,
     });
   }
   return { tenants: summary, userIds: [...userIds] };
+}
+
+/**
+ * Warehouses, documents and reorder levels of a demo tenant. Documents go through the same use
+ * case as the API (same rules, locks, numbering), each recorded "on its own day" so the date
+ * rules hold whatever today is; they are added only to a company whose warehouses have none.
+ */
+async function seedWarehouse(
+  db: DbClient,
+  services: { tenancy: TenancyService; registry: RegistryService; warehouse: WarehouseService },
+  tenantId: string,
+  tenant: (typeof DEMO.tenants)[0],
+) {
+  let warehouses = 0;
+  let documents = 0;
+  const companyIds = await services.tenancy.companyIdsByVat(
+    db,
+    tenantId,
+    tenant.companies.map((c) => c.vatNumber),
+  );
+  const itemIds = await services.registry.itemIdsByCode(
+    db,
+    tenantId,
+    tenant.items.map((i) => i.code),
+  );
+  for (const [index, spec] of tenant.warehouse.entries()) {
+    const company = { tenantId, companyId: companyIds[index]!, userId: null };
+    const warehouseIds = new Map<string, string>();
+    let hasDocuments = false;
+    for (const warehouse of spec.warehouses) {
+      const ensured = await services.warehouse.ensureWarehouse(db, company, warehouse);
+      if (ensured.created) warehouses++;
+      warehouseIds.set(warehouse.code, ensured.id);
+      hasDocuments ||= await services.warehouse.hasDocuments(db, ensured.id);
+    }
+    if (!hasDocuments) {
+      for (const spec_ of spec.documents) {
+        const partyId = spec_.party
+          ? await services.registry.partyIdByVat(db, tenantId, withCheckDigit(spec_.party))
+          : null;
+        const counted = spec_.reason === 'INVENTORY_ADJUSTMENT';
+        const dto: CreateStockDocumentDto = {
+          id: uuidv7(Date.parse(`${spec_.date}T09:00:00Z`)),
+          reason: spec_.reason,
+          documentDate: spec_.date,
+          warehouseId: warehouseIds.get(spec_.warehouse)!,
+          targetWarehouseId: spec_.target ? warehouseIds.get(spec_.target)! : null,
+          partyId,
+          partyDocumentRef: spec_.ref ?? null,
+          partyDocumentDate: spec_.refDate ?? null,
+          notes: spec_.notes ?? null,
+          lines: spec_.lines.map(([code, quantity]) => ({
+            itemId: itemIds.get(code)!,
+            ...(counted ? { countedQuantity: quantity } : { quantity }),
+          })),
+        };
+        const posted = await services.warehouse.postDocument(db, company, dto, spec_.date);
+        documents++;
+        if (spec_.reverseOn) {
+          await services.warehouse.reverseDocument(db, company, posted.id, spec_.reverseOn);
+          documents++;
+        }
+      }
+    }
+    for (const level of spec.reorderLevels) {
+      await services.warehouse.setReorderLevelIfMissing(db, company, {
+        warehouseId: warehouseIds.get(level.warehouse)!,
+        itemId: itemIds.get(level.item)!,
+        reorderPoint: level.reorderPoint,
+        reorderQuantity: level.reorderQuantity,
+      });
+    }
+  }
+  return { warehouses, documents };
+}
+
+/** A demo stock document: reason, date, warehouse code, lines as [item code, quantity]. */
+function doc(
+  reason: CreateStockDocumentDto['reason'],
+  date: string,
+  warehouse: string,
+  lines: [string, string][],
+  extra: {
+    target?: string;
+    party?: string;
+    ref?: string;
+    refDate?: string;
+    notes?: string;
+    reverseOn?: string;
+  } = {},
+) {
+  return { reason, date, warehouse, lines, ...extra };
 }
 
 function company(

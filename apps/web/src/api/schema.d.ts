@@ -423,6 +423,246 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/warehouses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Warehouses of the company */
+        get: operations["WarehousesController_list"];
+        put?: never;
+        post: operations["WarehousesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/warehouses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WarehousesController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Rename; 409 EDIT_CONFLICT if the version is old */
+        patch: operations["WarehousesController_update"];
+        trace?: never;
+    };
+    "/warehouses/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive an empty warehouse; 409 WAREHOUSE_NOT_EMPTY otherwise */
+        post: operations["WarehousesController_archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/warehouses/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WarehousesController_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stock per item, searched, filtered and paginated */
+        get: operations["StockController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Counters for the overview */
+        get: operations["StockController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock/items-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Items that can go on a document line (at most 20) */
+        get: operations["StockController_searchItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock/parties-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Active suppliers or customers for a document (at most 20) */
+        get: operations["StockController_searchParties"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stock and reorder levels of an item in each warehouse */
+        get: operations["StockController_item"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock/items/{itemId}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Movements of an item, newest first, with the stock after each */
+        get: operations["StockController_movements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock/reorder-levels/{warehouseId}/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the reorder level; 409 EDIT_CONFLICT if the version is old */
+        put: operations["StockController_setReorderLevel"];
+        post?: never;
+        delete: operations["StockController_removeReorderLevel"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stock documents of the company, newest first by default */
+        get: operations["StockDocumentsController_list"];
+        put?: never;
+        /**
+         * Record a document; 409 STOCK_INSUFFICIENT if stock would go below zero
+         * @description The same id with the same content answers 200 with the document already recorded (B33).
+         */
+        post: operations["StockDocumentsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock-documents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StockDocumentsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock-documents/{id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reverse a document; 409 ALREADY_REVERSED the second time */
+        post: operations["StockDocumentsController_reverse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -823,11 +1063,6 @@ export interface components {
              * @example 12.5
              */
             salePrice?: string | null;
-            /**
-             * @description True for goods, false for services
-             * @default true
-             */
-            stockManaged: boolean;
             notes?: string | null;
             /** @example 1 */
             version: number;
@@ -846,6 +1081,15 @@ export interface components {
              */
             nature: string | null;
         };
+        UnitDto: {
+            /** @example PZ */
+            code: string;
+            /**
+             * @description Decimals a quantity may have in this unit
+             * @example 0
+             */
+            decimals: number;
+        };
         LegalFormDto: {
             /** @example SRL */
             code: string;
@@ -854,14 +1098,251 @@ export interface components {
         };
         ReferenceDataDto: {
             vatCodes: components["schemas"]["VatCodeDto"][];
-            /**
-             * @example [
-             *       "PZ",
-             *       "KG"
-             *     ]
-             */
-            units: string[];
+            units: components["schemas"]["UnitDto"][];
             legalForms: components["schemas"]["LegalFormDto"][];
+        };
+        WarehouseDto: {
+            id: string;
+            code: string;
+            name: string;
+            version: number;
+            archivedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
+        WarehousePageDto: {
+            items: components["schemas"]["WarehouseDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CreateWarehouseDto: {
+            /**
+             * @description 1-10 letters, digits and -; stored uppercase
+             * @example SEDE
+             */
+            code: string;
+            /** @example Magazzino della sede */
+            name: string;
+        };
+        UpdateWarehouseDto: {
+            /** @example 1 */
+            version: number;
+            /** @example Deposito Nord */
+            name: string;
+        };
+        StockRowDto: {
+            itemId: string;
+            itemCode: string;
+            itemDescription: string;
+            unit: string;
+            /** @description Decimals a quantity may have in this unit */
+            unitDecimals: number;
+            itemArchived: boolean;
+            /** @example 12.000 */
+            quantity: string;
+            reorderPoint: string | null;
+            reorderQuantity: string | null;
+            belowReorder: boolean;
+        };
+        StockPageDto: {
+            items: components["schemas"]["StockRowDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        StockSummaryDto: {
+            belowReorder: number;
+            documentsToday: number;
+        };
+        ItemOptionDto: {
+            id: string;
+            code: string;
+            description: string;
+            unit: string;
+            unitDecimals: number;
+            archived: boolean;
+            /** @description Stock in the warehouse asked for */
+            quantity: string | null;
+        };
+        PartyOptionDto: {
+            id: string;
+            name: string;
+            vatNumber: string | null;
+        };
+        ItemStockWarehouseDto: {
+            warehouseId: string;
+            warehouseCode: string;
+            warehouseName: string;
+            warehouseArchived: boolean;
+            quantity: string;
+            reorderPoint: string | null;
+            reorderQuantity: string | null;
+            /** @description Version of the reorder level (B29) */
+            reorderVersion: number | null;
+            belowReorder: boolean;
+        };
+        ItemStockDto: {
+            itemId: string;
+            itemCode: string;
+            itemDescription: string;
+            unit: string;
+            unitDecimals: number;
+            itemArchived: boolean;
+            stockManaged: boolean;
+            /** @description Sum over the warehouses of the company */
+            quantity: string;
+            warehouses: components["schemas"]["ItemStockWarehouseDto"][];
+        };
+        MovementRowDto: {
+            id: string;
+            movementDate: string;
+            documentId: string;
+            /** @example CA-2026/0042 */
+            reference: string;
+            reason: string;
+            warehouseCode: string;
+            /** @description Signed: positive in, negative out */
+            quantity: string;
+            /** @description Stock after this movement (in the warehouse filtered on, or the company) */
+            balance: string;
+        };
+        MovementPageDto: {
+            items: components["schemas"]["MovementRowDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        SetReorderLevelDto: {
+            /**
+             * @description Decimal string (B30), zero or more
+             * @example 10
+             */
+            reorderPoint: string;
+            /** @example 50 */
+            reorderQuantity?: string | null;
+            /** @description Absent to create the level, the version read to change it */
+            version?: number;
+        };
+        ReorderLevelDto: {
+            warehouseId: string;
+            itemId: string;
+            reorderPoint: string;
+            reorderQuantity: string | null;
+            version: number;
+        };
+        DocumentLinkDto: {
+            id: string;
+            /** @example CA-2026/0042 */
+            reference: string;
+        };
+        StockDocumentSummaryDto: {
+            id: string;
+            /** @example CA-2026/0042 */
+            reference: string;
+            /** @enum {string} */
+            reason: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER" | "REVERSAL";
+            /** @enum {string} */
+            type: "receipt" | "issue" | "adjustment" | "transfer";
+            /** @example 2026-10-23 */
+            documentDate: string;
+            warehouseId: string;
+            warehouseCode: string;
+            targetWarehouseId: string | null;
+            targetWarehouseCode: string | null;
+            partyId: string | null;
+            partyName: string | null;
+            partyDocumentRef: string | null;
+            lineCount: number;
+            reverses: components["schemas"]["DocumentLinkDto"] | null;
+            reversedBy: components["schemas"]["DocumentLinkDto"] | null;
+            createdAt: string;
+        };
+        StockDocumentPageDto: {
+            items: components["schemas"]["StockDocumentSummaryDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        StockLineDto: {
+            lineNo: number;
+            itemId: string;
+            itemCode: string;
+            itemDescription: string;
+            unit: string;
+            /**
+             * @description Amount moved, positive; for an adjustment the signed difference; for a reversal as in the document it reverses
+             * @example 5.000
+             */
+            quantity: string;
+            countedQuantity: string | null;
+        };
+        StockDocumentDto: {
+            id: string;
+            /** @example CA-2026/0042 */
+            reference: string;
+            /** @enum {string} */
+            reason: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER" | "REVERSAL";
+            /** @enum {string} */
+            type: "receipt" | "issue" | "adjustment" | "transfer";
+            /** @example 2026-10-23 */
+            documentDate: string;
+            warehouseId: string;
+            warehouseCode: string;
+            targetWarehouseId: string | null;
+            targetWarehouseCode: string | null;
+            partyId: string | null;
+            partyName: string | null;
+            partyDocumentRef: string | null;
+            lineCount: number;
+            reverses: components["schemas"]["DocumentLinkDto"] | null;
+            reversedBy: components["schemas"]["DocumentLinkDto"] | null;
+            createdAt: string;
+            partyDocumentDate: string | null;
+            notes: string | null;
+            /** @description Who recorded it */
+            createdByName: string | null;
+            /**
+             * @description For a reversal: the reason of the document it reverses
+             * @enum {string|null}
+             */
+            reversedReason: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER" | null;
+            lines: components["schemas"]["StockLineDto"][];
+        };
+        StockLineInputDto: {
+            itemId: string;
+            /**
+             * @description Positive decimal string (B30); the reason gives the sign. Not for adjustments
+             * @example 5
+             */
+            quantity?: string;
+            /**
+             * @description Inventory adjustments only: what was counted (zero or more)
+             * @example 12.5
+             */
+            countedQuantity?: string;
+        };
+        CreateStockDocumentDto: {
+            /** @description Chosen by the client (UUID v7) when it opens the form: sending it again does not record a second document (B33) */
+            id: string;
+            /** @enum {string} */
+            reason: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER";
+            /**
+             * @description Default today (Italian time)
+             * @example 2026-10-23
+             */
+            documentDate?: string;
+            warehouseId: string;
+            /** @description Transfers only */
+            targetWarehouseId?: string | null;
+            /** @description Supplier or customer */
+            partyId?: string | null;
+            /** @description Number of the supplier's delivery note (DDT) */
+            partyDocumentRef?: string | null;
+            /** @example 2026-10-22 */
+            partyDocumentDate?: string | null;
+            notes?: string | null;
+            lines: components["schemas"]["StockLineInputDto"][];
         };
     };
     responses: never;
@@ -909,7 +1390,7 @@ export interface operations {
                 sort?: string;
                 /** @description Text to search for */
                 q?: string;
-                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED";
+                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED" | "WAREHOUSE_CREATED" | "WAREHOUSE_UPDATED" | "WAREHOUSE_ARCHIVED" | "WAREHOUSE_RESTORED" | "STOCK_DOCUMENT_POSTED" | "STOCK_DOCUMENT_REVERSED" | "REORDER_LEVEL_SET" | "REORDER_LEVEL_REMOVED";
                 /** @description From this instant (ISO 8601), inclusive */
                 from?: string;
                 /** @description Until this instant (ISO 8601), exclusive */
@@ -1543,6 +2024,509 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReferenceDataDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                /** @description Archived warehouses instead of active ones */
+                archived?: boolean;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehousePageDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWarehouseDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateWarehouseDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_archive: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_restore: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseDto"];
+                };
+            };
+        };
+    };
+    StockController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                /** @description One warehouse; without it, the sum over the company */
+                warehouseId?: string;
+                /** @description Only items at or below their reorder point */
+                belowReorder?: boolean;
+                /** @description Also items that have moved but are at zero */
+                includeZero?: boolean;
+                /** @description Stock at the end of that day, from the movements (no reorder levels then) */
+                asOf?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockPageDto"];
+                };
+            };
+        };
+    };
+    StockController_summary: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockSummaryDto"];
+                };
+            };
+        };
+    };
+    StockController_searchItems: {
+        parameters: {
+            query?: {
+                q?: string;
+                /** @description Show the stock in this warehouse */
+                warehouseId?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemOptionDto"][];
+                };
+            };
+        };
+    };
+    StockController_searchParties: {
+        parameters: {
+            query: {
+                q?: string;
+                role: "supplier" | "customer";
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyOptionDto"][];
+                };
+            };
+        };
+    };
+    StockController_item: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemStockDto"];
+                };
+            };
+        };
+    };
+    StockController_movements: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                warehouseId?: string;
+                from?: string;
+                to?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementPageDto"];
+                };
+            };
+        };
+    };
+    StockController_setReorderLevel: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                warehouseId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetReorderLevelDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReorderLevelDto"];
+                };
+            };
+        };
+    };
+    StockController_removeReorderLevel: {
+        parameters: {
+            query: {
+                version: number;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                warehouseId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StockDocumentsController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                reason?: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER" | "REVERSAL";
+                /** @description Reversals included */
+                type?: "receipt" | "issue" | "adjustment" | "transfer";
+                /** @description Documents moving goods in or out of this warehouse */
+                warehouseId?: string;
+                partyId?: string;
+                from?: string;
+                to?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockDocumentPageDto"];
+                };
+            };
+        };
+    };
+    StockDocumentsController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStockDocumentDto"];
+            };
+        };
+        responses: {
+            /** @description Already recorded with this id */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockDocumentDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockDocumentDto"];
+                };
+            };
+        };
+    };
+    StockDocumentsController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockDocumentDto"];
+                };
+            };
+        };
+    };
+    StockDocumentsController_reverse: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockDocumentDto"];
                 };
             };
         };

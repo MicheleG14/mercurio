@@ -160,9 +160,9 @@ function ItemForm({ item }: { item?: Item }) {
             <FormField label={t('items.field.unit')} error={msg(errors.unit?.message)}>
               {(p) => (
                 <NativeSelect className="w-full" {...p} {...form.register('unit')}>
-                  {reference?.units.map((unit) => (
-                    <NativeSelectOption key={unit} value={unit}>
-                      {unit} · {t(`unit.${unit as 'PZ'}`)}
+                  {reference?.units.map(({ code }) => (
+                    <NativeSelectOption key={code} value={code}>
+                      {code} · {t(`unit.${code as 'PZ'}`)}
                     </NativeSelectOption>
                   ))}
                 </NativeSelect>
@@ -185,11 +185,13 @@ function ItemForm({ item }: { item?: Item }) {
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={(checked) => field.onChange(checked)}
-                      disabled={readOnly}
+                      disabled={readOnly || Boolean(item)}
                     />
                     {t('items.field.stockManaged')}
                   </label>
-                  <p className="text-muted-foreground text-xs">{t('items.hint.stockManaged')}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {t(item ? 'items.hint.stockManagedFixed' : 'items.hint.stockManaged')}
+                  </p>
                 </div>
               )}
             />

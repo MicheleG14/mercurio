@@ -95,7 +95,15 @@
                 "ITEM_CREATED",
                 "ITEM_UPDATED",
                 "ITEM_ARCHIVED",
-                "ITEM_RESTORED"
+                "ITEM_RESTORED",
+                "WAREHOUSE_CREATED",
+                "WAREHOUSE_UPDATED",
+                "WAREHOUSE_ARCHIVED",
+                "WAREHOUSE_RESTORED",
+                "STOCK_DOCUMENT_POSTED",
+                "STOCK_DOCUMENT_REVERSED",
+                "REORDER_LEVEL_SET",
+                "REORDER_LEVEL_REMOVED"
               ]
             }
           },
@@ -1218,6 +1226,1168 @@
         "summary": "VAT codes, units of measure and legal forms",
         "tags": [
           "registry"
+        ]
+      }
+    },
+    "/warehouses": {
+      "get": {
+        "operationId": "WarehousesController_list",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "archived",
+            "required": false,
+            "in": "query",
+            "description": "Archived warehouses instead of active ones",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WarehousePageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Warehouses of the company",
+        "tags": [
+          "warehouse"
+        ]
+      },
+      "post": {
+        "operationId": "WarehousesController_create",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWarehouseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WarehouseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/warehouses/{id}": {
+      "get": {
+        "operationId": "WarehousesController_get",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WarehouseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "warehouse"
+        ]
+      },
+      "patch": {
+        "operationId": "WarehousesController_update",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWarehouseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WarehouseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rename; 409 EDIT_CONFLICT if the version is old",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/warehouses/{id}/archive": {
+      "post": {
+        "operationId": "WarehousesController_archive",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WarehouseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Archive an empty warehouse; 409 WAREHOUSE_NOT_EMPTY otherwise",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/warehouses/{id}/restore": {
+      "post": {
+        "operationId": "WarehousesController_restore",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WarehouseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/stock": {
+      "get": {
+        "operationId": "StockController_list",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "warehouseId",
+            "required": false,
+            "in": "query",
+            "description": "One warehouse; without it, the sum over the company",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "belowReorder",
+            "required": false,
+            "in": "query",
+            "description": "Only items at or below their reorder point",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "includeZero",
+            "required": false,
+            "in": "query",
+            "description": "Also items that have moved but are at zero",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "asOf",
+            "required": false,
+            "in": "query",
+            "description": "Stock at the end of that day, from the movements (no reorder levels then)",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Stock per item, searched, filtered and paginated",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/stock/summary": {
+      "get": {
+        "operationId": "StockController_summary",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockSummaryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Counters for the overview",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/stock/items-search": {
+      "get": {
+        "operationId": "StockController_searchItems",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "warehouseId",
+            "required": false,
+            "in": "query",
+            "description": "Show the stock in this warehouse",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemOptionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Items that can go on a document line (at most 20)",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/stock/parties-search": {
+      "get": {
+        "operationId": "StockController_searchParties",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "supplier",
+                "customer"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PartyOptionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Active suppliers or customers for a document (at most 20)",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/stock/items/{itemId}": {
+      "get": {
+        "operationId": "StockController_item",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemStockDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Stock and reorder levels of an item in each warehouse",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/stock/items/{itemId}/movements": {
+      "get": {
+        "operationId": "StockController_movements",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "warehouseId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovementPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Movements of an item, newest first, with the stock after each",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/stock/reorder-levels/{warehouseId}/{itemId}": {
+      "put": {
+        "operationId": "StockController_setReorderLevel",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "warehouseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetReorderLevelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReorderLevelDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set the reorder level; 409 EDIT_CONFLICT if the version is old",
+        "tags": [
+          "warehouse"
+        ]
+      },
+      "delete": {
+        "operationId": "StockController_removeReorderLevel",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "warehouseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/stock-documents": {
+      "get": {
+        "operationId": "StockDocumentsController_list",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "reason",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "OPENING",
+                "PURCHASE_RECEIPT",
+                "CUSTOMER_RETURN",
+                "SALE_ISSUE",
+                "INTERNAL_USE",
+                "LOSS",
+                "INVENTORY_ADJUSTMENT",
+                "TRANSFER",
+                "REVERSAL"
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Reversals included",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "receipt",
+                "issue",
+                "adjustment",
+                "transfer"
+              ]
+            }
+          },
+          {
+            "name": "warehouseId",
+            "required": false,
+            "in": "query",
+            "description": "Documents moving goods in or out of this warehouse",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "partyId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-31",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockDocumentPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Stock documents of the company, newest first by default",
+        "tags": [
+          "warehouse"
+        ]
+      },
+      "post": {
+        "description": "The same id with the same content answers 200 with the document already recorded (B33).",
+        "operationId": "StockDocumentsController_create",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStockDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Already recorded with this id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockDocumentDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockDocumentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record a document; 409 STOCK_INSUFFICIENT if stock would go below zero",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/stock-documents/{id}": {
+      "get": {
+        "operationId": "StockDocumentsController_get",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockDocumentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
+    "/stock-documents/{id}/reverse": {
+      "post": {
+        "operationId": "StockDocumentsController_reverse",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockDocumentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reverse a document; 409 ALREADY_REVERSED the second time",
+        "tags": [
+          "warehouse"
         ]
       }
     }
@@ -2529,11 +3699,6 @@
             "example": "12.5",
             "description": "Decimal string with a dot, up to 4 decimals (B30)"
           },
-          "stockManaged": {
-            "type": "boolean",
-            "default": true,
-            "description": "True for goods, false for services"
-          },
           "notes": {
             "type": "string",
             "nullable": true,
@@ -2574,6 +3739,24 @@
           "nature"
         ]
       },
+      "UnitDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "PZ"
+          },
+          "decimals": {
+            "type": "number",
+            "example": 0,
+            "description": "Decimals a quantity may have in this unit"
+          }
+        },
+        "required": [
+          "code",
+          "decimals"
+        ]
+      },
       "LegalFormDto": {
         "type": "object",
         "properties": {
@@ -2607,13 +3790,9 @@
             }
           },
           "units": {
-            "example": [
-              "PZ",
-              "KG"
-            ],
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/UnitDto"
             }
           },
           "legalForms": {
@@ -2627,6 +3806,891 @@
           "vatCodes",
           "units",
           "legalForms"
+        ]
+      },
+      "WarehouseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "version",
+          "archivedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "WarehousePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WarehouseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "CreateWarehouseDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "SEDE",
+            "description": "1-10 letters, digits and -; stored uppercase"
+          },
+          "name": {
+            "type": "string",
+            "example": "Magazzino della sede",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "UpdateWarehouseDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Deposito Nord",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "version",
+          "name"
+        ]
+      },
+      "StockRowDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string"
+          },
+          "itemCode": {
+            "type": "string"
+          },
+          "itemDescription": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "unitDecimals": {
+            "type": "number",
+            "description": "Decimals a quantity may have in this unit"
+          },
+          "itemArchived": {
+            "type": "boolean"
+          },
+          "quantity": {
+            "type": "string",
+            "example": "12.000"
+          },
+          "reorderPoint": {
+            "type": "string",
+            "nullable": true
+          },
+          "reorderQuantity": {
+            "type": "string",
+            "nullable": true
+          },
+          "belowReorder": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "itemId",
+          "itemCode",
+          "itemDescription",
+          "unit",
+          "unitDecimals",
+          "itemArchived",
+          "quantity",
+          "reorderPoint",
+          "reorderQuantity",
+          "belowReorder"
+        ]
+      },
+      "StockPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockRowDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "StockSummaryDto": {
+        "type": "object",
+        "properties": {
+          "belowReorder": {
+            "type": "number"
+          },
+          "documentsToday": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "belowReorder",
+          "documentsToday"
+        ]
+      },
+      "ItemOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "unitDecimals": {
+            "type": "number"
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "quantity": {
+            "type": "string",
+            "nullable": true,
+            "description": "Stock in the warehouse asked for"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "description",
+          "unit",
+          "unitDecimals",
+          "archived",
+          "quantity"
+        ]
+      },
+      "PartyOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "vatNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "vatNumber"
+        ]
+      },
+      "ItemStockWarehouseDto": {
+        "type": "object",
+        "properties": {
+          "warehouseId": {
+            "type": "string"
+          },
+          "warehouseCode": {
+            "type": "string"
+          },
+          "warehouseName": {
+            "type": "string"
+          },
+          "warehouseArchived": {
+            "type": "boolean"
+          },
+          "quantity": {
+            "type": "string"
+          },
+          "reorderPoint": {
+            "type": "string",
+            "nullable": true
+          },
+          "reorderQuantity": {
+            "type": "string",
+            "nullable": true
+          },
+          "reorderVersion": {
+            "type": "number",
+            "nullable": true,
+            "description": "Version of the reorder level (B29)"
+          },
+          "belowReorder": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "warehouseId",
+          "warehouseCode",
+          "warehouseName",
+          "warehouseArchived",
+          "quantity",
+          "reorderPoint",
+          "reorderQuantity",
+          "reorderVersion",
+          "belowReorder"
+        ]
+      },
+      "ItemStockDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string"
+          },
+          "itemCode": {
+            "type": "string"
+          },
+          "itemDescription": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "unitDecimals": {
+            "type": "number"
+          },
+          "itemArchived": {
+            "type": "boolean"
+          },
+          "stockManaged": {
+            "type": "boolean"
+          },
+          "quantity": {
+            "type": "string",
+            "description": "Sum over the warehouses of the company"
+          },
+          "warehouses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemStockWarehouseDto"
+            }
+          }
+        },
+        "required": [
+          "itemId",
+          "itemCode",
+          "itemDescription",
+          "unit",
+          "unitDecimals",
+          "itemArchived",
+          "stockManaged",
+          "quantity",
+          "warehouses"
+        ]
+      },
+      "MovementRowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "movementDate": {
+            "type": "string"
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "example": "CA-2026/0042"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "warehouseCode": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string",
+            "description": "Signed: positive in, negative out"
+          },
+          "balance": {
+            "type": "string",
+            "description": "Stock after this movement (in the warehouse filtered on, or the company)"
+          }
+        },
+        "required": [
+          "id",
+          "movementDate",
+          "documentId",
+          "reference",
+          "reason",
+          "warehouseCode",
+          "quantity",
+          "balance"
+        ]
+      },
+      "MovementPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MovementRowDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "SetReorderLevelDto": {
+        "type": "object",
+        "properties": {
+          "reorderPoint": {
+            "type": "string",
+            "example": "10",
+            "description": "Decimal string (B30), zero or more"
+          },
+          "reorderQuantity": {
+            "type": "string",
+            "nullable": true,
+            "example": "50"
+          },
+          "version": {
+            "type": "number",
+            "description": "Absent to create the level, the version read to change it"
+          }
+        },
+        "required": [
+          "reorderPoint"
+        ]
+      },
+      "ReorderLevelDto": {
+        "type": "object",
+        "properties": {
+          "warehouseId": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string"
+          },
+          "reorderPoint": {
+            "type": "string"
+          },
+          "reorderQuantity": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "warehouseId",
+          "itemId",
+          "reorderPoint",
+          "reorderQuantity",
+          "version"
+        ]
+      },
+      "DocumentLinkDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "example": "CA-2026/0042"
+          }
+        },
+        "required": [
+          "id",
+          "reference"
+        ]
+      },
+      "StockDocumentSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "example": "CA-2026/0042"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "OPENING",
+              "PURCHASE_RECEIPT",
+              "CUSTOMER_RETURN",
+              "SALE_ISSUE",
+              "INTERNAL_USE",
+              "LOSS",
+              "INVENTORY_ADJUSTMENT",
+              "TRANSFER",
+              "REVERSAL"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "receipt",
+              "issue",
+              "adjustment",
+              "transfer"
+            ]
+          },
+          "documentDate": {
+            "type": "string",
+            "example": "2026-10-23"
+          },
+          "warehouseId": {
+            "type": "string"
+          },
+          "warehouseCode": {
+            "type": "string"
+          },
+          "targetWarehouseId": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetWarehouseCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "partyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "partyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "partyDocumentRef": {
+            "type": "string",
+            "nullable": true
+          },
+          "lineCount": {
+            "type": "number"
+          },
+          "reverses": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DocumentLinkDto"
+              }
+            ]
+          },
+          "reversedBy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DocumentLinkDto"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "reason",
+          "type",
+          "documentDate",
+          "warehouseId",
+          "warehouseCode",
+          "targetWarehouseId",
+          "targetWarehouseCode",
+          "partyId",
+          "partyName",
+          "partyDocumentRef",
+          "lineCount",
+          "reverses",
+          "reversedBy",
+          "createdAt"
+        ]
+      },
+      "StockDocumentPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockDocumentSummaryDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "StockLineDto": {
+        "type": "object",
+        "properties": {
+          "lineNo": {
+            "type": "number"
+          },
+          "itemId": {
+            "type": "string"
+          },
+          "itemCode": {
+            "type": "string"
+          },
+          "itemDescription": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string",
+            "example": "5.000",
+            "description": "Amount moved, positive; for an adjustment the signed difference; for a reversal as in the document it reverses"
+          },
+          "countedQuantity": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "lineNo",
+          "itemId",
+          "itemCode",
+          "itemDescription",
+          "unit",
+          "quantity",
+          "countedQuantity"
+        ]
+      },
+      "StockDocumentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "example": "CA-2026/0042"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "OPENING",
+              "PURCHASE_RECEIPT",
+              "CUSTOMER_RETURN",
+              "SALE_ISSUE",
+              "INTERNAL_USE",
+              "LOSS",
+              "INVENTORY_ADJUSTMENT",
+              "TRANSFER",
+              "REVERSAL"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "receipt",
+              "issue",
+              "adjustment",
+              "transfer"
+            ]
+          },
+          "documentDate": {
+            "type": "string",
+            "example": "2026-10-23"
+          },
+          "warehouseId": {
+            "type": "string"
+          },
+          "warehouseCode": {
+            "type": "string"
+          },
+          "targetWarehouseId": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetWarehouseCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "partyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "partyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "partyDocumentRef": {
+            "type": "string",
+            "nullable": true
+          },
+          "lineCount": {
+            "type": "number"
+          },
+          "reverses": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DocumentLinkDto"
+              }
+            ]
+          },
+          "reversedBy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DocumentLinkDto"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "partyDocumentDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdByName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Who recorded it"
+          },
+          "reversedReason": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "OPENING",
+              "PURCHASE_RECEIPT",
+              "CUSTOMER_RETURN",
+              "SALE_ISSUE",
+              "INTERNAL_USE",
+              "LOSS",
+              "INVENTORY_ADJUSTMENT",
+              "TRANSFER"
+            ],
+            "description": "For a reversal: the reason of the document it reverses"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockLineDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "reason",
+          "type",
+          "documentDate",
+          "warehouseId",
+          "warehouseCode",
+          "targetWarehouseId",
+          "targetWarehouseCode",
+          "partyId",
+          "partyName",
+          "partyDocumentRef",
+          "lineCount",
+          "reverses",
+          "reversedBy",
+          "createdAt",
+          "partyDocumentDate",
+          "notes",
+          "createdByName",
+          "reversedReason",
+          "lines"
+        ]
+      },
+      "StockLineInputDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string",
+            "example": "5",
+            "description": "Positive decimal string (B30); the reason gives the sign. Not for adjustments"
+          },
+          "countedQuantity": {
+            "type": "string",
+            "example": "12.5",
+            "description": "Inventory adjustments only: what was counted (zero or more)"
+          }
+        },
+        "required": [
+          "itemId"
+        ]
+      },
+      "CreateStockDocumentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Chosen by the client (UUID v7) when it opens the form: sending it again does not record a second document (B33)"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "OPENING",
+              "PURCHASE_RECEIPT",
+              "CUSTOMER_RETURN",
+              "SALE_ISSUE",
+              "INTERNAL_USE",
+              "LOSS",
+              "INVENTORY_ADJUSTMENT",
+              "TRANSFER"
+            ]
+          },
+          "documentDate": {
+            "type": "string",
+            "example": "2026-10-23",
+            "description": "Default today (Italian time)"
+          },
+          "warehouseId": {
+            "type": "string"
+          },
+          "targetWarehouseId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Transfers only"
+          },
+          "partyId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Supplier or customer"
+          },
+          "partyDocumentRef": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 35,
+            "description": "Number of the supplier's delivery note (DDT)"
+          },
+          "partyDocumentDate": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-10-22"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000
+          },
+          "lines": {
+            "minItems": 1,
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockLineInputDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "reason",
+          "warehouseId",
+          "lines"
         ]
       }
     }

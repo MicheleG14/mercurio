@@ -155,7 +155,8 @@
       "code": "Lettere, cifre e - . _ / (massimo 35). Non si potrà cambiare dopo la creazione.",
       "codeFixed": "Il codice non si cambia: i documenti lo riportano.",
       "stockManaged": "Togli la spunta per i servizi, che non hanno giacenza.",
-      "salePrice": "Fino a 4 decimali, con la virgola: 12,50"
+      "salePrice": "Fino a 4 decimali, con la virgola: 12,50",
+      "stockManagedFixed": "Non si cambia dopo la creazione: il magazzino potrebbe averne giacenza."
     },
     "noPrice": "Nessun prezzo"
   },

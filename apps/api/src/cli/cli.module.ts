@@ -5,6 +5,7 @@ import { AuthModule } from '../modules/auth/index.js';
 import { IdentityModule } from '../modules/identity/index.js';
 import { RegistryModule } from '../modules/registry/index.js';
 import { TenancyModule } from '../modules/tenancy/index.js';
+import { WarehouseModule } from '../modules/warehouse/index.js';
 import { PrismaModule } from '../prisma/index.js';
 
 /**
@@ -39,6 +40,7 @@ class CliConfigModule {}
     AuditModule,
     AuthModule,
     RegistryModule,
+    WarehouseModule,
   ],
 })
 export class CliModule {}

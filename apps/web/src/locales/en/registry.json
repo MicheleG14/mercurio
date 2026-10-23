@@ -155,7 +155,8 @@
       "code": "Letters, digits and - . _ / (up to 35). It cannot change once created.",
       "codeFixed": "The code never changes: documents print it.",
       "stockManaged": "Untick for services, which have no stock.",
-      "salePrice": "Up to 4 decimals, with a dot: 12.50"
+      "salePrice": "Up to 4 decimals, with a dot: 12.50",
+      "stockManagedFixed": "Fixed once created: the warehouse may hold stock of it."
     },
     "noPrice": "No price"
   },

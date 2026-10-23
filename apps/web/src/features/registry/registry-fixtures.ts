@@ -10,7 +10,11 @@ export const referenceData: ReferenceData = {
     { code: 'N4', rate: '0.00', nature: 'N4' },
     { code: 'N2.1', rate: '0.00', nature: 'N2.1' },
   ],
-  units: ['PZ', 'KG', 'H'],
+  units: [
+    { code: 'PZ', decimals: 0 },
+    { code: 'KG', decimals: 3 },
+    { code: 'H', decimals: 2 },
+  ],
   legalForms: [
     { code: 'SRL', category: 'CAPITAL' },
     { code: 'SNC', category: 'PARTNERSHIP' },
