@@ -80,6 +80,23 @@ The registry is the reference ("list and record" in [docs/architecture.md](docs/
    Form + Zod, `FormSection`, `RecordNotices`, `ArchiveButton` and `useUnsavedChanges`; query keys in
    the feature's `queries.ts`; component tests for checks, field errors, read-only mode and conflicts.
 
+## Adding a document with lines
+
+The warehouse is the reference ([ADR 0021](docs/adr/0021-warehouse-documents-and-computed-stock.md)):
+
+1. **Tables**: the document and its lines are insert-only for `mercurio_app` (B32); a reversal is a
+   new document pointing to the one it corrects, with a unique index on that pointer. Numbers come
+   from a counter row per company, series and year, taken in the document's transaction.
+2. **Use case**: one transaction; lock what the document depends on in a fixed order (B34), check,
+   take the number, write, record the audit event. Projections (such as stock) are written in the
+   same transaction and checked by a test against what they summarise (B11).
+3. **Ids**: the client sends the id of a new document (B33); the same id with the same content
+   answers `200` with what was recorded.
+4. **Other modules' data**: checks through their public service, lists through the views they
+   publish ([ADR 0022](docs/adr/0022-module-boundaries-in-sql.md)); never their tables.
+5. **Web app**: `SearchCombobox` to choose records on a line, quantities with the decimals of their
+   unit (`lib/decimal.ts`), field errors of the API mapped to the line they belong to.
+
 ## Commits
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/), checked by a

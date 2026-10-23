@@ -5,6 +5,34 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [0.6.0] - Unreleased
+
+Phase 3: warehouse. Goods in and out of the warehouses of each company, from the database to the
+browser, with stock that is always the sum of its movements.
+
+### Added
+
+- Warehouses per company, with a code printed on documents, archived only when empty.
+- Stock documents with lines and a reason: opening stock, receipt from a supplier (with the
+  supplier's delivery note), return from a customer, issue for sale, internal use, loss, inventory
+  adjustment (by count) and transfer between warehouses. Numbered per company, series and year
+  without gaps (`CA-2026/0001`); never changed, corrected by one reversal.
+- Stock per item and warehouse, never below zero, also with simultaneous requests; stock at a date;
+  each item's history with the stock after every movement; reorder levels and the list of items
+  below reorder; a warehouse card on the overview.
+- Sending the same document twice records it once (the client chooses its id).
+- Quantities with the decimals of their unit of measure (pieces are whole).
+- Permissions `stock:read`, `stock:write` and `warehouses:manage`; the activity log shows warehouse
+  events.
+- Terminal command `verify-stock`; the demo seed adds warehouses, a few weeks of documents and
+  reorder levels to the Rossi demo tenant.
+- ADR 0021-0023; conventions B11, B32, B33, B34, B3 (views).
+
+### Changed
+
+- "Stock managed" no longer changes after an item is created.
+- `GET /registry/reference-data` lists units with their decimals.
+
 ## [0.5.0] - 2026-10-21
 
 Phase 2c: responsive interface. The app works on desktops, tablets and phones, each with its own

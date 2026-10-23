@@ -207,7 +207,7 @@ flowchart TB
         auth[auth<br/>sign-in · sessions · guards]
         audit[audit<br/>security and tenant events]
         registry[registry<br/>parties · items · catalogs]
-        warehouse[warehouse]
+        warehouse[warehouse<br/>warehouses · documents · stock]
         orders[orders]
         invoicing[invoicing]
         shared[shared<br/>errors · text · decimals · Italian identifiers]
@@ -219,17 +219,19 @@ flowchart TB
     auth -- public services --> tenancy
     auth -- public service --> audit
     registry -- public service --> audit
+    warehouse -- public service, views --> registry
+    warehouse -- public service --> audit
     orders -- public service --> registry
     orders -- public service --> warehouse
     orders -. OrderFulfilledEvent .-> invoicing
     invoicing -- public service --> registry
 
     classDef planned stroke-dasharray: 5 5
-    class warehouse,orders,invoicing planned
+    class orders,invoicing planned
 ```
 
 Dashed boxes are planned (see the roadmap in the [README](../README.md#roadmap)). Today the API has
-the modules `tenancy`, `identity`, `auth`, `audit` and `registry` (in `src/modules/`), `health`, the
+the modules `tenancy`, `identity`, `auth`, `audit`, `registry` and `warehouse` (in `src/modules/`), `health`, the
 technical modules `config`, `prisma` and `web`, and the terminal commands in `src/cli/`.
 
 Each module can be sold on its own: the catalog in `tenancy` lists modules and their requirements,
@@ -240,7 +242,9 @@ Rules that keep the modules independent:
 
 - A module exposes a **public service** or emits **domain events**; everything else is internal.
 - A module owns its tables (and its Prisma file, `prisma/schema/<module>.prisma`). No module
-  queries another module's tables.
+  queries another module's tables; it may join the read-only views another module publishes
+  (`registry_item_refs`, `registry_party_refs`), and a test checks hand-written SQL for crossings
+  ([ADR 0022](adr/0022-module-boundaries-in-sql.md)).
 - Other modules import only from a module's `index.ts`; `pnpm check:boundaries` enforces it in CI.
 - Inside a module: controller (HTTP) → service (use cases, transactions) → repository (data access).
 
@@ -277,6 +281,35 @@ sets the pattern the next ones follow for anything people search, open and edit.
 The catalogs (VAT codes with their natures, units of measure, legal forms) are constants in the
 module, served by `GET /registry/reference-data`. Terminal commands (the demo seed) go through
 `RegistryService`, the module's public service, with the same rules as the API.
+
+## Warehouse: documents and computed stock
+
+The warehouse ([ADR 0021](adr/0021-warehouse-documents-and-computed-stock.md)) is the first module
+that works on **one company**: every route needs `X-Company-Id`, and composite foreign keys keep a
+document, its warehouses and its movements in that company. Stock moves only through **documents**
+(receipt, issue, inventory adjustment, transfer), which are never changed: a mistake is corrected by
+reversing the document once.
+
+Recording a document is one transaction, in a fixed order:
+
+```mermaid
+sequenceDiagram
+    participant API as StockDocumentsService
+    participant DB as PostgreSQL
+    API->>DB: lock the warehouses (FOR SHARE: no archiving meanwhile)
+    API->>DB: check items and party (RegistryService, same transaction)
+    API->>DB: create missing balances at zero, lock them FOR UPDATE by warehouse, then item
+    Note over API: compute the movements (an adjustment: counted − stock)<br/>refuse if a balance would go below zero (409 STOCK_INSUFFICIENT)
+    API->>DB: next number of the series (counter row, ON CONFLICT DO UPDATE)
+    API->>DB: insert the document and its movements
+    API->>DB: update the balances, record the audit event
+```
+
+`stock_balances` is the current stock, a projection of the movements kept in that transaction and
+protected by `CHECK (quantity >= 0)`; stock at a date and an item's history are sums over
+`stock_movements`. `pnpm cli verify-stock` reports any balance that differs from its movements. The
+client chooses the id of a new document, so sending it twice records it once
+([ADR 0023](adr/0023-client-chosen-document-ids.md)).
 
 ## Request lifecycle
 
