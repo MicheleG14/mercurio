@@ -3,30 +3,37 @@ import { Prisma } from '../../generated/prisma/client.js';
 import type { DbClient } from '../../prisma/index.js';
 import type { StockKey } from './stock-rules.js';
 
-const withLinks = {
-  warehouse: { select: { code: true } },
-  targetWarehouse: { select: { code: true } },
-  reverses: { select: { id: true, series: true, year: true, number: true, reason: true } },
-  reversedBy: { select: { id: true, series: true, year: true, number: true } },
-  _count: { select: { movements: true } },
-} satisfies Prisma.StockDocumentInclude;
+type Link = { id: string; series: string; year: number; number: number };
 
-export type DocumentRow = Prisma.StockDocumentGetPayload<{ include: typeof withLinks }>;
+/** A document with what its screens show of the rows around it. */
+export type DocumentRow = Prisma.StockDocumentGetPayload<object> & {
+  warehouse: { code: string };
+  targetWarehouse: { code: string } | null;
+  reverses: (Link & { reason: Prisma.StockDocumentGetPayload<object>['reason'] }) | null;
+  reversedBy: Link | null;
+  _count: { movements: number };
+};
+
+const LINK = { id: true, series: true, year: true, number: true } as const;
 
 /**
  * The only code that touches documents, movements, balances and counters. The locking queries are
  * SQL written by hand: Prisma cannot express SELECT ... FOR UPDATE or ON CONFLICT ... RETURNING.
  * They join only this module's tables (docs/adr/0022; checked by a test).
+ * Queries run one after the other: inside a transaction they share one connection, and Prisma's
+ * `include` would send its queries for relations at the same time on it.
  */
 @Injectable()
 export class StockDocumentsRepository {
-  findById(db: DbClient, companyId: string, id: string) {
-    return db.stockDocument.findFirst({ where: { id, companyId }, include: withLinks });
+  async findById(db: DbClient, companyId: string, id: string): Promise<DocumentRow | null> {
+    const document = await db.stockDocument.findFirst({ where: { id, companyId } });
+    return document ? ((await this.withLinks(db, [document]))[0] ?? null) : null;
   }
 
   /** Any document with this id, in any company of the tenant: ids are unique in the table. */
-  findAnyById(db: DbClient, id: string) {
-    return db.stockDocument.findUnique({ where: { id }, include: withLinks });
+  async findAnyById(db: DbClient, id: string): Promise<DocumentRow | null> {
+    const document = await db.stockDocument.findUnique({ where: { id } });
+    return document ? ((await this.withLinks(db, [document]))[0] ?? null) : null;
   }
 
   movementsOf(db: DbClient, documentId: string) {
@@ -42,11 +49,58 @@ export class StockDocumentsRepository {
     orderBy: Prisma.StockDocumentOrderByWithRelationInput[],
     page: { skip: number; take: number },
   ) {
-    const [items, total] = await Promise.all([
-      db.stockDocument.findMany({ where, orderBy, include: withLinks, ...page }),
-      db.stockDocument.count({ where }),
-    ]);
-    return { items, total };
+    const documents = await db.stockDocument.findMany({ where, orderBy, ...page });
+    const total = await db.stockDocument.count({ where });
+    return { items: await this.withLinks(db, documents), total };
+  }
+
+  /** Warehouse codes, reversal links and movement counts of a page of documents, in batches. */
+  private async withLinks(
+    db: DbClient,
+    documents: Prisma.StockDocumentGetPayload<object>[],
+  ): Promise<DocumentRow[]> {
+    if (documents.length === 0) return [];
+    const ids = documents.map((d) => d.id);
+    const warehouseIds = [
+      ...new Set(documents.flatMap((d) => [d.warehouseId, d.targetWarehouseId ?? d.warehouseId])),
+    ];
+    const reversedIds = documents.map((d) => d.reversesId).filter((r): r is string => r !== null);
+    const warehouses = await db.warehouse.findMany({
+      where: { id: { in: warehouseIds } },
+      select: { id: true, code: true },
+    });
+    const reverses = await db.stockDocument.findMany({
+      where: { id: { in: reversedIds } },
+      select: { ...LINK, reason: true },
+    });
+    const reversals = await db.stockDocument.findMany({
+      where: { reversesId: { in: ids } },
+      select: { ...LINK, reversesId: true },
+    });
+    const counts = await db.stockMovement.groupBy({
+      by: ['documentId'],
+      where: { documentId: { in: ids } },
+      _count: true,
+    });
+    const code = new Map(warehouses.map((w) => [w.id, { code: w.code }]));
+    return documents.map((d) => {
+      const reversal = reversals.find((r) => r.reversesId === d.id);
+      return {
+        ...d,
+        warehouse: code.get(d.warehouseId)!,
+        targetWarehouse: d.targetWarehouseId ? (code.get(d.targetWarehouseId) ?? null) : null,
+        reverses: reverses.find((r) => r.id === d.reversesId) ?? null,
+        reversedBy: reversal
+          ? {
+              id: reversal.id,
+              series: reversal.series,
+              year: reversal.year,
+              number: reversal.number,
+            }
+          : null,
+        _count: { movements: counts.find((c) => c.documentId === d.id)?._count ?? 0 },
+      };
+    });
   }
 
   /**
