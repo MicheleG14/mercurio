@@ -12,5 +12,11 @@
     "warehouse": "Magazzino",
     "orders": "Ordini",
     "invoicing": "Fatturazione"
+  },
+  "warehouse": {
+    "title": "Magazzino",
+    "belowReorder": "Articoli sotto scorta",
+    "documentsToday": "Documenti di oggi",
+    "open": "Vedi le giacenze"
   }
 }

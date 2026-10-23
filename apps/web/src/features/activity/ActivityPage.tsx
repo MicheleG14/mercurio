@@ -23,10 +23,22 @@ const TYPES = [
   'ITEM_UPDATED',
   'ITEM_ARCHIVED',
   'ITEM_RESTORED',
+  'WAREHOUSE_CREATED',
+  'WAREHOUSE_UPDATED',
+  'WAREHOUSE_ARCHIVED',
+  'WAREHOUSE_RESTORED',
+  'STOCK_DOCUMENT_POSTED',
+  'STOCK_DOCUMENT_REVERSED',
+  'REORDER_LEVEL_SET',
+  'REORDER_LEVEL_REMOVED',
 ] as const;
 
 /** Records an event can be about, and where they open. */
-const SUBJECT_PATHS: Record<string, string> = { party: '/parties', item: '/items' };
+const SUBJECT_PATHS: Record<string, string> = {
+  party: '/parties',
+  item: '/items',
+  stock_document: '/stock/documents',
+};
 
 /** The audit log of the current customer, for administrators (permission audit:read). */
 export function ActivityPage() {
@@ -99,16 +111,24 @@ export function ActivityPage() {
             card: 'detail',
             cell: (row) => {
               const path = row.subjectId && SUBJECT_PATHS[row.subjectType ?? ''];
-              const fields = (row.details as { fields?: unknown } | null)?.fields;
+              const details = row.details as { fields?: unknown; reference?: unknown } | null;
+              const fields = details?.fields;
+              // A stock document is named by its number, as people know it.
+              const name =
+                typeof details?.reference === 'string'
+                  ? details.reference
+                  : t(`subjectType.${row.subjectType as 'party'}`);
               return (
                 <span className="flex flex-col">
-                  {path && (
+                  {path ? (
                     <Link
                       className="underline-offset-4 hover:underline"
                       to={`${path}/${row.subjectId}`}
                     >
-                      {t(`subjectType.${row.subjectType as 'party'}`)}
+                      {name}
                     </Link>
+                  ) : (
+                    row.subjectType && <span>{name}</span>
                   )}
                   {Array.isArray(fields) && (
                     <span className="text-muted-foreground text-xs">

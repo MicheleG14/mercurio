@@ -1,0 +1,196 @@
+{
+  "reason": {
+    "OPENING": "Giacenza iniziale",
+    "PURCHASE_RECEIPT": "Carico da fornitore",
+    "CUSTOMER_RETURN": "Reso da cliente",
+    "SALE_ISSUE": "Scarico per vendita",
+    "INTERNAL_USE": "Consumo interno",
+    "LOSS": "Rottura o smarrimento",
+    "INVENTORY_ADJUSTMENT": "Rettifica inventariale",
+    "TRANSFER": "Trasferimento",
+    "REVERSAL": "Storno"
+  },
+  "type": {
+    "receipt": "Carico",
+    "issue": "Scarico",
+    "adjustment": "Rettifica",
+    "transfer": "Trasferimento"
+  },
+  "newType": {
+    "receipt": "Nuovo carico",
+    "issue": "Nuovo scarico",
+    "adjustment": "Nuova rettifica",
+    "transfer": "Nuovo trasferimento"
+  },
+  "common": {
+    "allWarehouses": "Tutti i magazzini",
+    "warehouse": "Magazzino",
+    "below": "Sotto scorta",
+    "itemArchived": "Articolo archiviato",
+    "noWarehouses": "Questa azienda non ha ancora magazzini.",
+    "createWarehouse": "Crea il primo magazzino",
+    "askAdmin": "Chiedi a un amministratore di crearne uno."
+  },
+  "stock": {
+    "title": "Giacenze",
+    "description": "Quanto c'è in magazzino, calcolato dai movimenti.",
+    "search": "Cerca per codice o descrizione",
+    "showZero": "Mostra a zero",
+    "asOf": "Giacenza al",
+    "asOfHint": "Alla data scelta: somma dei movimenti fino a quel giorno, senza soglie.",
+    "empty": "Nessun articolo in giacenza.",
+    "columns": {
+      "code": "Codice",
+      "description": "Descrizione",
+      "quantity": "Giacenza",
+      "reorderPoint": "Soglia",
+      "state": "Stato"
+    }
+  },
+  "below": {
+    "title": "Sotto scorta",
+    "description": "Articoli con giacenza pari o inferiore al punto di riordino: da riordinare.",
+    "empty": "Nessun articolo sotto scorta.",
+    "reorderQuantity": "Da riordinare"
+  },
+  "item": {
+    "byWarehouse": "Giacenza per magazzino",
+    "total": "Totale dell'azienda",
+    "history": "Movimenti",
+    "historyEmpty": "Nessun movimento.",
+    "openRegistry": "Scheda anagrafica",
+    "notStockManaged": "Questo articolo è un servizio: non ha giacenza.",
+    "columns": {
+      "warehouse": "Magazzino",
+      "quantity": "Giacenza",
+      "reorderPoint": "Punto di riordino",
+      "reorderQuantity": "Quantità da riordinare",
+      "date": "Data",
+      "document": "Documento",
+      "reason": "Causale",
+      "movement": "Movimento",
+      "balance": "Giacenza dopo"
+    },
+    "reorder": {
+      "title": "Soglia di riordino in {{warehouse}}",
+      "point": "Punto di riordino",
+      "quantity": "Quantità da riordinare",
+      "hint": "Sotto scorta quando la giacenza scende al punto di riordino o sotto.",
+      "set": "Imposta la soglia",
+      "edit": "Modifica la soglia",
+      "remove": "Togli la soglia",
+      "none": "Nessuna soglia"
+    }
+  },
+  "documents": {
+    "title": "Movimenti",
+    "description": "I documenti di magazzino dell'azienda: non si modificano, si stornano.",
+    "search": "Cerca per numero o DDT del fornitore",
+    "empty": "Nessun documento.",
+    "filter": {
+      "type": "Tipo",
+      "all": "Tutti",
+      "from": "Dal",
+      "to": "Al"
+    },
+    "columns": {
+      "reference": "Numero",
+      "date": "Data",
+      "reason": "Causale",
+      "warehouse": "Magazzino",
+      "party": "Soggetto",
+      "lines": "Righe"
+    },
+    "reversed": "Stornato",
+    "lineCount_one": "{{count}} riga",
+    "lineCount_other": "{{count}} righe"
+  },
+  "document": {
+    "title": "Documento {{reference}}",
+    "newTitle": {
+      "receipt": "Nuovo carico",
+      "issue": "Nuovo scarico",
+      "adjustment": "Nuova rettifica inventariale",
+      "transfer": "Nuovo trasferimento"
+    },
+    "section": {
+      "header": "Documento",
+      "party": "Fornitore o cliente",
+      "lines": "Righe",
+      "notes": "Note"
+    },
+    "fields": {
+      "reason": "Causale",
+      "date": "Data",
+      "warehouse": "Magazzino",
+      "source": "Da magazzino",
+      "target": "A magazzino",
+      "supplier": "Fornitore",
+      "customer": "Cliente",
+      "party": "Soggetto",
+      "partyDocumentRef": "Numero del DDT",
+      "partyDocumentDate": "Data del DDT",
+      "notes": "Note",
+      "createdBy": "Registrato da",
+      "createdAt": "Registrato il"
+    },
+    "hint": {
+      "date": "Oggi, o fino a 30 giorni fa.",
+      "partyDocumentRef": "Il documento di trasporto che accompagna la merce.",
+      "notes": "Obbligatorie per rotture e smarrimenti.",
+      "counted": "Inserisci quanto hai contato: la differenza con la giacenza diventa il movimento.",
+      "partyOptional": "Facoltativo."
+    },
+    "lines": {
+      "item": "Articolo",
+      "quantity": "Quantità",
+      "counted": "Contata",
+      "difference": "Differenza",
+      "stock": "In giacenza: {{quantity}}",
+      "add": "Aggiungi riga",
+      "remove": "Togli la riga {{n}}",
+      "line": "Riga {{n}}",
+      "searchItem": "Cerca un articolo",
+      "searchParty": "Cerca per nome o partita IVA",
+      "none": "Nessuno"
+    },
+    "post": "Registra",
+    "posting": "Registrazione…",
+    "immutable": "Un documento registrato non si modifica: per correggerlo si storna e se ne registra uno nuovo.",
+    "reverse": {
+      "action": "Storna",
+      "title": "Stornare {{reference}}?",
+      "description": "Verrà registrato un documento che riporta la merce com'era, con la data di oggi. Lo storno non si può annullare.",
+      "confirm": "Storna il documento"
+    },
+    "reversedBy": "Stornato da {{reference}}",
+    "reverses": "Storno di {{reference}}",
+    "reversedReason": "Causale stornata"
+  },
+  "warehouses": {
+    "title": "Magazzini",
+    "description": "I luoghi in cui l'azienda tiene la merce.",
+    "empty": "Nessun magazzino.",
+    "new": "Nuovo magazzino",
+    "newTitle": "Nuovo magazzino",
+    "renameTitle": "Rinomina {{code}}",
+    "rename": "Rinomina",
+    "showArchived": "Mostra archiviati",
+    "columns": {
+      "code": "Codice",
+      "name": "Nome"
+    },
+    "fields": {
+      "code": "Codice",
+      "name": "Nome"
+    },
+    "hint": {
+      "code": "Breve, compare sui documenti: non si cambia più."
+    },
+    "archiveTitle": "Archiviare {{name}}?",
+    "archiveDescription": "Si archivia solo un magazzino vuoto. Potrai ripristinarlo.",
+    "restoreTitle": "Ripristinare {{name}}?",
+    "restoreDescription": "Il magazzino tornerà utilizzabile nei documenti.",
+    "archived": "Archiviato"
+  }
+}

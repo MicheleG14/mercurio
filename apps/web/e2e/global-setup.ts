@@ -66,10 +66,38 @@ export default function globalSetup(): void {
     ...['--role', 'READ_ONLY', '--companies', 'all'],
   );
 
-  const code = /^ {2}([A-Za-z0-9_-]{43})$/m.exec(created)?.[1];
-  if (!code) throw new Error(`No activation code in the output of create-tenant:\n${created}`);
+  const code = activationCode(created);
+
+  // The warehouse, from the desktop and from a phone: one new tenant each, with its own
+  // administrator, so the two tests never spend the same one-time code.
+  const warehouseTenant = (key: string, vatFirst10: string) => {
+    const admin = `browser-${key}-${run}@example.com`;
+    const output = cli(
+      'create-tenant',
+      ...['--name', `Browser Magazzino ${key} ${run}`, '--slug', `browser-${key}-${run}`],
+      ...['--modules', 'registry,warehouse'],
+      ...['--company-name', `Magazzino ${key} Srl`, '--vat', vat(vatFirst10)],
+      ...['--admin-email', admin, '--admin-name', `Magazziniere ${key}`],
+    );
+    return { email: admin, code: activationCode(output) };
+  };
+
   writeFileSync(
     resolve(import.meta.dirname, '.state.json'),
-    JSON.stringify({ email, code, first: first.name, second: second.name }),
+    JSON.stringify({
+      email,
+      code,
+      first: first.name,
+      second: second.name,
+      warehouseDesktop: warehouseTenant('wd', '0612345678'),
+      warehousePhone: warehouseTenant('wp', '0723456789'),
+    }),
   );
+}
+
+/** The activation code printed by create-tenant (shown once, as to an operator). */
+function activationCode(output: string): string {
+  const code = /^ {2}([A-Za-z0-9_-]{43})$/m.exec(output)?.[1];
+  if (!code) throw new Error(`No activation code in the output of create-tenant:\n${output}`);
+  return code;
 }
