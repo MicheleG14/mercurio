@@ -10,11 +10,12 @@ export class WarehousesRepository {
     where: Prisma.WarehouseWhereInput,
     page: { skip: number; take: number },
   ) {
-    const [items, total] = await Promise.all([
-      db.warehouse.findMany({ where, orderBy: [{ code: 'asc' }, { id: 'asc' }], ...page }),
-      db.warehouse.count({ where }),
-    ]);
-    return { items, total };
+    const items = await db.warehouse.findMany({
+      where,
+      orderBy: [{ code: 'asc' }, { id: 'asc' }],
+      ...page,
+    });
+    return { items, total: await db.warehouse.count({ where }) };
   }
 
   findInCompany(db: DbClient, companyId: string, id: string) {

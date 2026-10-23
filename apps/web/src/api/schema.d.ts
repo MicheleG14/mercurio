@@ -4,2597 +4,2531 @@
  */
 
 export interface paths {
-  '/health': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HealthController_check"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations['HealthController_check'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/audit-events': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/audit-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AuditController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations['AuditController_list'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/activate': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Redeem an activation code and set the password */
+        post: operations["AuthController_activate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Redeem an activation code and set the password */
-    post: operations['AuthController_activate'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/mfa/enroll/start': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/mfa/enroll/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create the two-factor secret to show as a QR code */
+        post: operations["AuthController_enrollStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Create the two-factor secret to show as a QR code */
-    post: operations['AuthController_enrollStart'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/mfa/enroll/confirm': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/mfa/enroll/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm the two-factor setup with a code; signs the person in */
+        post: operations["AuthController_enrollConfirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Confirm the two-factor setup with a code; signs the person in */
-    post: operations['AuthController_enrollConfirm'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/login': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** First step of signing in: email and password */
+        post: operations["AuthController_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** First step of signing in: email and password */
-    post: operations['AuthController_login'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/mfa/verify': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/mfa/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Second step of signing in: a code or a recovery code */
+        post: operations["AuthController_verifyMfa"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Second step of signing in: a code or a recovery code */
-    post: operations['AuthController_verifyMfa'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/refresh': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Swap the refresh cookie for a new one and a new access token */
+        post: operations["AuthController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Swap the refresh cookie for a new one and a new access token */
-    post: operations['AuthController_refresh'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/tenant': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/tenant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Choose or change the tenant of the session */
+        post: operations["AuthController_selectTenant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Choose or change the tenant of the session */
-    post: operations['AuthController_selectTenant'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/logout': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close this session */
+        post: operations["AuthController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Close this session */
-    post: operations['AuthController_logout'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/logout-all': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/logout-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close every session of the person */
+        post: operations["AuthController_logoutAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Close every session of the person */
-    post: operations['AuthController_logoutAll'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/password': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change the password; the other sessions are closed */
+        post: operations["AuthController_changePassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Change the password; the other sessions are closed */
-    post: operations['AuthController_changePassword'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/recovery-codes': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replace the recovery codes (needs the password and a current code) */
+        post: operations["AuthController_regenerateRecoveryCodes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Replace the recovery codes (needs the password and a current code) */
-    post: operations['AuthController_regenerateRecoveryCodes'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/me': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Who is signed in, with permissions, modules and companies */
+        get: operations["AuthController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Who is signed in, with permissions, modules and companies */
-    get: operations['AuthController_me'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/events': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The latest security events of the signed-in person */
+        get: operations["AuthController_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** The latest security events of the signed-in person */
-    get: operations['AuthController_events'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/parties': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/parties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Customers and suppliers, searched, filtered and paginated */
+        get: operations["PartiesController_list"];
+        put?: never;
+        post: operations["PartiesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Customers and suppliers, searched, filtered and paginated */
-    get: operations['PartiesController_list'];
-    put?: never;
-    post: operations['PartiesController_create'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/parties/lookup': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/parties/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Parties, archived ones too, with a VAT number or a tax code */
+        get: operations["PartiesController_lookup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Parties, archived ones too, with a VAT number or a tax code */
-    get: operations['PartiesController_lookup'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/parties/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/parties/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PartiesController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change the fields sent; 409 EDIT_CONFLICT if the version is old */
+        patch: operations["PartiesController_update"];
+        trace?: never;
     };
-    get: operations['PartiesController_get'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Change the fields sent; 409 EDIT_CONFLICT if the version is old */
-    patch: operations['PartiesController_update'];
-    trace?: never;
-  };
-  '/parties/{id}/archive': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/parties/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PartiesController_archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations['PartiesController_archive'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/parties/{id}/restore': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/parties/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PartiesController_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations['PartiesController_restore'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/items': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Items, searched, filtered and paginated */
+        get: operations["ItemsController_list"];
+        put?: never;
+        post: operations["ItemsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Items, searched, filtered and paginated */
-    get: operations['ItemsController_list'];
-    put?: never;
-    post: operations['ItemsController_create'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/items/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ItemsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change the fields sent; 409 EDIT_CONFLICT if the version is old */
+        patch: operations["ItemsController_update"];
+        trace?: never;
     };
-    get: operations['ItemsController_get'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Change the fields sent; 409 EDIT_CONFLICT if the version is old */
-    patch: operations['ItemsController_update'];
-    trace?: never;
-  };
-  '/items/{id}/archive': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/items/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ItemsController_archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations['ItemsController_archive'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/items/{id}/restore': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/items/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ItemsController_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations['ItemsController_restore'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/registry/reference-data': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/registry/reference-data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** VAT codes, units of measure and legal forms */
+        get: operations["ReferenceDataController_referenceData"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** VAT codes, units of measure and legal forms */
-    get: operations['ReferenceDataController_referenceData'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/warehouses': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/warehouses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Warehouses of the company */
+        get: operations["WarehousesController_list"];
+        put?: never;
+        post: operations["WarehousesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Warehouses of the company */
-    get: operations['WarehousesController_list'];
-    put?: never;
-    post: operations['WarehousesController_create'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/warehouses/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/warehouses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WarehousesController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Rename; 409 EDIT_CONFLICT if the version is old */
+        patch: operations["WarehousesController_update"];
+        trace?: never;
     };
-    get: operations['WarehousesController_get'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Rename; 409 EDIT_CONFLICT if the version is old */
-    patch: operations['WarehousesController_update'];
-    trace?: never;
-  };
-  '/warehouses/{id}/archive': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/warehouses/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive an empty warehouse; 409 WAREHOUSE_NOT_EMPTY otherwise */
+        post: operations["WarehousesController_archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Archive an empty warehouse; 409 WAREHOUSE_NOT_EMPTY otherwise */
-    post: operations['WarehousesController_archive'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/warehouses/{id}/restore': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/warehouses/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WarehousesController_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations['WarehousesController_restore'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/stock': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stock per item, searched, filtered and paginated */
+        get: operations["StockController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Stock per item, searched, filtered and paginated */
-    get: operations['StockController_list'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/stock/summary': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stock/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Counters for the overview */
+        get: operations["StockController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Counters for the overview */
-    get: operations['StockController_summary'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/stock/items-search': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stock/items-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Items that can go on a document line (at most 20) */
+        get: operations["StockController_searchItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Items that can go on a document line (at most 20) */
-    get: operations['StockController_searchItems'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/stock/parties-search': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stock/parties-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Active suppliers or customers for a document (at most 20) */
+        get: operations["StockController_searchParties"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Active suppliers or customers for a document (at most 20) */
-    get: operations['StockController_searchParties'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/stock/items/{itemId}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stock/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stock and reorder levels of an item in each warehouse */
+        get: operations["StockController_item"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Stock and reorder levels of an item in each warehouse */
-    get: operations['StockController_item'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/stock/items/{itemId}/movements': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stock/items/{itemId}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Movements of an item, newest first, with the stock after each */
+        get: operations["StockController_movements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Movements of an item, newest first, with the stock after each */
-    get: operations['StockController_movements'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/stock/reorder-levels/{warehouseId}/{itemId}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stock/reorder-levels/{warehouseId}/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the reorder level; 409 EDIT_CONFLICT if the version is old */
+        put: operations["StockController_setReorderLevel"];
+        post?: never;
+        delete: operations["StockController_removeReorderLevel"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    /** Set the reorder level; 409 EDIT_CONFLICT if the version is old */
-    put: operations['StockController_setReorderLevel'];
-    post?: never;
-    delete: operations['StockController_removeReorderLevel'];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/stock-documents': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stock-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stock documents of the company, newest first by default */
+        get: operations["StockDocumentsController_list"];
+        put?: never;
+        /**
+         * Record a document; 409 STOCK_INSUFFICIENT if stock would go below zero
+         * @description The same id with the same content answers 200 with the document already recorded (B33).
+         */
+        post: operations["StockDocumentsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Stock documents of the company, newest first by default */
-    get: operations['StockDocumentsController_list'];
-    put?: never;
-    /**
-     * Record a document; 409 STOCK_INSUFFICIENT if stock would go below zero
-     * @description The same id with the same content answers 200 with the document already recorded (B33).
-     */
-    post: operations['StockDocumentsController_create'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/stock-documents/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stock-documents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StockDocumentsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations['StockDocumentsController_get'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/stock-documents/{id}/reverse': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stock-documents/{id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reverse a document; 409 ALREADY_REVERSED the second time */
+        post: operations["StockDocumentsController_reverse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Reverse a document; 409 ALREADY_REVERSED the second time */
-    post: operations['StockDocumentsController_reverse'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    HealthChecksDto: {
-      /** @enum {string} */
-      database: 'up' | 'down';
-      /**
-       * @description Down when the database role could bypass Row-Level Security
-       * @enum {string}
-       */
-      tenantIsolation: 'up' | 'down';
-    };
-    HealthResponseDto: {
-      /** @enum {string} */
-      status: 'ok' | 'degraded';
-      checks: components['schemas']['HealthChecksDto'];
-      /** @example 0.1.0 */
-      version: string;
-      /**
-       * @description Seconds since the process started
-       * @example 42
-       */
-      uptimeSeconds: number;
-      /** @example 2026-10-19T15:00:00.000Z */
-      timestamp: string;
-    };
-    AuditActorDto: {
-      name: string;
-      email: string;
-    };
-    AuditEventDto: {
-      id: string;
-      /** @example 2026-10-20T15:00:00.000Z */
-      at: string;
-      /** @example MEMBER_ADDED */
-      type: string;
-      /** @enum {string} */
-      source: 'API' | 'CLI';
-      /** @description Empty for the terminal operator */
-      actor: components['schemas']['AuditActorDto'] | null;
-      subjectType?: string | null;
-      subjectId?: string | null;
-      /** @description Small structured facts about the event, never secrets */
-      details?: {
-        [key: string]: unknown;
-      } | null;
-    };
-    AuditEventPageDto: {
-      items: components['schemas']['AuditEventDto'][];
-      total: number;
-      page: number;
-      pageSize: number;
-    };
-    ActivateDto: {
-      /** @description The one-time activation code received from the administrator */
-      code: string;
-      /** @description The new password, 12 to 128 characters */
-      password: string;
-    };
-    ActivateResponseDto: {
-      enrollToken: string;
-    };
-    EnrollStartDto: {
-      /** @description The enrollment token returned by the activation */
-      enrollToken: string;
-    };
-    EnrollStartResponseDto: {
-      /** @description The secret in base32, for typing into an app by hand */
-      secret: string;
-      /** @description The otpauth:// address to show as a QR code */
-      uri: string;
-    };
-    EnrollConfirmDto: {
-      /** @description The enrollment token returned by the activation */
-      enrollToken: string;
-      /**
-       * @description The six-digit code shown by the app
-       * @example 123456
-       */
-      code: string;
-    };
-    TenantChoiceDto: {
-      id: string;
-      name: string;
-      slug: string;
-      /** @enum {string} */
-      role: 'ADMIN' | 'WAREHOUSE_KEEPER' | 'ACCOUNTANT' | 'READ_ONLY';
-    };
-    EnrollConfirmResponseDto: {
-      /** @description Send as "Authorization: Bearer <token>" */
-      accessToken: string;
-      /** @description Seconds until the access token expires */
-      expiresIn: number;
-      /** @description The tenant of the session; empty until chosen */
-      tenantId: string | null;
-      /** @description Tenants the person can choose from */
-      tenants: components['schemas']['TenantChoiceDto'][];
-      /** @description Shown once: the person must save them */
-      recoveryCodes: string[];
-    };
-    LoginDto: {
-      /** @example mario@example.com */
-      email: string;
-      password: string;
-    };
-    LoginResponseDto: {
-      /**
-       * @description MFA_REQUIRED: send the challenge token with a code to /auth/mfa/verify. ENROLLMENT_REQUIRED: the two-factor setup was never finished; use the enrollment token.
-       * @enum {string}
-       */
-      status: 'MFA_REQUIRED' | 'ENROLLMENT_REQUIRED';
-      /** @description Challenge token or enrollment token, according to status */
-      token: string;
-    };
-    VerifyMfaDto: {
-      /** @description The challenge token returned by the login */
-      challengeToken: string;
-      /**
-       * @description A six-digit code, or a recovery code
-       * @example 123456
-       */
-      code: string;
-    };
-    SessionDto: {
-      /** @description Send as "Authorization: Bearer <token>" */
-      accessToken: string;
-      /** @description Seconds until the access token expires */
-      expiresIn: number;
-      /** @description The tenant of the session; empty until chosen */
-      tenantId: string | null;
-      /** @description Tenants the person can choose from */
-      tenants: components['schemas']['TenantChoiceDto'][];
-    };
-    SelectTenantDto: {
-      tenantId: string;
-    };
-    ChangePasswordDto: {
-      currentPassword: string;
-      newPassword: string;
-    };
-    RegenerateRecoveryCodesDto: {
-      password: string;
-      /**
-       * @description A current six-digit code
-       * @example 123456
-       */
-      code: string;
-    };
-    RecoveryCodesDto: {
-      recoveryCodes: string[];
-    };
-    MeUserDto: {
-      id: string;
-      email: string;
-      name: string;
-    };
-    MeTenantDto: {
-      id: string;
-      name: string;
-      slug: string;
-    };
-    MeCompanyDto: {
-      id: string;
-      legalName: string;
-      vatNumber: string;
-    };
-    MeDto: {
-      user: components['schemas']['MeUserDto'];
-      tenant: components['schemas']['MeTenantDto'] | null;
-      role?: string | null;
-      /**
-       * @example [
-       *       "parties:read"
-       *     ]
-       */
-      permissions: string[];
-      /**
-       * @example [
-       *       "registry",
-       *       "warehouse"
-       *     ]
-       */
-      modules: string[];
-      /** @description Companies the person can work on */
-      companies: components['schemas']['MeCompanyDto'][];
-      /** @description Every tenant the person can switch to */
-      tenants: components['schemas']['TenantChoiceDto'][];
-    };
-    AuthEventDto: {
-      id: string;
-      at: string;
-      /** @example LOGIN_SUCCEEDED */
-      type: string;
-      ip?: string | null;
-      userAgent?: string | null;
-    };
-    AuthEventPageDto: {
-      items: components['schemas']['AuthEventDto'][];
-      total: number;
-      page: number;
-      pageSize: number;
-    };
-    /** @enum {string} */
-    PartyKind: 'PRIVATE' | 'SOLE_TRADER' | 'COMPANY' | 'ORGANIZATION';
-    PartySummaryDto: {
-      id: string;
-      kind: components['schemas']['PartyKind'];
-      isCustomer: boolean;
-      isSupplier: boolean;
-      /** @description Legal name, or "Last First" for people */
-      name: string;
-      vatNumber: string | null;
-      taxCode: string | null;
-      /** @example IT */
-      country: string;
-      city: string | null;
-      province: string | null;
-      version: number;
-      archivedAt: string | null;
-      createdAt: string;
-    };
-    PartyPageDto: {
-      items: components['schemas']['PartySummaryDto'][];
-      total: number;
-      page: number;
-      pageSize: number;
-    };
-    PartyMatchDto: {
-      id: string;
-      name: string;
-      vatNumber: string | null;
-      taxCode: string | null;
-      archivedAt: string | null;
-    };
-    PartyLookupDto: {
-      items: components['schemas']['PartyMatchDto'][];
-    };
-    PartyDto: {
-      id: string;
-      kind: components['schemas']['PartyKind'];
-      isCustomer: boolean;
-      isSupplier: boolean;
-      /** @description Legal name, or "Last First" for people */
-      name: string;
-      legalName: string | null;
-      firstName: string | null;
-      lastName: string | null;
-      legalForm: string | null;
-      vatNumber: string | null;
-      taxCode: string | null;
-      /** @example IT */
-      country: string;
-      address: string | null;
-      postalCode: string | null;
-      city: string | null;
-      province: string | null;
-      email: string | null;
-      phone: string | null;
-      pecEmail: string | null;
-      sdiCode: string | null;
-      notes: string | null;
-      version: number;
-      archivedAt: string | null;
-      createdAt: string;
-      updatedAt: string;
-    };
-    CreatePartyDto: {
-      kind: components['schemas']['PartyKind'];
-      isCustomer: boolean;
-      isSupplier: boolean;
-      /** @example Ferramenta Bruni Srl */
-      legalName?: string | null;
-      /** @example Mario */
-      firstName?: string | null;
-      /** @example Rossi */
-      lastName?: string | null;
-      /** @example SRL */
-      legalForm?: string | null;
-      /** @example 12345678903 */
-      vatNumber?: string | null;
-      taxCode?: string | null;
-      /** @example IT */
-      country?: string | null;
-      address?: string | null;
-      postalCode?: string | null;
-      city?: string | null;
-      /** @example MI */
-      province?: string | null;
-      email?: string | null;
-      phone?: string | null;
-      pecEmail?: string | null;
-      /** @example 0000000 */
-      sdiCode?: string | null;
-      notes?: string | null;
-    };
-    UpdatePartyDto: {
-      kind?: components['schemas']['PartyKind'];
-      isCustomer?: boolean;
-      isSupplier?: boolean;
-      /** @example Ferramenta Bruni Srl */
-      legalName?: string | null;
-      /** @example Mario */
-      firstName?: string | null;
-      /** @example Rossi */
-      lastName?: string | null;
-      /** @example SRL */
-      legalForm?: string | null;
-      /** @example 12345678903 */
-      vatNumber?: string | null;
-      taxCode?: string | null;
-      /** @example IT */
-      country?: string | null;
-      address?: string | null;
-      postalCode?: string | null;
-      city?: string | null;
-      /** @example MI */
-      province?: string | null;
-      email?: string | null;
-      phone?: string | null;
-      pecEmail?: string | null;
-      /** @example 0000000 */
-      sdiCode?: string | null;
-      notes?: string | null;
-      /** @example 1 */
-      version: number;
-    };
-    VersionDto: {
-      /** @example 1 */
-      version: number;
-    };
-    ItemDto: {
-      id: string;
-      code: string;
-      description: string;
-      unit: string;
-      vatCode: string;
-      /** @example 12.5000 */
-      salePrice: string | null;
-      stockManaged: boolean;
-      notes: string | null;
-      version: number;
-      archivedAt: string | null;
-      createdAt: string;
-      updatedAt: string;
-    };
-    ItemPageDto: {
-      items: components['schemas']['ItemDto'][];
-      total: number;
-      page: number;
-      pageSize: number;
-    };
-    CreateItemDto: {
-      /**
-       * @description 1-35 letters, digits and - . _ /
-       * @example VT-M6-20
-       */
-      code: string;
-      /** @example Vite a testa esagonale M6x20 */
-      description: string;
-      /**
-       * @description A unit of measure from the reference data
-       * @example PZ
-       */
-      unit: string;
-      /**
-       * @description A VAT code from the reference data
-       * @example 22
-       */
-      vatCode: string;
-      /**
-       * @description Decimal string with a dot, up to 4 decimals (B30)
-       * @example 12.5
-       */
-      salePrice?: string | null;
-      /**
-       * @description True for goods, false for services
-       * @default true
-       */
-      stockManaged: boolean;
-      notes?: string | null;
-    };
-    UpdateItemDto: {
-      /** @example Vite a testa esagonale M6x20 */
-      description?: string;
-      /**
-       * @description A unit of measure from the reference data
-       * @example PZ
-       */
-      unit?: string;
-      /**
-       * @description A VAT code from the reference data
-       * @example 22
-       */
-      vatCode?: string;
-      /**
-       * @description Decimal string with a dot, up to 4 decimals (B30)
-       * @example 12.5
-       */
-      salePrice?: string | null;
-      notes?: string | null;
-      /** @example 1 */
-      version: number;
-    };
-    VatCodeDto: {
-      /** @example 22 */
-      code: string;
-      /**
-       * @description Decimal string (B30)
-       * @example 22.00
-       */
-      rate: string;
-      /**
-       * @description Exemption nature of the e-invoice, for 0% codes
-       * @example N4
-       */
-      nature: string | null;
-    };
-    UnitDto: {
-      /** @example PZ */
-      code: string;
-      /**
-       * @description Decimals a quantity may have in this unit
-       * @example 0
-       */
-      decimals: number;
-    };
-    LegalFormDto: {
-      /** @example SRL */
-      code: string;
-      /** @enum {string|null} */
-      category: 'CAPITAL' | 'PARTNERSHIP' | 'COOPERATIVE' | 'CONSORTIUM' | null;
-    };
-    ReferenceDataDto: {
-      vatCodes: components['schemas']['VatCodeDto'][];
-      units: components['schemas']['UnitDto'][];
-      legalForms: components['schemas']['LegalFormDto'][];
-    };
-    WarehouseDto: {
-      id: string;
-      code: string;
-      name: string;
-      version: number;
-      archivedAt: string | null;
-      createdAt: string;
-      updatedAt: string;
-    };
-    WarehousePageDto: {
-      items: components['schemas']['WarehouseDto'][];
-      total: number;
-      page: number;
-      pageSize: number;
-    };
-    CreateWarehouseDto: {
-      /**
-       * @description 1-10 letters, digits and -; stored uppercase
-       * @example SEDE
-       */
-      code: string;
-      /** @example Magazzino della sede */
-      name: string;
-    };
-    UpdateWarehouseDto: {
-      /** @example 1 */
-      version: number;
-      /** @example Deposito Nord */
-      name: string;
-    };
-    StockRowDto: {
-      itemId: string;
-      itemCode: string;
-      itemDescription: string;
-      unit: string;
-      /** @description Decimals a quantity may have in this unit */
-      unitDecimals: number;
-      itemArchived: boolean;
-      /** @example 12.000 */
-      quantity: string;
-      reorderPoint: string | null;
-      reorderQuantity: string | null;
-      belowReorder: boolean;
-    };
-    StockPageDto: {
-      items: components['schemas']['StockRowDto'][];
-      total: number;
-      page: number;
-      pageSize: number;
-    };
-    StockSummaryDto: {
-      belowReorder: number;
-      documentsToday: number;
-    };
-    ItemOptionDto: {
-      id: string;
-      code: string;
-      description: string;
-      unit: string;
-      unitDecimals: number;
-      archived: boolean;
-      /** @description Stock in the warehouse asked for */
-      quantity: string | null;
-    };
-    PartyOptionDto: {
-      id: string;
-      name: string;
-      vatNumber: string | null;
-    };
-    ItemStockWarehouseDto: {
-      warehouseId: string;
-      warehouseCode: string;
-      warehouseName: string;
-      warehouseArchived: boolean;
-      quantity: string;
-      reorderPoint: string | null;
-      reorderQuantity: string | null;
-      /** @description Version of the reorder level (B29) */
-      reorderVersion: number | null;
-      belowReorder: boolean;
-    };
-    ItemStockDto: {
-      itemId: string;
-      itemCode: string;
-      itemDescription: string;
-      unit: string;
-      unitDecimals: number;
-      itemArchived: boolean;
-      stockManaged: boolean;
-      /** @description Sum over the warehouses of the company */
-      quantity: string;
-      warehouses: components['schemas']['ItemStockWarehouseDto'][];
-    };
-    MovementRowDto: {
-      id: string;
-      movementDate: string;
-      documentId: string;
-      /** @example CA-2026/0042 */
-      reference: string;
-      reason: string;
-      warehouseCode: string;
-      /** @description Signed: positive in, negative out */
-      quantity: string;
-      /** @description Stock after this movement (in the warehouse filtered on, or the company) */
-      balance: string;
-    };
-    MovementPageDto: {
-      items: components['schemas']['MovementRowDto'][];
-      total: number;
-      page: number;
-      pageSize: number;
-    };
-    SetReorderLevelDto: {
-      /**
-       * @description Decimal string (B30), zero or more
-       * @example 10
-       */
-      reorderPoint: string;
-      /** @example 50 */
-      reorderQuantity?: string | null;
-      /** @description Absent to create the level, the version read to change it */
-      version?: number;
-    };
-    ReorderLevelDto: {
-      warehouseId: string;
-      itemId: string;
-      reorderPoint: string;
-      reorderQuantity: string | null;
-      version: number;
-    };
-    DocumentLinkDto: {
-      id: string;
-      /** @example CA-2026/0042 */
-      reference: string;
-    };
-    StockDocumentSummaryDto: {
-      id: string;
-      /** @example CA-2026/0042 */
-      reference: string;
-      /** @enum {string} */
-      reason:
-        | 'OPENING'
-        | 'PURCHASE_RECEIPT'
-        | 'CUSTOMER_RETURN'
-        | 'SALE_ISSUE'
-        | 'INTERNAL_USE'
-        | 'LOSS'
-        | 'INVENTORY_ADJUSTMENT'
-        | 'TRANSFER'
-        | 'REVERSAL';
-      /** @enum {string} */
-      type: 'receipt' | 'issue' | 'adjustment' | 'transfer';
-      /** @example 2026-10-23 */
-      documentDate: string;
-      warehouseId: string;
-      warehouseCode: string;
-      targetWarehouseId: string | null;
-      targetWarehouseCode: string | null;
-      partyId: string | null;
-      partyName: string | null;
-      partyDocumentRef: string | null;
-      lineCount: number;
-      reverses: components['schemas']['DocumentLinkDto'] | null;
-      reversedBy: components['schemas']['DocumentLinkDto'] | null;
-      createdAt: string;
-    };
-    StockDocumentPageDto: {
-      items: components['schemas']['StockDocumentSummaryDto'][];
-      total: number;
-      page: number;
-      pageSize: number;
-    };
-    StockLineDto: {
-      lineNo: number;
-      itemId: string;
-      itemCode: string;
-      itemDescription: string;
-      unit: string;
-      /**
-       * @description Amount moved, positive; for an adjustment the signed difference; for a reversal as in the document it reverses
-       * @example 5.000
-       */
-      quantity: string;
-      countedQuantity: string | null;
-    };
-    StockDocumentDto: {
-      id: string;
-      /** @example CA-2026/0042 */
-      reference: string;
-      /** @enum {string} */
-      reason:
-        | 'OPENING'
-        | 'PURCHASE_RECEIPT'
-        | 'CUSTOMER_RETURN'
-        | 'SALE_ISSUE'
-        | 'INTERNAL_USE'
-        | 'LOSS'
-        | 'INVENTORY_ADJUSTMENT'
-        | 'TRANSFER'
-        | 'REVERSAL';
-      /** @enum {string} */
-      type: 'receipt' | 'issue' | 'adjustment' | 'transfer';
-      /** @example 2026-10-23 */
-      documentDate: string;
-      warehouseId: string;
-      warehouseCode: string;
-      targetWarehouseId: string | null;
-      targetWarehouseCode: string | null;
-      partyId: string | null;
-      partyName: string | null;
-      partyDocumentRef: string | null;
-      lineCount: number;
-      reverses: components['schemas']['DocumentLinkDto'] | null;
-      reversedBy: components['schemas']['DocumentLinkDto'] | null;
-      createdAt: string;
-      partyDocumentDate: string | null;
-      notes: string | null;
-      /** @description Who recorded it */
-      createdByName: string | null;
-      /**
-       * @description For a reversal: the reason of the document it reverses
-       * @enum {string|null}
-       */
-      reversedReason:
-        | 'OPENING'
-        | 'PURCHASE_RECEIPT'
-        | 'CUSTOMER_RETURN'
-        | 'SALE_ISSUE'
-        | 'INTERNAL_USE'
-        | 'LOSS'
-        | 'INVENTORY_ADJUSTMENT'
-        | 'TRANSFER'
-        | null;
-      lines: components['schemas']['StockLineDto'][];
-    };
-    StockLineInputDto: {
-      itemId: string;
-      /**
-       * @description Positive decimal string (B30); the reason gives the sign. Not for adjustments
-       * @example 5
-       */
-      quantity?: string;
-      /**
-       * @description Inventory adjustments only: what was counted (zero or more)
-       * @example 12.5
-       */
-      countedQuantity?: string;
-    };
-    CreateStockDocumentDto: {
-      /** @description Chosen by the client (UUID v7) when it opens the form: sending it again does not record a second document (B33) */
-      id: string;
-      /** @enum {string} */
-      reason:
-        | 'OPENING'
-        | 'PURCHASE_RECEIPT'
-        | 'CUSTOMER_RETURN'
-        | 'SALE_ISSUE'
-        | 'INTERNAL_USE'
-        | 'LOSS'
-        | 'INVENTORY_ADJUSTMENT'
-        | 'TRANSFER';
-      /**
-       * @description Default today (Italian time)
-       * @example 2026-10-23
-       */
-      documentDate?: string;
-      warehouseId: string;
-      /** @description Transfers only */
-      targetWarehouseId?: string | null;
-      /** @description Supplier or customer */
-      partyId?: string | null;
-      /** @description Number of the supplier's delivery note (DDT) */
-      partyDocumentRef?: string | null;
-      /** @example 2026-10-22 */
-      partyDocumentDate?: string | null;
-      notes?: string | null;
-      lines: components['schemas']['StockLineInputDto'][];
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    schemas: {
+        HealthChecksDto: {
+            /** @enum {string} */
+            database: "up" | "down";
+            /**
+             * @description Down when the database role could bypass Row-Level Security
+             * @enum {string}
+             */
+            tenantIsolation: "up" | "down";
+        };
+        HealthResponseDto: {
+            /** @enum {string} */
+            status: "ok" | "degraded";
+            checks: components["schemas"]["HealthChecksDto"];
+            /** @example 0.1.0 */
+            version: string;
+            /**
+             * @description Seconds since the process started
+             * @example 42
+             */
+            uptimeSeconds: number;
+            /** @example 2026-10-19T15:00:00.000Z */
+            timestamp: string;
+        };
+        AuditActorDto: {
+            name: string;
+            email: string;
+        };
+        AuditEventDto: {
+            id: string;
+            /** @example 2026-10-20T15:00:00.000Z */
+            at: string;
+            /** @example MEMBER_ADDED */
+            type: string;
+            /** @enum {string} */
+            source: "API" | "CLI";
+            /** @description Empty for the terminal operator */
+            actor: components["schemas"]["AuditActorDto"] | null;
+            subjectType?: string | null;
+            subjectId?: string | null;
+            /** @description Small structured facts about the event, never secrets */
+            details?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        AuditEventPageDto: {
+            items: components["schemas"]["AuditEventDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        ActivateDto: {
+            /** @description The one-time activation code received from the administrator */
+            code: string;
+            /** @description The new password, 12 to 128 characters */
+            password: string;
+        };
+        ActivateResponseDto: {
+            enrollToken: string;
+        };
+        EnrollStartDto: {
+            /** @description The enrollment token returned by the activation */
+            enrollToken: string;
+        };
+        EnrollStartResponseDto: {
+            /** @description The secret in base32, for typing into an app by hand */
+            secret: string;
+            /** @description The otpauth:// address to show as a QR code */
+            uri: string;
+        };
+        EnrollConfirmDto: {
+            /** @description The enrollment token returned by the activation */
+            enrollToken: string;
+            /**
+             * @description The six-digit code shown by the app
+             * @example 123456
+             */
+            code: string;
+        };
+        TenantChoiceDto: {
+            id: string;
+            name: string;
+            slug: string;
+            /** @enum {string} */
+            role: "ADMIN" | "WAREHOUSE_KEEPER" | "ACCOUNTANT" | "READ_ONLY";
+        };
+        EnrollConfirmResponseDto: {
+            /** @description Send as "Authorization: Bearer <token>" */
+            accessToken: string;
+            /** @description Seconds until the access token expires */
+            expiresIn: number;
+            /** @description The tenant of the session; empty until chosen */
+            tenantId: string | null;
+            /** @description Tenants the person can choose from */
+            tenants: components["schemas"]["TenantChoiceDto"][];
+            /** @description Shown once: the person must save them */
+            recoveryCodes: string[];
+        };
+        LoginDto: {
+            /** @example mario@example.com */
+            email: string;
+            password: string;
+        };
+        LoginResponseDto: {
+            /**
+             * @description MFA_REQUIRED: send the challenge token with a code to /auth/mfa/verify. ENROLLMENT_REQUIRED: the two-factor setup was never finished; use the enrollment token.
+             * @enum {string}
+             */
+            status: "MFA_REQUIRED" | "ENROLLMENT_REQUIRED";
+            /** @description Challenge token or enrollment token, according to status */
+            token: string;
+        };
+        VerifyMfaDto: {
+            /** @description The challenge token returned by the login */
+            challengeToken: string;
+            /**
+             * @description A six-digit code, or a recovery code
+             * @example 123456
+             */
+            code: string;
+        };
+        SessionDto: {
+            /** @description Send as "Authorization: Bearer <token>" */
+            accessToken: string;
+            /** @description Seconds until the access token expires */
+            expiresIn: number;
+            /** @description The tenant of the session; empty until chosen */
+            tenantId: string | null;
+            /** @description Tenants the person can choose from */
+            tenants: components["schemas"]["TenantChoiceDto"][];
+        };
+        SelectTenantDto: {
+            tenantId: string;
+        };
+        ChangePasswordDto: {
+            currentPassword: string;
+            newPassword: string;
+        };
+        RegenerateRecoveryCodesDto: {
+            password: string;
+            /**
+             * @description A current six-digit code
+             * @example 123456
+             */
+            code: string;
+        };
+        RecoveryCodesDto: {
+            recoveryCodes: string[];
+        };
+        MeUserDto: {
+            id: string;
+            email: string;
+            name: string;
+        };
+        MeTenantDto: {
+            id: string;
+            name: string;
+            slug: string;
+        };
+        MeCompanyDto: {
+            id: string;
+            legalName: string;
+            vatNumber: string;
+        };
+        MeDto: {
+            user: components["schemas"]["MeUserDto"];
+            tenant: components["schemas"]["MeTenantDto"] | null;
+            role?: string | null;
+            /**
+             * @example [
+             *       "parties:read"
+             *     ]
+             */
+            permissions: string[];
+            /**
+             * @example [
+             *       "registry",
+             *       "warehouse"
+             *     ]
+             */
+            modules: string[];
+            /** @description Companies the person can work on */
+            companies: components["schemas"]["MeCompanyDto"][];
+            /** @description Every tenant the person can switch to */
+            tenants: components["schemas"]["TenantChoiceDto"][];
+        };
+        AuthEventDto: {
+            id: string;
+            at: string;
+            /** @example LOGIN_SUCCEEDED */
+            type: string;
+            ip?: string | null;
+            userAgent?: string | null;
+        };
+        AuthEventPageDto: {
+            items: components["schemas"]["AuthEventDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        /** @enum {string} */
+        PartyKind: "PRIVATE" | "SOLE_TRADER" | "COMPANY" | "ORGANIZATION";
+        PartySummaryDto: {
+            id: string;
+            kind: components["schemas"]["PartyKind"];
+            isCustomer: boolean;
+            isSupplier: boolean;
+            /** @description Legal name, or "Last First" for people */
+            name: string;
+            vatNumber: string | null;
+            taxCode: string | null;
+            /** @example IT */
+            country: string;
+            city: string | null;
+            province: string | null;
+            version: number;
+            archivedAt: string | null;
+            createdAt: string;
+        };
+        PartyPageDto: {
+            items: components["schemas"]["PartySummaryDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        PartyMatchDto: {
+            id: string;
+            name: string;
+            vatNumber: string | null;
+            taxCode: string | null;
+            archivedAt: string | null;
+        };
+        PartyLookupDto: {
+            items: components["schemas"]["PartyMatchDto"][];
+        };
+        PartyDto: {
+            id: string;
+            kind: components["schemas"]["PartyKind"];
+            isCustomer: boolean;
+            isSupplier: boolean;
+            /** @description Legal name, or "Last First" for people */
+            name: string;
+            legalName: string | null;
+            firstName: string | null;
+            lastName: string | null;
+            legalForm: string | null;
+            vatNumber: string | null;
+            taxCode: string | null;
+            /** @example IT */
+            country: string;
+            address: string | null;
+            postalCode: string | null;
+            city: string | null;
+            province: string | null;
+            email: string | null;
+            phone: string | null;
+            pecEmail: string | null;
+            sdiCode: string | null;
+            notes: string | null;
+            version: number;
+            archivedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
+        CreatePartyDto: {
+            kind: components["schemas"]["PartyKind"];
+            isCustomer: boolean;
+            isSupplier: boolean;
+            /** @example Ferramenta Bruni Srl */
+            legalName?: string | null;
+            /** @example Mario */
+            firstName?: string | null;
+            /** @example Rossi */
+            lastName?: string | null;
+            /** @example SRL */
+            legalForm?: string | null;
+            /** @example 12345678903 */
+            vatNumber?: string | null;
+            taxCode?: string | null;
+            /** @example IT */
+            country?: string | null;
+            address?: string | null;
+            postalCode?: string | null;
+            city?: string | null;
+            /** @example MI */
+            province?: string | null;
+            email?: string | null;
+            phone?: string | null;
+            pecEmail?: string | null;
+            /** @example 0000000 */
+            sdiCode?: string | null;
+            notes?: string | null;
+        };
+        UpdatePartyDto: {
+            kind?: components["schemas"]["PartyKind"];
+            isCustomer?: boolean;
+            isSupplier?: boolean;
+            /** @example Ferramenta Bruni Srl */
+            legalName?: string | null;
+            /** @example Mario */
+            firstName?: string | null;
+            /** @example Rossi */
+            lastName?: string | null;
+            /** @example SRL */
+            legalForm?: string | null;
+            /** @example 12345678903 */
+            vatNumber?: string | null;
+            taxCode?: string | null;
+            /** @example IT */
+            country?: string | null;
+            address?: string | null;
+            postalCode?: string | null;
+            city?: string | null;
+            /** @example MI */
+            province?: string | null;
+            email?: string | null;
+            phone?: string | null;
+            pecEmail?: string | null;
+            /** @example 0000000 */
+            sdiCode?: string | null;
+            notes?: string | null;
+            /** @example 1 */
+            version: number;
+        };
+        VersionDto: {
+            /** @example 1 */
+            version: number;
+        };
+        ItemDto: {
+            id: string;
+            code: string;
+            description: string;
+            unit: string;
+            vatCode: string;
+            /** @example 12.5000 */
+            salePrice: string | null;
+            stockManaged: boolean;
+            notes: string | null;
+            version: number;
+            archivedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
+        ItemPageDto: {
+            items: components["schemas"]["ItemDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CreateItemDto: {
+            /**
+             * @description 1-35 letters, digits and - . _ /
+             * @example VT-M6-20
+             */
+            code: string;
+            /** @example Vite a testa esagonale M6x20 */
+            description: string;
+            /**
+             * @description A unit of measure from the reference data
+             * @example PZ
+             */
+            unit: string;
+            /**
+             * @description A VAT code from the reference data
+             * @example 22
+             */
+            vatCode: string;
+            /**
+             * @description Decimal string with a dot, up to 4 decimals (B30)
+             * @example 12.5
+             */
+            salePrice?: string | null;
+            /**
+             * @description True for goods, false for services
+             * @default true
+             */
+            stockManaged: boolean;
+            notes?: string | null;
+        };
+        UpdateItemDto: {
+            /** @example Vite a testa esagonale M6x20 */
+            description?: string;
+            /**
+             * @description A unit of measure from the reference data
+             * @example PZ
+             */
+            unit?: string;
+            /**
+             * @description A VAT code from the reference data
+             * @example 22
+             */
+            vatCode?: string;
+            /**
+             * @description Decimal string with a dot, up to 4 decimals (B30)
+             * @example 12.5
+             */
+            salePrice?: string | null;
+            notes?: string | null;
+            /** @example 1 */
+            version: number;
+        };
+        VatCodeDto: {
+            /** @example 22 */
+            code: string;
+            /**
+             * @description Decimal string (B30)
+             * @example 22.00
+             */
+            rate: string;
+            /**
+             * @description Exemption nature of the e-invoice, for 0% codes
+             * @example N4
+             */
+            nature: string | null;
+        };
+        UnitDto: {
+            /** @example PZ */
+            code: string;
+            /**
+             * @description Decimals a quantity may have in this unit
+             * @example 0
+             */
+            decimals: number;
+        };
+        LegalFormDto: {
+            /** @example SRL */
+            code: string;
+            /** @enum {string|null} */
+            category: "CAPITAL" | "PARTNERSHIP" | "COOPERATIVE" | "CONSORTIUM" | null;
+        };
+        ReferenceDataDto: {
+            vatCodes: components["schemas"]["VatCodeDto"][];
+            units: components["schemas"]["UnitDto"][];
+            legalForms: components["schemas"]["LegalFormDto"][];
+        };
+        WarehouseDto: {
+            id: string;
+            code: string;
+            name: string;
+            version: number;
+            archivedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
+        WarehousePageDto: {
+            items: components["schemas"]["WarehouseDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CreateWarehouseDto: {
+            /**
+             * @description 1-10 letters, digits and -; stored uppercase
+             * @example SEDE
+             */
+            code: string;
+            /** @example Magazzino della sede */
+            name: string;
+        };
+        UpdateWarehouseDto: {
+            /** @example 1 */
+            version: number;
+            /** @example Deposito Nord */
+            name: string;
+        };
+        StockRowDto: {
+            itemId: string;
+            itemCode: string;
+            itemDescription: string;
+            unit: string;
+            /** @description Decimals a quantity may have in this unit */
+            unitDecimals: number;
+            itemArchived: boolean;
+            /** @example 12.000 */
+            quantity: string;
+            reorderPoint: string | null;
+            reorderQuantity: string | null;
+            belowReorder: boolean;
+        };
+        StockPageDto: {
+            items: components["schemas"]["StockRowDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        StockSummaryDto: {
+            belowReorder: number;
+            documentsToday: number;
+        };
+        ItemOptionDto: {
+            id: string;
+            code: string;
+            description: string;
+            unit: string;
+            unitDecimals: number;
+            archived: boolean;
+            /** @description Stock in the warehouse asked for */
+            quantity: string | null;
+        };
+        PartyOptionDto: {
+            id: string;
+            name: string;
+            vatNumber: string | null;
+        };
+        ItemStockWarehouseDto: {
+            warehouseId: string;
+            warehouseCode: string;
+            warehouseName: string;
+            warehouseArchived: boolean;
+            quantity: string;
+            reorderPoint: string | null;
+            reorderQuantity: string | null;
+            /** @description Version of the reorder level (B29) */
+            reorderVersion: number | null;
+            belowReorder: boolean;
+        };
+        ItemStockDto: {
+            itemId: string;
+            itemCode: string;
+            itemDescription: string;
+            unit: string;
+            unitDecimals: number;
+            itemArchived: boolean;
+            stockManaged: boolean;
+            /** @description Sum over the warehouses of the company */
+            quantity: string;
+            warehouses: components["schemas"]["ItemStockWarehouseDto"][];
+        };
+        MovementRowDto: {
+            id: string;
+            movementDate: string;
+            documentId: string;
+            /** @example CA-2026/0042 */
+            reference: string;
+            reason: string;
+            warehouseCode: string;
+            /** @description Signed: positive in, negative out */
+            quantity: string;
+            /** @description Stock after this movement (in the warehouse filtered on, or the company) */
+            balance: string;
+        };
+        MovementPageDto: {
+            items: components["schemas"]["MovementRowDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        SetReorderLevelDto: {
+            /**
+             * @description Decimal string (B30), zero or more
+             * @example 10
+             */
+            reorderPoint: string;
+            /** @example 50 */
+            reorderQuantity?: string | null;
+            /** @description Absent to create the level, the version read to change it */
+            version?: number;
+        };
+        ReorderLevelDto: {
+            warehouseId: string;
+            itemId: string;
+            reorderPoint: string;
+            reorderQuantity: string | null;
+            version: number;
+        };
+        DocumentLinkDto: {
+            id: string;
+            /** @example CA-2026/0042 */
+            reference: string;
+        };
+        StockDocumentSummaryDto: {
+            id: string;
+            /** @example CA-2026/0042 */
+            reference: string;
+            /** @enum {string} */
+            reason: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER" | "REVERSAL";
+            /** @enum {string} */
+            type: "receipt" | "issue" | "adjustment" | "transfer";
+            /** @example 2026-10-23 */
+            documentDate: string;
+            warehouseId: string;
+            warehouseCode: string;
+            targetWarehouseId: string | null;
+            targetWarehouseCode: string | null;
+            partyId: string | null;
+            partyName: string | null;
+            partyDocumentRef: string | null;
+            lineCount: number;
+            reverses: components["schemas"]["DocumentLinkDto"] | null;
+            reversedBy: components["schemas"]["DocumentLinkDto"] | null;
+            createdAt: string;
+        };
+        StockDocumentPageDto: {
+            items: components["schemas"]["StockDocumentSummaryDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        StockLineDto: {
+            lineNo: number;
+            itemId: string;
+            itemCode: string;
+            itemDescription: string;
+            unit: string;
+            /**
+             * @description Amount moved, positive; for an adjustment the signed difference; for a reversal as in the document it reverses
+             * @example 5.000
+             */
+            quantity: string;
+            countedQuantity: string | null;
+        };
+        StockDocumentDto: {
+            id: string;
+            /** @example CA-2026/0042 */
+            reference: string;
+            /** @enum {string} */
+            reason: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER" | "REVERSAL";
+            /** @enum {string} */
+            type: "receipt" | "issue" | "adjustment" | "transfer";
+            /** @example 2026-10-23 */
+            documentDate: string;
+            warehouseId: string;
+            warehouseCode: string;
+            targetWarehouseId: string | null;
+            targetWarehouseCode: string | null;
+            partyId: string | null;
+            partyName: string | null;
+            partyDocumentRef: string | null;
+            lineCount: number;
+            reverses: components["schemas"]["DocumentLinkDto"] | null;
+            reversedBy: components["schemas"]["DocumentLinkDto"] | null;
+            createdAt: string;
+            partyDocumentDate: string | null;
+            notes: string | null;
+            /** @description Who recorded it */
+            createdByName: string | null;
+            /**
+             * @description For a reversal: the reason of the document it reverses
+             * @enum {string|null}
+             */
+            reversedReason: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER" | null;
+            lines: components["schemas"]["StockLineDto"][];
+        };
+        StockLineInputDto: {
+            itemId: string;
+            /**
+             * @description Positive decimal string (B30); the reason gives the sign. Not for adjustments
+             * @example 5
+             */
+            quantity?: string;
+            /**
+             * @description Inventory adjustments only: what was counted (zero or more)
+             * @example 12.5
+             */
+            countedQuantity?: string;
+        };
+        CreateStockDocumentDto: {
+            /** @description Chosen by the client (UUID v7) when it opens the form: sending it again does not record a second document (B33) */
+            id: string;
+            /** @enum {string} */
+            reason: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER";
+            /**
+             * @description Default today (Italian time)
+             * @example 2026-10-23
+             */
+            documentDate?: string;
+            warehouseId: string;
+            /** @description Transfers only */
+            targetWarehouseId?: string | null;
+            /** @description Supplier or customer */
+            partyId?: string | null;
+            /** @description Number of the supplier's delivery note (DDT) */
+            partyDocumentRef?: string | null;
+            /** @example 2026-10-22 */
+            partyDocumentDate?: string | null;
+            notes?: string | null;
+            lines: components["schemas"]["StockLineInputDto"][];
+        };
+    };
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  HealthController_check: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description The API and its database are reachable */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HealthResponseDto'];
-        };
-      };
-      /** @description A dependency is down */
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HealthResponseDto'];
-        };
-      };
-    };
-  };
-  AuditController_list: {
-    parameters: {
-      query?: {
-        page?: number;
-        pageSize?: number;
-        sort?: string;
-        /** @description Text to search for */
-        q?: string;
-        type?:
-          | 'TENANT_SELECTED'
-          | 'TENANT_CREATED'
-          | 'MEMBER_ADDED'
-          | 'MEMBER_REMOVED'
-          | 'MODULES_CHANGED'
-          | 'COMPANY_ADDED'
-          | 'PARTY_CREATED'
-          | 'PARTY_UPDATED'
-          | 'PARTY_ARCHIVED'
-          | 'PARTY_RESTORED'
-          | 'ITEM_CREATED'
-          | 'ITEM_UPDATED'
-          | 'ITEM_ARCHIVED'
-          | 'ITEM_RESTORED'
-          | 'WAREHOUSE_CREATED'
-          | 'WAREHOUSE_UPDATED'
-          | 'WAREHOUSE_ARCHIVED'
-          | 'WAREHOUSE_RESTORED'
-          | 'STOCK_DOCUMENT_POSTED'
-          | 'STOCK_DOCUMENT_REVERSED'
-          | 'REORDER_LEVEL_SET'
-          | 'REORDER_LEVEL_REMOVED';
-        /** @description From this instant (ISO 8601), inclusive */
-        from?: string;
-        /** @description Until this instant (ISO 8601), exclusive */
-        to?: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Events of the current tenant */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['AuditEventPageDto'];
-        };
-      };
-    };
-  };
-  AuthController_activate: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ActivateDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ActivateResponseDto'];
-        };
-      };
-    };
-  };
-  AuthController_enrollStart: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['EnrollStartDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['EnrollStartResponseDto'];
-        };
-      };
-    };
-  };
-  AuthController_enrollConfirm: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['EnrollConfirmDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['EnrollConfirmResponseDto'];
-        };
-      };
-    };
-  };
-  AuthController_login: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['LoginDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['LoginResponseDto'];
-        };
-      };
-    };
-  };
-  AuthController_verifyMfa: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['VerifyMfaDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SessionDto'];
-        };
-      };
-    };
-  };
-  AuthController_refresh: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SessionDto'];
-        };
-      };
-    };
-  };
-  AuthController_selectTenant: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SelectTenantDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SessionDto'];
-        };
-      };
-    };
-  };
-  AuthController_logout: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  AuthController_logoutAll: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  AuthController_changePassword: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ChangePasswordDto'];
-      };
-    };
-    responses: {
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  AuthController_regenerateRecoveryCodes: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['RegenerateRecoveryCodesDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['RecoveryCodesDto'];
-        };
-      };
-    };
-  };
-  AuthController_me: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['MeDto'];
-        };
-      };
-    };
-  };
-  AuthController_events: {
-    parameters: {
-      query?: {
-        page?: number;
-        pageSize?: number;
-        sort?: string;
-        /** @description Text to search for */
-        q?: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['AuthEventPageDto'];
-        };
-      };
-    };
-  };
-  PartiesController_list: {
-    parameters: {
-      query?: {
-        page?: number;
-        pageSize?: number;
-        sort?: string;
-        /** @description Text to search for */
-        q?: string;
-        role?: 'customer' | 'supplier';
-        /** @description Archived parties instead of active ones */
-        archived?: boolean;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['PartyPageDto'];
-        };
-      };
-    };
-  };
-  PartiesController_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreatePartyDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['PartyDto'];
-        };
-      };
-    };
-  };
-  PartiesController_lookup: {
-    parameters: {
-      query?: {
-        vatNumber?: string;
-        taxCode?: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['PartyLookupDto'];
-        };
-      };
-    };
-  };
-  PartiesController_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['PartyDto'];
-        };
-      };
-    };
-  };
-  PartiesController_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdatePartyDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['PartyDto'];
-        };
-      };
-    };
-  };
-  PartiesController_archive: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['VersionDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['PartyDto'];
-        };
-      };
-    };
-  };
-  PartiesController_restore: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['VersionDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['PartyDto'];
-        };
-      };
-    };
-  };
-  ItemsController_list: {
-    parameters: {
-      query?: {
-        page?: number;
-        pageSize?: number;
-        sort?: string;
-        /** @description Text to search for */
-        q?: string;
-        /** @description Goods (true) or services (false) */
-        stockManaged?: boolean;
-        /** @description Archived items instead of active ones */
-        archived?: boolean;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ItemPageDto'];
-        };
-      };
-    };
-  };
-  ItemsController_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateItemDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ItemDto'];
-        };
-      };
-    };
-  };
-  ItemsController_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ItemDto'];
-        };
-      };
-    };
-  };
-  ItemsController_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateItemDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ItemDto'];
-        };
-      };
-    };
-  };
-  ItemsController_archive: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['VersionDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ItemDto'];
-        };
-      };
-    };
-  };
-  ItemsController_restore: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['VersionDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ItemDto'];
-        };
-      };
-    };
-  };
-  ReferenceDataController_referenceData: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ReferenceDataDto'];
-        };
-      };
-    };
-  };
-  WarehousesController_list: {
-    parameters: {
-      query?: {
-        page?: number;
-        pageSize?: number;
-        sort?: string;
-        /** @description Text to search for */
-        q?: string;
-        /** @description Archived warehouses instead of active ones */
-        archived?: boolean;
-      };
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['WarehousePageDto'];
-        };
-      };
-    };
-  };
-  WarehousesController_create: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateWarehouseDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['WarehouseDto'];
-        };
-      };
-    };
-  };
-  WarehousesController_get: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['WarehouseDto'];
-        };
-      };
-    };
-  };
-  WarehousesController_update: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateWarehouseDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['WarehouseDto'];
-        };
-      };
-    };
-  };
-  WarehousesController_archive: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['VersionDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['WarehouseDto'];
-        };
-      };
-    };
-  };
-  WarehousesController_restore: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['VersionDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['WarehouseDto'];
-        };
-      };
-    };
-  };
-  StockController_list: {
-    parameters: {
-      query?: {
-        page?: number;
-        pageSize?: number;
-        sort?: string;
-        /** @description Text to search for */
-        q?: string;
-        /** @description One warehouse; without it, the sum over the company */
-        warehouseId?: string;
-        /** @description Only items at or below their reorder point */
-        belowReorder?: boolean;
-        /** @description Also items that have moved but are at zero */
-        includeZero?: boolean;
-        /** @description Stock at the end of that day, from the movements (no reorder levels then) */
-        asOf?: string;
-      };
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['StockPageDto'];
-        };
-      };
-    };
-  };
-  StockController_summary: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['StockSummaryDto'];
-        };
-      };
-    };
-  };
-  StockController_searchItems: {
-    parameters: {
-      query?: {
-        q?: string;
-        /** @description Show the stock in this warehouse */
-        warehouseId?: string;
-      };
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ItemOptionDto'][];
-        };
-      };
-    };
-  };
-  StockController_searchParties: {
-    parameters: {
-      query: {
-        q?: string;
-        role: 'supplier' | 'customer';
-      };
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['PartyOptionDto'][];
-        };
-      };
-    };
-  };
-  StockController_item: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path: {
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ItemStockDto'];
-        };
-      };
-    };
-  };
-  StockController_movements: {
-    parameters: {
-      query?: {
-        page?: number;
-        pageSize?: number;
-        sort?: string;
-        /** @description Text to search for */
-        q?: string;
-        warehouseId?: string;
-        from?: string;
-        to?: string;
-      };
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path: {
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['MovementPageDto'];
-        };
-      };
-    };
-  };
-  StockController_setReorderLevel: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path: {
-        warehouseId: string;
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SetReorderLevelDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ReorderLevelDto'];
-        };
-      };
-    };
-  };
-  StockController_removeReorderLevel: {
-    parameters: {
-      query: {
-        version: number;
-      };
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path: {
-        warehouseId: string;
-        itemId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  StockDocumentsController_list: {
-    parameters: {
-      query?: {
-        page?: number;
-        pageSize?: number;
-        sort?: string;
-        /** @description Text to search for */
-        q?: string;
-        reason?:
-          | 'OPENING'
-          | 'PURCHASE_RECEIPT'
-          | 'CUSTOMER_RETURN'
-          | 'SALE_ISSUE'
-          | 'INTERNAL_USE'
-          | 'LOSS'
-          | 'INVENTORY_ADJUSTMENT'
-          | 'TRANSFER'
-          | 'REVERSAL';
-        /** @description Reversals included */
-        type?: 'receipt' | 'issue' | 'adjustment' | 'transfer';
-        /** @description Documents moving goods in or out of this warehouse */
-        warehouseId?: string;
-        partyId?: string;
-        from?: string;
-        to?: string;
-      };
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['StockDocumentPageDto'];
-        };
-      };
-    };
-  };
-  StockDocumentsController_create: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateStockDocumentDto'];
-      };
-    };
-    responses: {
-      /** @description Already recorded with this id */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['StockDocumentDto'];
-        };
-      };
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['StockDocumentDto'];
-        };
-      };
-    };
-  };
-  StockDocumentsController_get: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['StockDocumentDto'];
-        };
-      };
-    };
-  };
-  StockDocumentsController_reverse: {
-    parameters: {
-      query?: never;
-      header: {
-        /** @description The company to work on, one the person can reach */
-        'X-Company-Id': string;
-      };
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['StockDocumentDto'];
-        };
-      };
-    };
-  };
+    HealthController_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The API and its database are reachable */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthResponseDto"];
+                };
+            };
+            /** @description A dependency is down */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthResponseDto"];
+                };
+            };
+        };
+    };
+    AuditController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED" | "WAREHOUSE_CREATED" | "WAREHOUSE_UPDATED" | "WAREHOUSE_ARCHIVED" | "WAREHOUSE_RESTORED" | "STOCK_DOCUMENT_POSTED" | "STOCK_DOCUMENT_REVERSED" | "REORDER_LEVEL_SET" | "REORDER_LEVEL_REMOVED";
+                /** @description From this instant (ISO 8601), inclusive */
+                from?: string;
+                /** @description Until this instant (ISO 8601), exclusive */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Events of the current tenant */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventPageDto"];
+                };
+            };
+        };
+    };
+    AuthController_activate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivateResponseDto"];
+                };
+            };
+        };
+    };
+    AuthController_enrollStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollStartDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollStartResponseDto"];
+                };
+            };
+        };
+    };
+    AuthController_enrollConfirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollConfirmDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollConfirmResponseDto"];
+                };
+            };
+        };
+    };
+    AuthController_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponseDto"];
+                };
+            };
+        };
+    };
+    AuthController_verifyMfa: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyMfaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionDto"];
+                };
+            };
+        };
+    };
+    AuthController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionDto"];
+                };
+            };
+        };
+    };
+    AuthController_selectTenant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SelectTenantDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionDto"];
+                };
+            };
+        };
+    };
+    AuthController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_logoutAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_changePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_regenerateRecoveryCodes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegenerateRecoveryCodesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryCodesDto"];
+                };
+            };
+        };
+    };
+    AuthController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeDto"];
+                };
+            };
+        };
+    };
+    AuthController_events: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthEventPageDto"];
+                };
+            };
+        };
+    };
+    PartiesController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                role?: "customer" | "supplier";
+                /** @description Archived parties instead of active ones */
+                archived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyPageDto"];
+                };
+            };
+        };
+    };
+    PartiesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePartyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDto"];
+                };
+            };
+        };
+    };
+    PartiesController_lookup: {
+        parameters: {
+            query?: {
+                vatNumber?: string;
+                taxCode?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyLookupDto"];
+                };
+            };
+        };
+    };
+    PartiesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDto"];
+                };
+            };
+        };
+    };
+    PartiesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePartyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDto"];
+                };
+            };
+        };
+    };
+    PartiesController_archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDto"];
+                };
+            };
+        };
+    };
+    PartiesController_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDto"];
+                };
+            };
+        };
+    };
+    ItemsController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                /** @description Goods (true) or services (false) */
+                stockManaged?: boolean;
+                /** @description Archived items instead of active ones */
+                archived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemPageDto"];
+                };
+            };
+        };
+    };
+    ItemsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateItemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"];
+                };
+            };
+        };
+    };
+    ItemsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"];
+                };
+            };
+        };
+    };
+    ItemsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateItemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"];
+                };
+            };
+        };
+    };
+    ItemsController_archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"];
+                };
+            };
+        };
+    };
+    ItemsController_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"];
+                };
+            };
+        };
+    };
+    ReferenceDataController_referenceData: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceDataDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                /** @description Archived warehouses instead of active ones */
+                archived?: boolean;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehousePageDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWarehouseDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateWarehouseDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_archive: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseDto"];
+                };
+            };
+        };
+    };
+    WarehousesController_restore: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseDto"];
+                };
+            };
+        };
+    };
+    StockController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                /** @description One warehouse; without it, the sum over the company */
+                warehouseId?: string;
+                /** @description Only items at or below their reorder point */
+                belowReorder?: boolean;
+                /** @description Also items that have moved but are at zero */
+                includeZero?: boolean;
+                /** @description Stock at the end of that day, from the movements (no reorder levels then) */
+                asOf?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockPageDto"];
+                };
+            };
+        };
+    };
+    StockController_summary: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockSummaryDto"];
+                };
+            };
+        };
+    };
+    StockController_searchItems: {
+        parameters: {
+            query?: {
+                q?: string;
+                /** @description Show the stock in this warehouse */
+                warehouseId?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemOptionDto"][];
+                };
+            };
+        };
+    };
+    StockController_searchParties: {
+        parameters: {
+            query: {
+                q?: string;
+                role: "supplier" | "customer";
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyOptionDto"][];
+                };
+            };
+        };
+    };
+    StockController_item: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemStockDto"];
+                };
+            };
+        };
+    };
+    StockController_movements: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                warehouseId?: string;
+                from?: string;
+                to?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementPageDto"];
+                };
+            };
+        };
+    };
+    StockController_setReorderLevel: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                warehouseId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetReorderLevelDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReorderLevelDto"];
+                };
+            };
+        };
+    };
+    StockController_removeReorderLevel: {
+        parameters: {
+            query: {
+                version: number;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                warehouseId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StockDocumentsController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                reason?: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER" | "REVERSAL";
+                /** @description Reversals included */
+                type?: "receipt" | "issue" | "adjustment" | "transfer";
+                /** @description Documents moving goods in or out of this warehouse */
+                warehouseId?: string;
+                partyId?: string;
+                from?: string;
+                to?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockDocumentPageDto"];
+                };
+            };
+        };
+    };
+    StockDocumentsController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStockDocumentDto"];
+            };
+        };
+        responses: {
+            /** @description Already recorded with this id */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockDocumentDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockDocumentDto"];
+                };
+            };
+        };
+    };
+    StockDocumentsController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockDocumentDto"];
+                };
+            };
+        };
+    };
+    StockDocumentsController_reverse: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockDocumentDto"];
+                };
+            };
+        };
+    };
 }
