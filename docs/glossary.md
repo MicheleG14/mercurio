@@ -50,18 +50,26 @@ term; the interface uses the term of the selected language.
 
 ## Warehouse
 
-| Code (English)     | Italiano               | Meaning                                                              |
-| ------------------ | ---------------------- | -------------------------------------------------------------------- |
-| stock movement     | movimento di magazzino | A recorded change in quantity of an item; never edited or deleted    |
-| inbound movement   | carico                 | A movement that increases stock (e.g. goods receipt)                 |
-| outbound movement  | scarico                | A movement that decreases stock (e.g. shipment to a customer)        |
-| adjustment         | rettifica              | A movement that aligns recorded stock with a physical count          |
-| reversal           | storno                 | A movement that cancels a wrong one, instead of deleting it          |
-| stock level        | giacenza               | Quantity on hand, always computed as the sum of the movements        |
-| reserved quantity  | quantità impegnata     | Stock set aside for open sales orders                                |
-| available quantity | disponibilità          | Stock level minus reserved quantity                                  |
-| reorder threshold  | soglia di riordino     | Stock level below which an item is flagged for reordering            |
-| goods receipt      | ricevimento merce      | Recording goods delivered against a purchase order, possibly in part |
+| Code (English)       | Italiano               | Meaning                                                                                 |
+| -------------------- | ---------------------- | --------------------------------------------------------------------------------------- |
+| warehouse            | magazzino              | A place where a company keeps goods; it has a short code printed on documents           |
+| stock document       | documento di magazzino | A recorded move of goods with a reason and lines, numbered per series and year          |
+| reason               | causale                | Why goods move (receipt from a supplier, internal use, loss…): decides series and sign  |
+| stock movement       | movimento di magazzino | One line of a document in one warehouse, signed; never edited or deleted                |
+| receipt              | carico                 | A document that brings goods in (series `CA`), e.g. from a supplier                     |
+| goods receipt        | ricevimento merce      | A receipt from a supplier, with their delivery note; from phase 4 also against an order |
+| issue                | scarico                | A document that takes goods out (series `SC`)                                           |
+| inventory adjustment | rettifica inventariale | A count: the movement is the difference between what was counted and the stock          |
+| transfer             | trasferimento          | Goods moved between two warehouses of the same company (series `TR`)                    |
+| reversal             | storno                 | A document with the opposite movements of another one, which it corrects; once only     |
+| stock level          | giacenza               | Quantity on hand, always the sum of the movements                                       |
+| stock at a date      | giacenza alla data     | The sum of the movements up to the end of a given day                                   |
+| reorder point        | punto di riordino      | Stock at or below which an item is "below reorder"                                      |
+| reorder quantity     | quantità da riordinare | How much to order when an item is below reorder                                         |
+| below reorder        | sotto scorta           | At or below the reorder point                                                           |
+| delivery note        | documento di trasporto | DDT: the document that comes with goods; a receipt records the supplier's               |
+| reserved quantity    | quantità impegnata     | Stock set aside for open sales orders (phase 4)                                         |
+| available quantity   | disponibilità          | Stock level minus reserved quantity (phase 4)                                           |
 
 ## Orders
 

@@ -8,10 +8,13 @@
 A vertical ERP for warehouse and invoicing, built as a modular monolith with NestJS and React.
 Named after Mercury, the Roman god of commerce.
 
-> **Status: phase 2c.** People sign in with mandatory two-factor authentication and work on the
-> registry, from a desktop, a tablet or a phone: customers, suppliers and items, searched, edited, archived and restored, with Italian
-> tax checks, edit conflicts detected and every change in the activity log. Every phase ships a
-> complete vertical slice (database → API → UI) to production. See the [roadmap](#roadmap).
+> **Status: phase 3.** People sign in with mandatory two-factor authentication and work from a
+> desktop, a tablet or a phone on the registry (customers, suppliers and items, with Italian tax
+> checks) and on the warehouse: goods received from suppliers, issued, counted and moved between
+> warehouses through documents that are never changed, only reversed; stock computed from the
+> movements and never below zero, even with simultaneous requests; reorder levels. Every change is
+> in the activity log. Every phase ships a complete vertical slice (database → API → UI) to
+> production. See the [roadmap](#roadmap).
 
 ## What it will do
 
@@ -21,8 +24,10 @@ Named after Mercury, the Roman god of commerce.
 - **Registry**: customers and suppliers as one party with roles and four kinds (private person, sole
   trader, company, organization), Italian VAT number and tax code checks, items with codes that are
   never reused, VAT codes with the natures of the e-invoice.
-- **Warehouse**: stock movements, stock levels computed from movements (never edited by hand),
-  goods receipt, reorder thresholds.
+- **Warehouse**: warehouses per company; stock documents (receipt from a supplier, issue, inventory
+  count, transfer) numbered without gaps and corrected only by a reversal; stock computed from the
+  movements, never edited by hand and never below zero; stock at a date, item history, reorder
+  levels.
 - **Orders**: purchase and sales orders, partial fulfilment, stock reservation, safe concurrency.
 - **Invoicing**: invoices generated from fulfilled orders through domain events, gap-free numbering,
   immutable issued documents corrected only by credit notes, VAT summary per rate, PDF.
@@ -50,7 +55,11 @@ Named after Mercury, the Roman god of commerce.
 - **One origin**: the API serves the built web app, so there is no CORS and cookies stay simple.
 - **Tenant isolation**: shared database with Row-Level Security on every tenant table; the API runs
   as a role that cannot bypass it, and a test fails if a new table lacks protection.
-- **Module boundaries** are checked in CI: a module offers others only what its `index.ts` exports.
+- **Module boundaries** are checked in CI: a module offers others only what its `index.ts` exports,
+  and in SQL only the read-only views it publishes.
+- **Consistency under concurrency**: stock documents lock the rows they touch in a fixed order, so
+  two people taking out the last pieces at once cannot push stock below zero, and numbering has no
+  gaps; the client chooses a document's id, so a repeated request records it once.
 - **Closed by default**: every API route needs a signed-in person unless it is explicitly public;
   permissions come from roles and are checked on every request, together with the enabled modules
   and the company.
@@ -143,7 +152,7 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 | 1b    | Authentication: sign-in, TOTP two-factor, roles, audit log       | ✅     |
 | 2     | Registry: customers, suppliers, items                            | ✅     |
 | 2c    | Responsive interface: sidebar, layouts for tablet and phone      | ✅     |
-| 3     | Warehouse: movements, stock levels, goods receipt                |        |
+| 3     | Warehouse: movements, stock levels, goods receipt                | ✅     |
 | 4     | Orders: purchase and sales orders, reservations, concurrency     |        |
 | 5     | Invoicing: invoices, credit notes, due dates, PDF                |        |
 | 6     | Polish: dashboard, architecture decision records, seed data      |        |
@@ -156,6 +165,7 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 - Self-service sign-up, subscriptions and billing, one subdomain per customer: tenants are created
   with terminal commands ([ADR 0010](docs/adr/0010-identity-and-memberships.md)).
 - General ledger, production planning, purchase invoices.
+- Stock valuation (average cost, FIFO), lots, serial numbers, locations and barcodes.
 - Transmission to the Italian e-invoicing exchange (SdI); at most, generating the FatturaPA XML.
 
 ## License

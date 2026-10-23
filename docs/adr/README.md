@@ -26,6 +26,9 @@ a decision that changes gets a new record that supersedes the old one.
 | [0018](0018-registry-parties-and-items.md)              | Registry: parties with roles, items, archiving and versions               | Accepted |
 | [0019](0019-decimals-as-strings-in-json.md)             | Decimals travel as strings in JSON                                        | Accepted |
 | [0020](0020-responsive-shell.md)                        | Responsive shell: one menu, one layout per screen size, no service worker | Accepted |
+| [0021](0021-warehouse-documents-and-computed-stock.md)  | Warehouse: immutable stock documents, stock computed from movements       | Accepted |
+| [0022](0022-module-boundaries-in-sql.md)                | Module boundaries in SQL: published views                                 | Accepted |
+| [0023](0023-client-chosen-document-ids.md)              | Documents created once: the client chooses the id                         | Accepted |
 
 ## Template
 
