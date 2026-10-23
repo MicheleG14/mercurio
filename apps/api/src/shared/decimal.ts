@@ -16,6 +16,9 @@ export interface DecimalFormat {
 /** Unit prices: numeric(14,4) (B8). */
 export const PRICE: DecimalFormat = { integerDigits: 10, scale: 4 };
 
+/** Quantities: numeric(14,3) (B8). The unit of measure may allow fewer decimals. */
+export const QUANTITY: DecimalFormat = { integerDigits: 11, scale: 3 };
+
 /** Non-negative decimal written with a dot, no sign, no exponent, no thousands separator. */
 export function isDecimalString(value: unknown, format: DecimalFormat): value is string {
   if (typeof value !== 'string') return false;

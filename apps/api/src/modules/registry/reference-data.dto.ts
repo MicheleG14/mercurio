@@ -22,8 +22,14 @@ export class LegalFormDto {
   category!: string | null;
 }
 
+export class UnitDto {
+  @ApiProperty({ example: 'PZ' }) code!: string;
+  @ApiProperty({ example: 0, description: 'Decimals a quantity may have in this unit' })
+  decimals!: number;
+}
+
 export class ReferenceDataDto {
   @ApiProperty({ type: [VatCodeDto] }) vatCodes!: VatCodeDto[];
-  @ApiProperty({ type: [String], example: ['PZ', 'KG'] }) units!: string[];
+  @ApiProperty({ type: [UnitDto] }) units!: UnitDto[];
   @ApiProperty({ type: [LegalFormDto] }) legalForms!: LegalFormDto[];
 }

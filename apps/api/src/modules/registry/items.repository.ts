@@ -18,8 +18,19 @@ export class ItemsRepository {
     return { items, total };
   }
 
+  findMany(db: DbClient, ids: string[]) {
+    return db.item.findMany({ where: { id: { in: ids } } });
+  }
+
   findById(db: DbClient, id: string) {
     return db.item.findUnique({ where: { id } });
+  }
+
+  /** The id of the tenant's item with this code, in any case, or null. */
+  async findIdByCode(db: DbClient, tenantId: string, code: string): Promise<string | null> {
+    const [row] = await db.$queryRaw<{ id: string }[]>`
+      SELECT id FROM items WHERE tenant_id = ${tenantId}::uuid AND lower(code) = lower(${code})`;
+    return row?.id ?? null;
   }
 
   /** Whether the tenant has an item with this code, in any case (the unique index's rule). */

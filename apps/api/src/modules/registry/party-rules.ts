@@ -7,7 +7,7 @@ import {
   stripItalianPrefix,
 } from '../../shared/italian-identifiers.js';
 import { isLegalForm } from './catalogs.js';
-import { FieldErrors, optionalLine, optionalText } from './field-errors.js';
+import { FieldErrors, optionalLine, optionalText } from '../../shared/errors/index.js';
 
 /** What a person fills in for a party: the form, before any rule is applied. */
 export interface PartyInput {

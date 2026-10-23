@@ -58,8 +58,14 @@ export class CreateItemDto {
   @Text(2000) notes?: string | null;
 }
 
-/** Only the fields sent change. The code is not among them: it never changes. */
-export class UpdateItemDto extends PartialType(OmitType(CreateItemDto, ['code'] as const)) {
+/**
+ * Only the fields sent change. The code is not among them: it never changes. Neither does
+ * "stock managed": a good with stock movements cannot become a service, and the registry cannot
+ * ask the warehouse whether there are any (it depends on the registry, not the other way round).
+ */
+export class UpdateItemDto extends PartialType(
+  OmitType(CreateItemDto, ['code', 'stockManaged'] as const),
+) {
   @ApiProperty({ minimum: 1, example: 1 })
   @IsInt()
   @Min(1)

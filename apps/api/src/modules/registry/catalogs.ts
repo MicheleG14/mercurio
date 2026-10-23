@@ -41,8 +41,23 @@ export const VAT_CODES = [
   ].map((nature) => ({ code: nature, rate: '0.00', nature })),
 ] as const satisfies readonly { code: string; rate: string; nature: string | null }[];
 
-/** Units of measure: a short, stable list. */
-export const UNITS = ['PZ', 'KG', 'G', 'L', 'M', 'M2', 'M3', 'H', 'CF', 'SET'] as const;
+/**
+ * Units of measure: a short, stable list, each with the decimals a quantity may have in it (one
+ * and a half pieces is a typing error; 1.250 kg is not). Quantities are numeric(14,3) (B8), so
+ * three decimals at most.
+ */
+export const UNITS = [
+  { code: 'PZ', decimals: 0 },
+  { code: 'KG', decimals: 3 },
+  { code: 'G', decimals: 3 },
+  { code: 'L', decimals: 3 },
+  { code: 'M', decimals: 3 },
+  { code: 'M2', decimals: 3 },
+  { code: 'M3', decimals: 3 },
+  { code: 'H', decimals: 2 },
+  { code: 'CF', decimals: 0 },
+  { code: 'SET', decimals: 0 },
+] as const satisfies readonly { code: string; decimals: number }[];
 
 /**
  * Italian legal forms of a company, with their legal category. The category is never stored: it
@@ -61,12 +76,15 @@ export const LEGAL_FORMS = [
   { code: 'OTHER', category: null },
 ] as const satisfies readonly { code: string; category: string | null }[];
 
-export type Unit = (typeof UNITS)[number];
+export type Unit = (typeof UNITS)[number]['code'];
 export type VatCode = (typeof VAT_CODES)[number]['code'];
 export type LegalForm = (typeof LEGAL_FORMS)[number]['code'];
 
-export const isUnit = (value: string): value is Unit =>
-  (UNITS as readonly string[]).includes(value);
+export const isUnit = (value: string): value is Unit => UNITS.some((unit) => unit.code === value);
+
+/** Decimals a quantity may have in this unit; 0 for a code outside the catalog. */
+export const unitDecimals = (code: string): number =>
+  UNITS.find((unit) => unit.code === code)?.decimals ?? 0;
 
 export const isVatCode = (value: string): value is VatCode =>
   VAT_CODES.some((vat) => vat.code === value);

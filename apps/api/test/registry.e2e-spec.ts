@@ -322,6 +322,11 @@ describe('registry (e2e)', () => {
         .patch(`/items/${created.body.id}`, { version: 2, code: 'OTHER' })
         .expect(400);
       expect(code.body.errors).toEqual([{ field: 'code', code: 'UNKNOWN_FIELD' }]);
+      // A good does not become a service later: the warehouse may hold stock of it.
+      const kind = await as('admin')
+        .patch(`/items/${created.body.id}`, { version: 2, stockManaged: false })
+        .expect(400);
+      expect(kind.body.errors).toEqual([{ field: 'stockManaged', code: 'UNKNOWN_FIELD' }]);
     });
 
     it.each([
@@ -386,7 +391,8 @@ describe('registry (e2e)', () => {
       const res = await as('READ_ONLY').get('/registry/reference-data').expect(200);
       expect(res.body.vatCodes).toContainEqual({ code: '22', rate: '22.00', nature: null });
       expect(res.body.vatCodes).toContainEqual({ code: 'N6.3', rate: '0.00', nature: 'N6.3' });
-      expect(res.body.units).toContain('PZ');
+      expect(res.body.units).toContainEqual({ code: 'PZ', decimals: 0 });
+      expect(res.body.units).toContainEqual({ code: 'KG', decimals: 3 });
       expect(res.body.legalForms).toContainEqual({ code: 'SRL', category: 'CAPITAL' });
     });
   });
