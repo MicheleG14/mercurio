@@ -67,7 +67,7 @@ test('receive goods, refuse a shortage, reverse, see what to reorder', async ({ 
   await page.getByRole('link', { name: 'Nuovo soggetto' }).click();
   await page.getByLabel('Ragione sociale').fill(supplier);
   await page.getByLabel('Partita IVA').fill(newVat());
-  await page.getByLabel('Fornitore', { exact: true }).check();
+  await page.getByRole('checkbox', { name: 'Fornitore', exact: true }).check();
   await page.getByRole('button', { name: 'Salva' }).click();
   await expect(page.getByRole('heading', { name: supplier })).toBeVisible();
 
