@@ -184,7 +184,7 @@ describe('warehouse', () => {
     await user.type(screen.getByLabelText('Quantità (KG)'), '9,5');
     await user.click(screen.getByRole('button', { name: 'Registra' }));
 
-    expect(await screen.findByText('Giacenza insufficiente.')).toBeInTheDocument();
+    expect(await screen.findByText('Giacenza disponibile insufficiente.')).toBeInTheDocument();
     await user.clear(screen.getByLabelText('Quantità (KG)'));
     await user.type(screen.getByLabelText('Quantità (KG)'), '2,5');
     await user.click(screen.getByRole('button', { name: 'Registra' }));
@@ -273,6 +273,76 @@ describe('warehouse', () => {
     renderApp('/stock/documents/d1');
     expect(await screen.findByText('Documento CA-2026/0042')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Storna' })).not.toBeInTheDocument();
+  });
+
+  it('sends a document made by an order back to the order, without a reversal here', async () => {
+    mockApi({
+      ...signedIn(),
+      'GET /stock-documents/d1': () =>
+        json(
+          200,
+          document({
+            reason: 'SALE_ISSUE',
+            type: 'issue',
+            origin: { type: 'order', id: 'o1', reference: 'OC-2026/0012' },
+          }),
+        ),
+    });
+    renderApp('/stock/documents/d1');
+
+    const link = await screen.findByRole('link', { name: /OC-2026\/0012/ });
+    expect(link).toHaveAttribute('href', '/orders/o1');
+    expect(screen.queryByRole('button', { name: 'Storna' })).not.toBeInTheDocument();
+  });
+
+  it('shows what is reserved, what is available and which orders hold it', async () => {
+    const stock = itemStock('7.000');
+    stock.reservedQuantity = '4.000';
+    stock.availableQuantity = '3.000';
+    stock.warehouses[0]!.reservedQuantity = '4.000';
+    stock.warehouses[0]!.availableQuantity = '3.000';
+    stock.reservations = [
+      {
+        warehouseId: 'w1',
+        warehouseCode: 'SEDE',
+        originType: 'order',
+        originId: 'o1',
+        originReference: 'OC-2026/0012',
+        quantity: '4.000',
+      },
+    ];
+    mockApi({
+      ...signedIn(),
+      'GET /stock/items/i1': () => json(200, stock),
+      'GET /stock/items/i1/movements': () => json(200, page([])),
+    });
+    renderApp('/stock/items/i1');
+
+    expect(await screen.findByRole('link', { name: 'OC-2026/0012' })).toHaveAttribute(
+      'href',
+      '/orders/o1',
+    );
+    expect(screen.getAllByText(/prenotata 4, disponibile 3/)).toHaveLength(2);
+  });
+
+  it('shows the available stock next to a line when part of it is reserved', async () => {
+    const user = userEvent.setup();
+    const stock = itemStock('7.000');
+    stock.warehouses[0]!.reservedQuantity = '5.000';
+    stock.warehouses[0]!.availableQuantity = '2.000';
+    mockApi({
+      ...signedIn(),
+      'GET /stock/items-search': () => json(200, [option({ availableQuantity: '2.000' })]),
+      'GET /stock/items/i1': () => json(200, stock),
+    });
+    renderApp('/stock/documents/new?type=issue');
+
+    await user.click(await screen.findByRole('combobox', { name: /Riga 1/ }));
+    expect(
+      await screen.findByRole('option', { name: /In giacenza: 7 KG · Disponibile: 2 KG/ }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('option', { name: /CM-PORT/ }));
+    expect(await screen.findByText('Disponibile: 2 KG')).toBeInTheDocument();
   });
 
   it('shows the warehouse in the menu only with the module and the permission', async () => {

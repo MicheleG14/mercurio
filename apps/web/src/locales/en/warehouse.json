@@ -39,23 +39,28 @@
     "asOf": "Stock on",
     "asOfHint": "On the chosen day: the sum of the movements up to it, without reorder levels.",
     "empty": "No items in stock.",
+    "availableCell": "{{quantity}} available",
     "columns": {
       "code": "Code",
       "description": "Description",
       "quantity": "Stock",
+      "reserved": "Reserved",
+      "available": "Available",
       "reorderPoint": "Reorder point",
       "state": "State"
     }
   },
   "below": {
     "title": "Below reorder",
-    "description": "Items at or below their reorder point: time to order.",
+    "description": "Items whose available (unreserved) stock is at or below their reorder point: time to order.",
     "empty": "No items below reorder.",
     "reorderQuantity": "To order"
   },
   "item": {
     "byWarehouse": "Stock by warehouse",
     "total": "Company total",
+    "reservedAvailable": "{{reserved}} reserved, {{available}} available",
+    "reservations": "Reserved by orders",
     "history": "Movements",
     "historyEmpty": "No movements.",
     "openRegistry": "Item record",
@@ -147,6 +152,7 @@
       "counted": "Counted",
       "difference": "Difference",
       "stock": "In stock: {{quantity}}",
+      "available": "Available: {{quantity}}",
       "add": "Add line",
       "remove": "Remove line {{n}}",
       "line": "Line {{n}}",
@@ -164,6 +170,7 @@
       "confirm": "Reverse the document"
     },
     "reversedBy": "Reversed by {{reference}}",
+    "origin": "Recorded by order {{reference}}: undo it there.",
     "reverses": "Reversal of {{reference}}",
     "reversedReason": "Reason reversed"
   },

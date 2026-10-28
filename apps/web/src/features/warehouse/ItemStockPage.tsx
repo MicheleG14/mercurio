@@ -60,6 +60,15 @@ export function ItemStockPage() {
             <span className="font-semibold tabular-nums">
               {quantity(item.quantity, item.unitDecimals)} {item.unit}
             </span>
+            {item.reservedQuantity !== '0.000' && (
+              <span className="text-muted-foreground tabular-nums">
+                {' · '}
+                {t('item.reservedAvailable', {
+                  reserved: quantity(item.reservedQuantity, item.unitDecimals),
+                  available: quantity(item.availableQuantity, item.unitDecimals),
+                })}
+              </span>
+            )}
           </span>
         </div>
         <ul className="grid gap-3 md:grid-cols-2">
@@ -69,8 +78,43 @@ export function ItemStockPage() {
         </ul>
       </section>
 
+      {item.reservations.length > 0 && <Reservations item={item} />}
+
       <History item={item} />
     </div>
+  );
+}
+
+/** Who has goods of the item promised: the orders, with a link to each. */
+function Reservations({ item }: { item: ItemStock }) {
+  const { t } = useTranslation('warehouse');
+  const quantity = useQuantity();
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="text-sm font-medium">{t('item.reservations')}</h2>
+      <ul className="border-border divide-border divide-y rounded-lg border">
+        {item.reservations.map((r) => (
+          <li
+            key={`${r.originId}-${r.warehouseId}`}
+            className="flex items-baseline justify-between gap-3 px-4 py-2 text-sm"
+          >
+            <span className="flex items-baseline gap-2">
+              <span className="text-muted-foreground font-mono">{r.warehouseCode}</span>
+              {r.originType === 'order' ? (
+                <Link className="underline underline-offset-4" to={`/orders/${r.originId}`}>
+                  {r.originReference}
+                </Link>
+              ) : (
+                r.originReference
+              )}
+            </span>
+            <span className="tabular-nums">
+              {quantity(r.quantity, item.unitDecimals)} {item.unit}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -124,6 +168,14 @@ function WarehouseCard({ item, warehouse }: { item: ItemStock; warehouse: Wareho
         </div>
         <div className="text-right">
           <div className="text-lg font-semibold tabular-nums">{show(warehouse.quantity)}</div>
+          {warehouse.reservedQuantity !== '0.000' && (
+            <div className="text-muted-foreground text-sm tabular-nums">
+              {t('item.reservedAvailable', {
+                reserved: quantity(warehouse.reservedQuantity, item.unitDecimals),
+                available: quantity(warehouse.availableQuantity, item.unitDecimals),
+              })}
+            </div>
+          )}
           {warehouse.belowReorder && <BelowBadge />}
         </div>
       </div>

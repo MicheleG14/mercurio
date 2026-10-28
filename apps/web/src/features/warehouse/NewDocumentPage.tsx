@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, type UseFormReturn, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +6,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { DecimalInput } from '@/components/shared/DecimalInput';
 import { ErrorMessage } from '@/components/shared/ErrorMessage';
 import { FormField } from '@/components/shared/FormField';
+import { LinesEditor } from '@/components/shared/LinesEditor';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SearchCombobox } from '@/components/shared/SearchCombobox';
 import { UnsavedChangesDialog } from '@/components/shared/UnsavedChangesGuard';
@@ -116,9 +116,11 @@ function DocumentForm({ type }: { type: DocumentType }) {
     <div className="flex flex-col gap-6">
       <PageHeader title={t(`document.newTitle.${type}`)} description={t('document.immutable')} />
       {post.error && !fieldErrorsOnly && <ErrorMessage error={post.error} />}
-      {post.error instanceof ApiError && post.error.problem?.code === 'STOCK_INSUFFICIENT' && (
-        <Alert variant="warning">{tError('STOCK_INSUFFICIENT')}</Alert>
-      )}
+      {post.error instanceof ApiError &&
+        (post.error.problem?.code === 'STOCK_INSUFFICIENT' ||
+          post.error.problem?.code === 'STOCK_RESERVED') && (
+          <Alert variant="warning">{tError(post.error.problem.code)}</Alert>
+        )}
 
       <form noValidate onSubmit={onSubmit} className="flex flex-col gap-6">
         <fieldset className="border-border grid gap-4 border-t pt-4 md:grid-cols-[12rem_1fr]">
@@ -210,35 +212,23 @@ function DocumentForm({ type }: { type: DocumentType }) {
 
         {rule.party && <PartySection role={rule.party} required={rule.partyRequired} form={form} />}
 
-        <fieldset className="border-border flex flex-col gap-3 border-t pt-4">
-          <legend className="text-sm font-medium">{t('document.section.lines')}</legend>
-          {counted && <p className="text-muted-foreground text-sm">{t('document.hint.counted')}</p>}
-          {errors.lines?.message && (
-            <p className="text-destructive text-sm">{msg(errors.lines.message)}</p>
+        <LinesEditor
+          legend={t('document.section.lines')}
+          hint={counted ? t('document.hint.counted') : undefined}
+          error={msg(errors.lines?.message)}
+          keys={lines.fields.map((line) => line.id)}
+          columns="md:grid-cols-[1fr_10rem_auto]"
+          renderLine={(index) => (
+            <LineFields index={index} form={form} warehouseId={warehouseId} counted={counted} />
           )}
-          <ol className="flex flex-col gap-3">
-            {lines.fields.map((line, index) => (
-              <LineRow
-                key={line.id}
-                index={index}
-                form={form}
-                warehouseId={warehouseId}
-                counted={counted}
-                canRemove={lines.fields.length > 1}
-                onRemove={() => lines.remove(index)}
-              />
-            ))}
-          </ol>
-          <Button
-            type="button"
-            variant="outline"
-            className="self-start"
-            onClick={() => lines.append(emptyLine())}
-          >
-            <PlusIcon data-icon="inline-start" />
-            {t('document.lines.add')}
-          </Button>
-        </fieldset>
+          renderAside={(index) => (
+            <LineAside index={index} form={form} warehouseId={warehouseId} counted={counted} />
+          )}
+          addLabel={t('document.lines.add')}
+          onAdd={() => lines.append(emptyLine())}
+          removeLabel={(n) => t('document.lines.remove', { n })}
+          onRemove={(index) => lines.remove(index)}
+        />
 
         <fieldset className="border-border grid gap-4 border-t pt-4 md:grid-cols-[12rem_1fr]">
           <legend className="sr-only">{t('document.section.notes')}</legend>
@@ -352,36 +342,33 @@ function PartySection({
 }
 
 /**
- * One line: the item (searched, with its stock in the warehouse) and the quantity, or what was
- * counted with the difference it will make. A grid row on wide screens, a card on a phone.
+ * The fields of one line: the item (searched, with its stock in the warehouse) and the quantity,
+ * or what was counted. LinesEditor lays them out, a grid row or a card.
  */
-function LineRow({
+function LineFields({
   index,
   form,
   warehouseId,
   counted,
-  canRemove,
-  onRemove,
 }: {
   index: number;
   form: Form;
   warehouseId: string;
   counted: boolean;
-  canRemove: boolean;
-  onRemove: () => void;
 }) {
   const { t } = useTranslation('warehouse');
   const { t: tError } = useTranslation('errors');
   const quantity = useQuantity();
   const items = useItemSearch(warehouseId || undefined);
   const item = useWatch({ control: form.control, name: `lines.${index}.item` });
-  const typed = useWatch({ control: form.control, name: `lines.${index}.quantity` });
   const lineErrors = form.formState.errors.lines?.[index];
   const msg = (key?: string) => (key ? tError(key as never) : undefined);
   const n = index + 1;
+  const amount = (value: string, option: ItemOption) =>
+    `${quantity(value, option.unitDecimals)} ${option.unit}`;
 
   return (
-    <li className="border-border bg-card grid gap-3 rounded-lg border p-3 md:grid-cols-[1fr_10rem_auto] md:items-start md:border-0 md:bg-transparent md:p-0">
+    <>
       <Controller
         control={form.control}
         name={`lines.${index}.item`}
@@ -402,9 +389,17 @@ function LineRow({
                 itemDetail={(option) =>
                   option.quantity === null
                     ? option.unit
-                    : t('document.lines.stock', {
-                        quantity: `${quantity(option.quantity, option.unitDecimals)} ${option.unit}`,
-                      })
+                    : [
+                        t('document.lines.stock', { quantity: amount(option.quantity, option) }),
+                        option.availableQuantity !== null &&
+                        option.availableQuantity !== option.quantity
+                          ? t('document.lines.available', {
+                              quantity: amount(option.availableQuantity, option),
+                            })
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
                 }
                 placeholder={t('document.lines.searchItem')}
               />
@@ -418,28 +413,33 @@ function LineRow({
       >
         {(p) => <DecimalInput {...p} {...form.register(`lines.${index}.quantity`)} />}
       </FormField>
-      <div className="flex items-end justify-between gap-3 md:h-full md:flex-col md:items-end md:justify-start md:pt-6">
-        {item && warehouseId && (
-          <LineStock
-            itemId={item.id}
-            warehouseId={warehouseId}
-            decimals={item.unitDecimals}
-            unit={item.unit}
-            counted={counted ? typed : undefined}
-          />
-        )}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={t('document.lines.remove', { n })}
-          disabled={!canRemove}
-          onClick={onRemove}
-        >
-          <Trash2Icon />
-        </Button>
-      </div>
-    </li>
+    </>
+  );
+}
+
+/** Next to a line: the item's stock in the warehouse, once an item is chosen. */
+function LineAside({
+  index,
+  form,
+  warehouseId,
+  counted,
+}: {
+  index: number;
+  form: Form;
+  warehouseId: string;
+  counted: boolean;
+}) {
+  const item = useWatch({ control: form.control, name: `lines.${index}.item` });
+  const typed = useWatch({ control: form.control, name: `lines.${index}.quantity` });
+  if (!item || !warehouseId) return null;
+  return (
+    <LineStock
+      itemId={item.id}
+      warehouseId={warehouseId}
+      decimals={item.unitDecimals}
+      unit={item.unit}
+      counted={counted ? typed : undefined}
+    />
   );
 }
 
@@ -460,7 +460,8 @@ function LineStock({
   const { t, i18n } = useTranslation('warehouse');
   const quantity = useQuantity();
   const stock = useItemStock(itemId).data;
-  const current = stock?.warehouses.find((w) => w.warehouseId === warehouseId)?.quantity ?? '0';
+  const row = stock?.warehouses.find((w) => w.warehouseId === warehouseId);
+  const current = row?.quantity ?? '0';
   if (!stock) return null;
   const parsed =
     counted === undefined
@@ -471,6 +472,14 @@ function LineStock({
   return (
     <span className="text-muted-foreground text-sm tabular-nums md:text-right">
       {t('document.lines.stock', { quantity: `${quantity(current, decimals)} ${unit}` })}
+      {row && row.reservedQuantity !== '0.000' && (
+        // Part of it is promised to orders: what a free issue may take is less.
+        <span className="block">
+          {t('document.lines.available', {
+            quantity: `${quantity(row.availableQuantity, decimals)} ${unit}`,
+          })}
+        </span>
+      )}
       {difference !== null && (
         <span className="text-foreground block font-medium">
           {t('document.lines.difference')}: {difference.startsWith('-') ? '' : '+'}
