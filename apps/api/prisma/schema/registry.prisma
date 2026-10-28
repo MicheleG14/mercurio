@@ -53,6 +53,7 @@ model Party {
 
   tenant         Tenant          @relation(fields: [tenantId], references: [id])
   stockDocuments StockDocument[]
+  orders         Order[]
 
   /// Target of composite foreign keys: a reference can never cross tenants (B25).
   @@unique([tenantId, id])
@@ -90,6 +91,7 @@ model Item {
   stockBalances  StockBalance[]
   reorderLevels  ReorderLevel[]
   reservations   StockReservation[]
+  orderLines     OrderLine[]
 
   @@unique([tenantId, id])
   @@index([code(ops: raw("gin_trgm_ops"))], type: Gin, map: "items_code_trgm_idx")

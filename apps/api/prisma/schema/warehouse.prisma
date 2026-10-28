@@ -42,6 +42,7 @@ model Warehouse {
   balances          StockBalance[]
   reorderLevels     ReorderLevel[]
   reservations      StockReservation[]
+  orders            Order[]
 
   @@unique([tenantId, id])
   /// Target of the foreign keys of documents and movements: they stay in the same company.
@@ -84,14 +85,17 @@ model StockDocument {
   createdById       String?     @map("created_by_id") @db.Uuid
   createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  tenant          Tenant          @relation(fields: [tenantId], references: [id])
-  warehouse       Warehouse       @relation("DocumentWarehouse", fields: [tenantId, companyId, warehouseId], references: [tenantId, companyId, id])
-  targetWarehouse Warehouse?      @relation("DocumentTargetWarehouse", fields: [tenantId, companyId, targetWarehouseId], references: [tenantId, companyId, id])
-  party           Party?          @relation(fields: [tenantId, partyId], references: [tenantId, id])
-  reverses        StockDocument?  @relation("Reversal", fields: [tenantId, companyId, reversesId], references: [tenantId, companyId, id])
-  reversedBy      StockDocument?  @relation("Reversal")
-  createdBy       User?           @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  movements       StockMovement[]
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  warehouse        Warehouse        @relation("DocumentWarehouse", fields: [tenantId, companyId, warehouseId], references: [tenantId, companyId, id])
+  targetWarehouse  Warehouse?       @relation("DocumentTargetWarehouse", fields: [tenantId, companyId, targetWarehouseId], references: [tenantId, companyId, id])
+  party            Party?           @relation(fields: [tenantId, partyId], references: [tenantId, id])
+  reverses         StockDocument?   @relation("Reversal", fields: [tenantId, companyId, reversesId], references: [tenantId, companyId, id])
+  reversedBy       StockDocument?   @relation("Reversal")
+  createdBy        User?            @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  movements        StockMovement[]
+  /// The fulfilment of an order this document recorded, or undid.
+  fulfilment       OrderFulfilment? @relation("FulfilmentDocument")
+  fulfilmentUndone OrderFulfilment? @relation("FulfilmentReversal")
 
   @@unique([tenantId, id])
   @@unique([tenantId, companyId, id])

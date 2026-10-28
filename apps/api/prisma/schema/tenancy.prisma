@@ -26,6 +26,11 @@ model Tenant {
   reorderLevels         ReorderLevel[]
   stockDocumentCounters StockDocumentCounter[]
   stockReservations     StockReservation[]
+  orders                Order[]
+  orderLines            OrderLine[]
+  orderFulfilments      OrderFulfilment[]
+  orderFulfilmentLines  OrderFulfilmentLine[]
+  orderCounters         OrderCounter[]
 
   @@map("tenants")
 }
@@ -54,6 +59,8 @@ model Company {
   membershipCompanies MembershipCompany[]
   warehouses          Warehouse[]
   stockCounters       StockDocumentCounter[]
+  orders              Order[]
+  orderCounters       OrderCounter[]
 
   /// Target of composite foreign keys: a reference can never cross tenants (B25).
   @@unique([tenantId, id])

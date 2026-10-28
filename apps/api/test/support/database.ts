@@ -91,6 +91,12 @@ export async function deleteTenantsAndUsers(
   await admin.session.deleteMany({ where: { userId } });
   await admin.recoveryCode.deleteMany({ where: { userId } });
   await admin.credential.deleteMany({ where: { userId } });
+  // Orders first: their fulfilments point to stock documents.
+  await admin.orderFulfilmentLine.deleteMany({ where: { tenantId } });
+  await admin.orderFulfilment.deleteMany({ where: { tenantId } });
+  await admin.orderLine.deleteMany({ where: { tenantId } });
+  await admin.order.deleteMany({ where: { tenantId } });
+  await admin.orderCounter.deleteMany({ where: { tenantId } });
   await admin.stockMovement.deleteMany({ where: { tenantId } });
   await admin.stockReservation.deleteMany({ where: { tenantId } });
   await admin.stockBalance.deleteMany({ where: { tenantId } });

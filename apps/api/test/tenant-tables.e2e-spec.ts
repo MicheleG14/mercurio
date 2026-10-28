@@ -97,10 +97,19 @@ describe('tenant tables (guard)', () => {
       ORDER BY table_name, privilege_type`;
     // Stock documents and movements: insert only (B32). Reorder levels are settings, and a
     // reservation goes when it reaches zero: both deletable.
+    // Orders: drafts are deleted (the API checks the status), with their lines; fulfilments and
+    // their lines are insert only (B32).
     expect(tableWrites).toEqual([
       { table: 'audit_events', privilege: 'INSERT' },
       { table: 'auth_events', privilege: 'INSERT' },
       { table: 'items', privilege: 'INSERT' },
+      { table: 'order_counters', privilege: 'INSERT' },
+      { table: 'order_fulfilment_lines', privilege: 'INSERT' },
+      { table: 'order_fulfilments', privilege: 'INSERT' },
+      { table: 'order_lines', privilege: 'DELETE' },
+      { table: 'order_lines', privilege: 'INSERT' },
+      { table: 'orders', privilege: 'DELETE' },
+      { table: 'orders', privilege: 'INSERT' },
       { table: 'parties', privilege: 'INSERT' },
       { table: 'recovery_codes', privilege: 'INSERT' },
       { table: 'reorder_levels', privilege: 'DELETE' },
@@ -157,9 +166,38 @@ describe('tenant tables (guard)', () => {
       'version',
     ]);
     expect(byTable('stock_document_counters')).toEqual(['last_number']);
+    // Orders: never the kind, the company or who created it; a line only in its progress once
+    // written; a fulfilment only in being undone.
+    expect(byTable('orders')).toEqual([
+      'cancelled_at',
+      'confirmed_at',
+      'notes',
+      'number',
+      'order_date',
+      'party_id',
+      'party_reference',
+      'party_reference_date',
+      'requested_date',
+      'series',
+      'status',
+      'taxable_total',
+      'total',
+      'updated_at',
+      'vat_total',
+      'version',
+      'warehouse_id',
+      'year',
+    ]);
+    expect(byTable('order_lines')).toEqual(['closed_quantity', 'done_quantity', 'updated_at']);
+    expect(byTable('order_fulfilments')).toEqual(['reversal_document_id', 'reversed_at']);
+    expect(byTable('order_counters')).toEqual(['last_number']);
     expect([...new Set(columnUpdates.map((c) => c.table))].sort()).toEqual([
       'credentials',
       'items',
+      'order_counters',
+      'order_fulfilments',
+      'order_lines',
+      'orders',
       'parties',
       'recovery_codes',
       'reorder_levels',

@@ -19,6 +19,8 @@ model User {
   authEvents       AuthEvent[]
   auditEvents      AuditEvent[]
   stockDocuments   StockDocument[]
+  orders           Order[]
+  orderFulfilments OrderFulfilment[]
 
   @@map("users")
 }
