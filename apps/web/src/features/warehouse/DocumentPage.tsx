@@ -38,7 +38,9 @@ function DocumentView({ document }: { document: StockDocument }) {
   const reverse = useReverseDocument(document.id);
   const [asking, setAsking] = useState(false);
   const date = (value: string) => formatDate(value, i18n.language);
-  const canReverse = write && document.reason !== 'REVERSAL' && !document.reversedBy;
+  // A document made by an order is undone from the order, which then knows (B35).
+  const canReverse =
+    write && document.reason !== 'REVERSAL' && !document.reversedBy && !document.origin;
   const signed = document.type === 'adjustment';
 
   const details: [string, React.ReactNode][] = [
@@ -110,6 +112,17 @@ function DocumentView({ document }: { document: StockDocument }) {
           >
             {t('document.reversedBy', { reference: document.reversedBy.reference })}
           </Link>
+        </Alert>
+      )}
+      {document.origin && (
+        <Alert>
+          {document.origin.type === 'order' ? (
+            <Link className="underline underline-offset-4" to={`/orders/${document.origin.id}`}>
+              {t('document.origin', { reference: document.origin.reference })}
+            </Link>
+          ) : (
+            t('document.origin', { reference: document.origin.reference })
+          )}
         </Alert>
       )}
       {document.reverses && (

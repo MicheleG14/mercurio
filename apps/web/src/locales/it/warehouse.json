@@ -39,23 +39,28 @@
     "asOf": "Giacenza al",
     "asOfHint": "Alla data scelta: somma dei movimenti fino a quel giorno, senza soglie.",
     "empty": "Nessun articolo in giacenza.",
+    "availableCell": "{{quantity}} disponibili",
     "columns": {
       "code": "Codice",
       "description": "Descrizione",
       "quantity": "Giacenza",
+      "reserved": "Prenotata",
+      "available": "Disponibile",
       "reorderPoint": "Soglia",
       "state": "Stato"
     }
   },
   "below": {
     "title": "Sotto scorta",
-    "description": "Articoli con giacenza pari o inferiore al punto di riordino: da riordinare.",
+    "description": "Articoli con giacenza disponibile (non prenotata) pari o inferiore al punto di riordino: da riordinare.",
     "empty": "Nessun articolo sotto scorta.",
     "reorderQuantity": "Da riordinare"
   },
   "item": {
     "byWarehouse": "Giacenza per magazzino",
     "total": "Totale dell'azienda",
+    "reservedAvailable": "prenotata {{reserved}}, disponibile {{available}}",
+    "reservations": "Prenotazioni degli ordini",
     "history": "Movimenti",
     "historyEmpty": "Nessun movimento.",
     "openRegistry": "Scheda anagrafica",
@@ -147,6 +152,7 @@
       "counted": "Contata",
       "difference": "Differenza",
       "stock": "In giacenza: {{quantity}}",
+      "available": "Disponibile: {{quantity}}",
       "add": "Aggiungi riga",
       "remove": "Togli la riga {{n}}",
       "line": "Riga {{n}}",
@@ -164,6 +170,7 @@
       "confirm": "Storna il documento"
     },
     "reversedBy": "Stornato da {{reference}}",
+    "origin": "Registrato dall'ordine {{reference}}: si annulla da lì.",
     "reverses": "Storno di {{reference}}",
     "reversedReason": "Causale stornata"
   },

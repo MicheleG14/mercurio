@@ -140,6 +140,33 @@ export function StockPage({ below = false }: { below?: boolean }) {
               </span>
             ),
           },
+          // Reserved and available exist for today's stock only: reservations have no history.
+          ...(asOf
+            ? []
+            : [
+                {
+                  key: 'reserved',
+                  header: t('stock.columns.reserved'),
+                  tablet: false,
+                  className: 'text-right tabular-nums',
+                  cell: (row: StockRow) =>
+                    row.reservedQuantity === null || row.reservedQuantity === '0.000'
+                      ? ''
+                      : quantity(row.reservedQuantity, row.unitDecimals),
+                },
+                {
+                  key: 'available',
+                  header: t('stock.columns.available'),
+                  card: 'detail' as const,
+                  className: 'text-right tabular-nums',
+                  cell: (row: StockRow) =>
+                    row.availableQuantity === null
+                      ? ''
+                      : t('stock.availableCell', {
+                          quantity: quantity(row.availableQuantity, row.unitDecimals),
+                        }),
+                },
+              ]),
           {
             key: 'reorderPoint',
             header: t('stock.columns.reorderPoint'),
