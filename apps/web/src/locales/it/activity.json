@@ -31,13 +31,23 @@
     "STOCK_DOCUMENT_POSTED": "Documento di magazzino registrato",
     "STOCK_DOCUMENT_REVERSED": "Documento di magazzino stornato",
     "REORDER_LEVEL_SET": "Soglia di riordino impostata",
-    "REORDER_LEVEL_REMOVED": "Soglia di riordino tolta"
+    "REORDER_LEVEL_REMOVED": "Soglia di riordino tolta",
+    "ORDER_CREATED": "Ordine creato (bozza)",
+    "ORDER_UPDATED": "Bozza di ordine modificata",
+    "ORDER_DELETED": "Bozza di ordine eliminata",
+    "ORDER_CONFIRMED": "Ordine confermato",
+    "ORDER_RESERVED": "Merce prenotata per un ordine",
+    "ORDER_CLOSED": "Residuo dell'ordine chiuso",
+    "ORDER_CANCELLED": "Ordine annullato",
+    "ORDER_FULFILLED": "Ordine ricevuto o evaso",
+    "ORDER_FULFILMENT_REVERSED": "Ricezione o evasione annullata"
   },
   "subjectType": {
     "party": "Soggetto",
     "item": "Articolo",
     "warehouse": "Magazzino",
-    "stock_document": "Documento di magazzino"
+    "stock_document": "Documento di magazzino",
+    "order": "Ordine"
   },
   "fields": "Campi: {{fields}}"
 }

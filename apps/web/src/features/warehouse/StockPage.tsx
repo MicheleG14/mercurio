@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import { buttonVariants } from '@/components/ui/button';
+import { useMe } from '@/lib/auth/me';
 import { DataTable } from '@/components/shared/DataTable';
 import { FilterBar } from '@/components/shared/FilterBar';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -35,10 +37,29 @@ export function StockPage({ below = false }: { below?: boolean }) {
     asOf,
   });
 
+  // From what is below reorder to a purchase order: the orders screen proposes the lines.
+  const me = useMe().data;
+  const canOrder =
+    below &&
+    Boolean(me?.modules.includes('orders')) &&
+    Boolean(me?.permissions.includes('orders:write'));
   const header = (
     <PageHeader
       title={t(below ? 'below.title' : 'stock.title')}
       description={t(below ? 'below.description' : 'stock.description')}
+      actions={
+        canOrder &&
+        (warehouseId ? (
+          <Link
+            to={`/orders/new?kind=PURCHASE&proposal=${warehouseId}`}
+            className={buttonVariants()}
+          >
+            {t('below.orderFromSuppliers')}
+          </Link>
+        ) : (
+          <span className="text-muted-foreground text-sm">{t('below.pickWarehouse')}</span>
+        ))
+      }
     />
   );
   if (warehouses.data && warehouses.data.items.length === 0) {

@@ -42,6 +42,15 @@
   "DOCUMENT_ID_REUSED": "The document changed after it was first sent: reload the page and start again.",
   "STOCK_DOCUMENT_NOT_FOUND": "Document not found.",
   "REORDER_LEVEL_NOT_FOUND": "Reorder level not found.",
+  "ORDER_NOT_FOUND": "Order not found in this company.",
+  "ORDER_NOT_DRAFT": "The order is already confirmed and no longer changes. To correct it, cancel it and duplicate it.",
+  "ORDER_NOT_OPEN": "The order is not open: it is a draft, already shipped or received, or cancelled.",
+  "ORDER_HAS_FULFILMENTS": "The order already has receipts or shipments: close the rest instead of cancelling it.",
+  "ORDER_DOES_NOT_RESERVE": "Only sales orders reserve goods.",
+  "NOTHING_TO_FULFIL": "Enter at least one quantity above zero.",
+  "NOTHING_TO_CLOSE": "There is nothing left to close.",
+  "FULFILMENT_ALREADY_REVERSED": "This record has already been undone.",
+  "FULFILMENT_NOT_FOUND": "Record not found in this order.",
   "validation": {
     "required": "Required field.",
     "email": "Enter a valid email address.",
@@ -97,6 +106,13 @@
     "DATE_INVALID": "Invalid date.",
     "DATE_AFTER_DOCUMENT": "Cannot be after the document date.",
     "ARRAY_MIN_SIZE": "Add at least one line.",
-    "ARRAY_MAX_SIZE": "At most 200 lines."
+    "ARRAY_MAX_SIZE": "At most 200 lines.",
+    "QUANTITY_OVER_REMAINING": "More than what is left on the line.",
+    "PRICE_INVALID": "Invalid price: use a dot for decimals, at most 4.",
+    "DISCOUNT_INVALID": "Invalid discount: 0 to 100, at most 2 decimals.",
+    "REQUESTED_BEFORE_ORDER": "Cannot be before the order date.",
+    "NO_LINES": "Add at least one line to confirm.",
+    "ORDER_LINE_NOT_FOUND": "Line not found in the order.",
+    "DUPLICATE_LINE": "Line already there."
   }
 }

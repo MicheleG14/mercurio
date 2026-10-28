@@ -13,6 +13,10 @@ import { ItemsPage } from '@/features/registry/items/ItemsPage';
 import { PartiesPage } from '@/features/registry/parties/PartiesPage';
 import { PartyPage } from '@/features/registry/parties/PartyPage';
 import { StatusPage } from '@/features/status/StatusPage';
+import { FulfilPage } from '@/features/orders/FulfilPage';
+import { OrderFormPage } from '@/features/orders/OrderFormPage';
+import { OrderPage } from '@/features/orders/OrderPage';
+import { OrdersPage } from '@/features/orders/OrdersPage';
 import { DocumentPage } from '@/features/warehouse/DocumentPage';
 import { DocumentsPage } from '@/features/warehouse/DocumentsPage';
 import { ItemStockPage } from '@/features/warehouse/ItemStockPage';
@@ -63,6 +67,12 @@ export const routes = [
           { path: 'stock/documents/new', element: <NewDocumentPage /> },
           { path: 'stock/documents/:id', element: <DocumentPage /> },
           { path: 'warehouses', element: <WarehousesPage /> },
+          { path: 'orders/sales', element: <OrdersPage key="sales" kind="SALES" /> },
+          { path: 'orders/purchase', element: <OrdersPage key="purchase" kind="PURCHASE" /> },
+          { path: 'orders/new', element: <OrderFormPage /> },
+          { path: 'orders/:id', element: <OrderPage /> },
+          { path: 'orders/:id/edit', element: <OrderFormPage /> },
+          { path: 'orders/:id/fulfil', element: <FulfilPage /> },
         ],
       },
     ],

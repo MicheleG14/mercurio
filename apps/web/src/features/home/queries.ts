@@ -16,3 +16,14 @@ export function useStockSummary(enabled: boolean) {
     enabled: enabled && Boolean(company),
   });
 }
+
+/** The order counters of the overview, through the API as above; keyed like the orders' own. */
+export function useOrdersSummary(enabled: boolean) {
+  const company = useCompanyId();
+  return useQuery({
+    queryKey: ['orders', company, 'summary'],
+    queryFn: () =>
+      unwrap(api.GET('/orders/summary', { params: { header: { 'X-Company-Id': company ?? '' } } })),
+    enabled: enabled && Boolean(company),
+  });
+}

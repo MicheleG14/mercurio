@@ -1,0 +1,197 @@
+{
+  "status": {
+    "SALES": {
+      "DRAFT": "Draft",
+      "CONFIRMED": "To ship",
+      "PARTIAL": "Partly shipped",
+      "COMPLETED": "Shipped",
+      "CANCELLED": "Cancelled"
+    },
+    "PURCHASE": {
+      "DRAFT": "Draft",
+      "CONFIRMED": "Incoming",
+      "PARTIAL": "Partly received",
+      "COMPLETED": "Received",
+      "CANCELLED": "Cancelled"
+    },
+    "late": "Late",
+    "uncovered": "Uncovered"
+  },
+  "totals": {
+    "taxable": "Taxable",
+    "vatRow": "VAT {{code}} on",
+    "vat": "VAT",
+    "total": "Total"
+  },
+  "list": {
+    "title": {
+      "SALES": "Sales orders",
+      "PURCHASE": "Purchase orders"
+    },
+    "description": {
+      "SALES": "Orders from customers: goods reserved and shipped.",
+      "PURCHASE": "Orders to suppliers: goods incoming and received."
+    },
+    "new": "New order",
+    "search": "Search by number, reference or party",
+    "filter": {
+      "status": "Status",
+      "all": "All",
+      "open": "Open",
+      "late": "Late",
+      "uncovered": "Uncovered"
+    },
+    "empty": "No orders.",
+    "draft": "Draft",
+    "columns": {
+      "number": "Number",
+      "date": "Date",
+      "party": {
+        "SALES": "Customer",
+        "PURCHASE": "Supplier"
+      },
+      "requestedDate": "Requested delivery",
+      "total": "Total",
+      "status": "Status"
+    }
+  },
+  "form": {
+    "editTitle": "Draft order",
+    "newTitle": {
+      "SALES": "New sales order",
+      "PURCHASE": "New purchase order"
+    },
+    "description": "A draft changes freely; once confirmed it gets its number and stays as it is.",
+    "section": {
+      "header": "Header",
+      "lines": "Lines",
+      "notes": "Notes"
+    },
+    "fields": {
+      "party": {
+        "SALES": "Customer",
+        "PURCHASE": "Supplier"
+      },
+      "warehouse": {
+        "SALES": "Ships from",
+        "PURCHASE": "Received into"
+      },
+      "orderDate": "Order date",
+      "requestedDate": "Requested delivery",
+      "partyReference": {
+        "SALES": "Customer's order number",
+        "PURCHASE": "Supplier's confirmation"
+      },
+      "partyReferenceDate": "Reference date",
+      "notes": "Notes"
+    },
+    "hint": {
+      "warehouse": "Needed to confirm."
+    },
+    "lines": {
+      "add": "Add line",
+      "remove": "Remove line {{n}}",
+      "line": "Line {{n}}",
+      "item": "Item",
+      "quantity": "Quantity",
+      "unitPrice": "Price",
+      "discount": "Discount %",
+      "vat": "VAT",
+      "available": "Available: {{quantity}}",
+      "searchItem": "Search an item"
+    },
+    "searchParty": "Search by name or VAT number",
+    "saveDraft": "Save draft",
+    "saveAndConfirm": "Save and confirm",
+    "confirming": "Confirming…"
+  },
+  "detail": {
+    "title": "Order {{reference}}",
+    "draftTitle": "Draft order",
+    "kind": {
+      "SALES": "Sales order",
+      "PURCHASE": "Purchase order"
+    },
+    "orderDate": "Date",
+    "createdBy": "Created by",
+    "confirmedAt": "Confirmed on",
+    "noLines": "No lines.",
+    "fulfilments": {
+      "SALES": "Shipments",
+      "PURCHASE": "Receipts"
+    },
+    "fulfilmentLines_one": "{{count}} line",
+    "fulfilmentLines_other": "{{count}} lines",
+    "reversed": "Undone by {{reference}}",
+    "discount": "{{percent}}% off",
+    "vat": "VAT {{code}}",
+    "progress": {
+      "SALES": "shipped {{done}} of {{total}}",
+      "PURCHASE": "received {{done}} of {{total}}"
+    },
+    "remaining": "Left",
+    "reserved": "Reserved",
+    "closed": "Closed"
+  },
+  "actions": {
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "fulfil": {
+      "SALES": "Ship",
+      "PURCHASE": "Receive"
+    },
+    "reserve": "Reserve available",
+    "close": "Close the rest",
+    "cancel": "Cancel the order",
+    "duplicate": "Duplicate",
+    "reverse": "Undo the record"
+  },
+  "confirm": {
+    "delete": {
+      "title": "Delete the draft?",
+      "description": "A draft has no number: it goes without a trace in the numbering."
+    },
+    "close": {
+      "title": "Close the rest of {{reference}}?",
+      "description": {
+        "SALES": "What is not shipped yet will not ship any more: its reserved goods become available.",
+        "PURCHASE": "What is not received yet will not arrive any more."
+      }
+    },
+    "cancel": {
+      "title": "Cancel {{reference}}?",
+      "description": "The order stays in the list as cancelled, with its number; its reserved goods become available."
+    },
+    "reverse": {
+      "title": "Undo this record?",
+      "description": {
+        "SALES": "The stock document is reversed: the goods come back and are reserved for this order again.",
+        "PURCHASE": "The stock document is reversed: the goods leave the warehouse again."
+      }
+    }
+  },
+  "fulfil": {
+    "title": {
+      "SALES": "Ship {{reference}}",
+      "PURCHASE": "Receive {{reference}}"
+    },
+    "all": "All",
+    "none": "None",
+    "remaining": "{{quantity}} left",
+    "reserved": "{{quantity}} reserved",
+    "quantity": {
+      "SALES": "To ship",
+      "PURCHASE": "Arrived"
+    },
+    "document": "Document",
+    "date": "Date",
+    "ref": "Supplier's delivery note number",
+    "refDate": "Delivery note date",
+    "post": {
+      "SALES": "Record the shipment",
+      "PURCHASE": "Record the receipt"
+    },
+    "posting": "Recording…"
+  }
+}

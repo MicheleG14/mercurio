@@ -2,9 +2,11 @@ import {
   ActivityIcon,
   ArrowLeftRightIcon,
   BoxesIcon,
+  ClipboardListIcon,
   HouseIcon,
   PackageIcon,
   TriangleAlertIcon,
+  TruckIcon,
   UsersIcon,
   WarehouseIcon,
   type LucideIcon,
@@ -26,6 +28,8 @@ export interface NavItem {
     | 'stockDocuments'
     | 'belowReorder'
     | 'warehouses'
+    | 'salesOrders'
+    | 'purchaseOrders'
     | 'activity';
   icon: LucideIcon;
   /** Shown only with this permission. The API still checks it on every call (F18). */
@@ -36,7 +40,7 @@ export interface NavItem {
 
 export interface NavGroup {
   /** Key under `nav.group.` in the common translations; none for the top items. */
-  label?: 'registry' | 'warehouse' | 'administration';
+  label?: 'registry' | 'warehouse' | 'orders' | 'administration';
   items: NavItem[];
 }
 
@@ -91,6 +95,25 @@ export const NAVIGATION: NavGroup[] = [
         icon: WarehouseIcon,
         permission: 'warehouses:manage',
         module: 'warehouse',
+      },
+    ],
+  },
+  {
+    label: 'orders',
+    items: [
+      {
+        to: '/orders/sales',
+        label: 'salesOrders',
+        icon: ClipboardListIcon,
+        permission: 'orders:read',
+        module: 'orders',
+      },
+      {
+        to: '/orders/purchase',
+        label: 'purchaseOrders',
+        icon: TruckIcon,
+        permission: 'orders:read',
+        module: 'orders',
       },
     ],
   },

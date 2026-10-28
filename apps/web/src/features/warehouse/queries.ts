@@ -159,6 +159,22 @@ export function useStockDocument(id: string) {
   });
 }
 
+/**
+ * What open purchase orders still bring of an item. Asked through the orders' API, not the
+ * orders feature (F12); keyed like the orders' own, so a receipt refreshes it.
+ */
+export function useIncoming(itemId: string, enabled: boolean) {
+  const company = useCompanyId();
+  return useQuery({
+    queryKey: ['orders', company, 'incoming', itemId],
+    queryFn: () =>
+      unwrap(
+        api.GET('/orders/incoming', { params: { header: header(company), query: { itemId } } }),
+      ),
+    enabled: enabled && Boolean(company),
+  });
+}
+
 /** Search functions for SearchCombobox: items for a line, parties for the header. */
 export function useItemSearch(warehouseId: string | undefined) {
   const company = useCompanyId();

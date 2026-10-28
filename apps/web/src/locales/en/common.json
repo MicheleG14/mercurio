@@ -38,14 +38,17 @@
     "group": {
       "registry": "Registry",
       "administration": "Administration",
-      "warehouse": "Warehouse"
+      "warehouse": "Warehouse",
+      "orders": "Orders"
     },
     "open": "Open the menu",
     "toggle": "Collapse or expand the menu",
     "stock": "Stock",
     "stockDocuments": "Movements",
     "belowReorder": "Below reorder",
-    "warehouses": "Warehouses"
+    "warehouses": "Warehouses",
+    "salesOrders": "Sales orders",
+    "purchaseOrders": "Purchase orders"
   },
   "actions": {
     "continue": "Continue",
