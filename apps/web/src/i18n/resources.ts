@@ -3,6 +3,7 @@ import enActivity from '@/locales/en/activity.json';
 import enAuth from '@/locales/en/auth.json';
 import enErrors from '@/locales/en/errors.json';
 import enHome from '@/locales/en/home.json';
+import enOrders from '@/locales/en/orders.json';
 import enRegistry from '@/locales/en/registry.json';
 import enCommon from '@/locales/en/common.json';
 import enStatus from '@/locales/en/status.json';
@@ -12,6 +13,7 @@ import itActivity from '@/locales/it/activity.json';
 import itAuth from '@/locales/it/auth.json';
 import itErrors from '@/locales/it/errors.json';
 import itHome from '@/locales/it/home.json';
+import itOrders from '@/locales/it/orders.json';
 import itRegistry from '@/locales/it/registry.json';
 import itCommon from '@/locales/it/common.json';
 import itStatus from '@/locales/it/status.json';
@@ -30,6 +32,7 @@ export const resources = {
     auth: itAuth,
     errors: itErrors,
     home: itHome,
+    orders: itOrders,
     registry: itRegistry,
     warehouse: itWarehouse,
   },
@@ -41,6 +44,7 @@ export const resources = {
     auth: enAuth,
     errors: enErrors,
     home: enHome,
+    orders: enOrders,
     registry: enRegistry,
     warehouse: enWarehouse,
   },

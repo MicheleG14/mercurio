@@ -38,14 +38,17 @@
     "group": {
       "registry": "Anagrafiche",
       "administration": "Amministrazione",
-      "warehouse": "Magazzino"
+      "warehouse": "Magazzino",
+      "orders": "Ordini"
     },
     "open": "Apri il menu",
     "toggle": "Riduci o espandi il menu",
     "stock": "Giacenze",
     "stockDocuments": "Movimenti",
     "belowReorder": "Sotto scorta",
-    "warehouses": "Magazzini"
+    "warehouses": "Magazzini",
+    "salesOrders": "Ordini clienti",
+    "purchaseOrders": "Ordini fornitori"
   },
   "actions": {
     "continue": "Continua",

@@ -54,7 +54,9 @@
     "title": "Sotto scorta",
     "description": "Articoli con giacenza disponibile (non prenotata) pari o inferiore al punto di riordino: da riordinare.",
     "empty": "Nessun articolo sotto scorta.",
-    "reorderQuantity": "Da riordinare"
+    "reorderQuantity": "Da riordinare",
+    "orderFromSuppliers": "Ordina ai fornitori",
+    "pickWarehouse": "Scegli un magazzino per ordinare ai fornitori."
   },
   "item": {
     "byWarehouse": "Giacenza per magazzino",
@@ -85,7 +87,9 @@
       "edit": "Modifica la soglia",
       "remove": "Togli la soglia",
       "none": "Nessuna soglia"
-    }
+    },
+    "incoming": "In arrivo dai fornitori",
+    "incomingTotal": "{{quantity}} in arrivo"
   },
   "documents": {
     "title": "Movimenti",

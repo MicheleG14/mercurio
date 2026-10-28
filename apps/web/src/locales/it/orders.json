@@ -1,0 +1,197 @@
+{
+  "status": {
+    "SALES": {
+      "DRAFT": "Bozza",
+      "CONFIRMED": "Da evadere",
+      "PARTIAL": "Evaso in parte",
+      "COMPLETED": "Evaso",
+      "CANCELLED": "Annullato"
+    },
+    "PURCHASE": {
+      "DRAFT": "Bozza",
+      "CONFIRMED": "In arrivo",
+      "PARTIAL": "Ricevuto in parte",
+      "COMPLETED": "Ricevuto",
+      "CANCELLED": "Annullato"
+    },
+    "late": "In ritardo",
+    "uncovered": "Scoperto"
+  },
+  "totals": {
+    "taxable": "Imponibile",
+    "vatRow": "IVA {{code}} su",
+    "vat": "IVA",
+    "total": "Totale"
+  },
+  "list": {
+    "title": {
+      "SALES": "Ordini clienti",
+      "PURCHASE": "Ordini fornitori"
+    },
+    "description": {
+      "SALES": "Ordini ricevuti dai clienti: prenotazione della merce ed evasione.",
+      "PURCHASE": "Ordini ai fornitori: merce in arrivo e ricezione."
+    },
+    "new": "Nuovo ordine",
+    "search": "Cerca per numero, riferimento o soggetto",
+    "filter": {
+      "status": "Stato",
+      "all": "Tutti",
+      "open": "Aperti",
+      "late": "In ritardo",
+      "uncovered": "Scoperti"
+    },
+    "empty": "Nessun ordine.",
+    "draft": "Bozza",
+    "columns": {
+      "number": "Numero",
+      "date": "Data",
+      "party": {
+        "SALES": "Cliente",
+        "PURCHASE": "Fornitore"
+      },
+      "requestedDate": "Consegna richiesta",
+      "total": "Totale",
+      "status": "Stato"
+    }
+  },
+  "form": {
+    "editTitle": "Bozza di ordine",
+    "newTitle": {
+      "SALES": "Nuovo ordine cliente",
+      "PURCHASE": "Nuovo ordine fornitore"
+    },
+    "description": "Una bozza si modifica liberamente; confermata, riceve il numero e non cambia più.",
+    "section": {
+      "header": "Testata",
+      "lines": "Righe",
+      "notes": "Note"
+    },
+    "fields": {
+      "party": {
+        "SALES": "Cliente",
+        "PURCHASE": "Fornitore"
+      },
+      "warehouse": {
+        "SALES": "Spedito da",
+        "PURCHASE": "Ricevuto in"
+      },
+      "orderDate": "Data dell'ordine",
+      "requestedDate": "Consegna richiesta",
+      "partyReference": {
+        "SALES": "Numero d'ordine del cliente",
+        "PURCHASE": "Conferma del fornitore"
+      },
+      "partyReferenceDate": "Data del riferimento",
+      "notes": "Note"
+    },
+    "hint": {
+      "warehouse": "Necessario per confermare."
+    },
+    "lines": {
+      "add": "Aggiungi riga",
+      "remove": "Togli la riga {{n}}",
+      "line": "Riga {{n}}",
+      "item": "Articolo",
+      "quantity": "Quantità",
+      "unitPrice": "Prezzo",
+      "discount": "Sconto %",
+      "vat": "IVA",
+      "available": "Disponibile: {{quantity}}",
+      "searchItem": "Cerca un articolo"
+    },
+    "searchParty": "Cerca per nome o partita IVA",
+    "saveDraft": "Salva bozza",
+    "saveAndConfirm": "Salva e conferma",
+    "confirming": "Conferma…"
+  },
+  "detail": {
+    "title": "Ordine {{reference}}",
+    "draftTitle": "Bozza di ordine",
+    "kind": {
+      "SALES": "Ordine cliente",
+      "PURCHASE": "Ordine fornitore"
+    },
+    "orderDate": "Data",
+    "createdBy": "Creato da",
+    "confirmedAt": "Confermato il",
+    "noLines": "Nessuna riga.",
+    "fulfilments": {
+      "SALES": "Evasioni",
+      "PURCHASE": "Ricezioni"
+    },
+    "fulfilmentLines_one": "{{count}} riga",
+    "fulfilmentLines_other": "{{count}} righe",
+    "reversed": "Annullata con {{reference}}",
+    "discount": "sconto {{percent}}%",
+    "vat": "IVA {{code}}",
+    "progress": {
+      "SALES": "evasi {{done}} su {{total}}",
+      "PURCHASE": "ricevuti {{done}} su {{total}}"
+    },
+    "remaining": "Residuo",
+    "reserved": "Prenotato",
+    "closed": "Chiuso"
+  },
+  "actions": {
+    "edit": "Modifica",
+    "confirm": "Conferma",
+    "delete": "Elimina",
+    "fulfil": {
+      "SALES": "Evadi",
+      "PURCHASE": "Ricevi"
+    },
+    "reserve": "Prenota disponibile",
+    "close": "Chiudi residuo",
+    "cancel": "Annulla l'ordine",
+    "duplicate": "Duplica",
+    "reverse": "Annulla la registrazione"
+  },
+  "confirm": {
+    "delete": {
+      "title": "Eliminare la bozza?",
+      "description": "La bozza non ha numero: sparisce senza lasciare traccia nella numerazione."
+    },
+    "close": {
+      "title": "Chiudere il residuo di {{reference}}?",
+      "description": {
+        "SALES": "Quanto non è ancora evaso non partirà più: la merce prenotata torna disponibile.",
+        "PURCHASE": "Quanto non è ancora ricevuto non arriverà più."
+      }
+    },
+    "cancel": {
+      "title": "Annullare {{reference}}?",
+      "description": "L'ordine resta nell'elenco come annullato, con il suo numero; la merce prenotata torna disponibile."
+    },
+    "reverse": {
+      "title": "Annullare questa registrazione?",
+      "description": {
+        "SALES": "Il documento di magazzino viene stornato, la merce rientra e torna prenotata per questo ordine.",
+        "PURCHASE": "Il documento di magazzino viene stornato e la merce esce di nuovo dal magazzino."
+      }
+    }
+  },
+  "fulfil": {
+    "title": {
+      "SALES": "Evadi {{reference}}",
+      "PURCHASE": "Ricevi {{reference}}"
+    },
+    "all": "Tutto",
+    "none": "Niente",
+    "remaining": "Residuo {{quantity}}",
+    "reserved": "prenotato {{quantity}}",
+    "quantity": {
+      "SALES": "Da spedire",
+      "PURCHASE": "Arrivata"
+    },
+    "document": "Documento",
+    "date": "Data",
+    "ref": "Numero del DDT del fornitore",
+    "refDate": "Data del DDT",
+    "post": {
+      "SALES": "Registra l'evasione",
+      "PURCHASE": "Registra la ricezione"
+    },
+    "posting": "Registrazione…"
+  }
+}

@@ -31,6 +31,15 @@ const TYPES = [
   'STOCK_DOCUMENT_REVERSED',
   'REORDER_LEVEL_SET',
   'REORDER_LEVEL_REMOVED',
+  'ORDER_CREATED',
+  'ORDER_UPDATED',
+  'ORDER_DELETED',
+  'ORDER_CONFIRMED',
+  'ORDER_RESERVED',
+  'ORDER_CLOSED',
+  'ORDER_CANCELLED',
+  'ORDER_FULFILLED',
+  'ORDER_FULFILMENT_REVERSED',
 ] as const;
 
 /** Records an event can be about, and where they open. */
@@ -38,6 +47,7 @@ const SUBJECT_PATHS: Record<string, string> = {
   party: '/parties',
   item: '/items',
   stock_document: '/stock/documents',
+  order: '/orders',
 };
 
 /** The audit log of the current customer, for administrators (permission audit:read). */

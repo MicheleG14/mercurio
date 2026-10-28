@@ -6,7 +6,6 @@
   "modules": "Enabled modules",
   "noModules": "No module enabled",
   "company": "Company",
-  "comingSoon": "Module features arrive in the next phases.",
   "module": {
     "registry": "Registry",
     "warehouse": "Warehouse",
@@ -18,5 +17,13 @@
     "belowReorder": "Items below reorder",
     "documentsToday": "Today's documents",
     "open": "See the stock"
+  },
+  "orders": {
+    "title": "Orders",
+    "salesOpen": "Sales to ship",
+    "salesUncovered": "Sales uncovered",
+    "salesLate": "Sales late",
+    "purchaseOpen": "Purchases incoming",
+    "purchaseLate": "Purchases late"
   }
 }

@@ -6,7 +6,6 @@
   "modules": "Moduli attivi",
   "noModules": "Nessun modulo attivo",
   "company": "Azienda",
-  "comingSoon": "Le funzioni dei moduli arrivano nelle prossime fasi.",
   "module": {
     "registry": "Anagrafiche",
     "warehouse": "Magazzino",
@@ -18,5 +17,13 @@
     "belowReorder": "Articoli sotto scorta",
     "documentsToday": "Documenti di oggi",
     "open": "Vedi le giacenze"
+  },
+  "orders": {
+    "title": "Ordini",
+    "salesOpen": "Clienti da evadere",
+    "salesUncovered": "Clienti scoperti",
+    "salesLate": "Clienti in ritardo",
+    "purchaseOpen": "Fornitori in arrivo",
+    "purchaseLate": "Fornitori in ritardo"
   }
 }

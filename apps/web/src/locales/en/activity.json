@@ -31,13 +31,23 @@
     "STOCK_DOCUMENT_POSTED": "Stock document recorded",
     "STOCK_DOCUMENT_REVERSED": "Stock document reversed",
     "REORDER_LEVEL_SET": "Reorder level set",
-    "REORDER_LEVEL_REMOVED": "Reorder level removed"
+    "REORDER_LEVEL_REMOVED": "Reorder level removed",
+    "ORDER_CREATED": "Order created (draft)",
+    "ORDER_UPDATED": "Draft order changed",
+    "ORDER_DELETED": "Draft order deleted",
+    "ORDER_CONFIRMED": "Order confirmed",
+    "ORDER_RESERVED": "Goods reserved for an order",
+    "ORDER_CLOSED": "Rest of an order closed",
+    "ORDER_CANCELLED": "Order cancelled",
+    "ORDER_FULFILLED": "Order received or shipped",
+    "ORDER_FULFILMENT_REVERSED": "Receipt or shipment undone"
   },
   "subjectType": {
     "party": "Party",
     "item": "Item",
     "warehouse": "Warehouse",
-    "stock_document": "Stock document"
+    "stock_document": "Stock document",
+    "order": "Order"
   },
   "fields": "Fields: {{fields}}"
 }

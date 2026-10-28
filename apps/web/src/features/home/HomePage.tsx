@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMe } from '@/lib/auth/me';
-import { useStockSummary } from './queries';
+import { useOrdersSummary, useStockSummary } from './queries';
 
 /** The landing page after signing in. Module features join it in the next phases. */
 export function HomePage() {
@@ -15,6 +15,9 @@ export function HomePage() {
   const warehouse =
     Boolean(me?.modules.includes('warehouse')) && Boolean(me?.permissions.includes('stock:read'));
   const stock = useStockSummary(warehouse);
+  const orders =
+    Boolean(me?.modules.includes('orders')) && Boolean(me?.permissions.includes('orders:read'));
+  const ordersSummary = useOrdersSummary(orders).data;
   if (!me?.tenant) return null;
 
   return (
@@ -73,8 +76,36 @@ export function HomePage() {
             </CardContent>
           </Card>
         )}
+        {orders && (
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>{t('orders.title')}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <dl className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+                {(
+                  [
+                    ['salesOpen', '/orders/sales?status=OPEN'],
+                    ['salesUncovered', '/orders/sales?status=OPEN&uncovered=true'],
+                    ['salesLate', '/orders/sales?status=OPEN&late=true'],
+                    ['purchaseOpen', '/orders/purchase?status=OPEN'],
+                    ['purchaseLate', '/orders/purchase?status=OPEN&late=true'],
+                  ] as const
+                ).map(([key, to]) => (
+                  <div key={key}>
+                    <dt className="text-muted-foreground text-sm">{t(`orders.${key}`)}</dt>
+                    <dd className="text-2xl font-semibold tabular-nums">
+                      <Link to={to} className="underline-offset-4 hover:underline">
+                        {ordersSummary?.[key] ?? '–'}
+                      </Link>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          </Card>
+        )}
       </div>
-      <p className="text-muted-foreground text-sm">{t('comingSoon')}</p>
     </div>
   );
 }

@@ -15,8 +15,10 @@ import { decimalToInput, parseDecimalInput, quantityLimits } from '@/lib/decimal
 import { formatDate } from '@/lib/format';
 import { useQuantity, useWarehouseRights } from './hooks';
 import { BelowBadge, WarehouseSelect } from './parts';
+import { useMe } from '@/lib/auth/me';
 import {
   type ItemStock,
+  useIncoming,
   useItemStock,
   useMovements,
   useRemoveReorderLevel,
@@ -79,9 +81,56 @@ export function ItemStockPage() {
       </section>
 
       {item.reservations.length > 0 && <Reservations item={item} />}
+      <Incoming item={item} />
 
       <History item={item} />
     </div>
+  );
+}
+
+/** What suppliers still bring, when the tenant has orders and the person may read them. */
+function Incoming({ item }: { item: ItemStock }) {
+  const { t, i18n } = useTranslation('warehouse');
+  const quantity = useQuantity();
+  const me = useMe().data;
+  const enabled =
+    Boolean(me?.modules.includes('orders')) && Boolean(me?.permissions.includes('orders:read'));
+  const incoming = useIncoming(item.itemId, enabled).data;
+  if (!incoming || incoming.orders.length === 0) return null;
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-sm font-medium">{t('item.incoming')}</h2>
+        <span className="text-sm tabular-nums">
+          {t('item.incomingTotal', {
+            quantity: `${quantity(incoming.quantity, item.unitDecimals)} ${item.unit}`,
+          })}
+        </span>
+      </div>
+      <ul className="border-border divide-border divide-y rounded-lg border">
+        {incoming.orders.map((o) => (
+          <li
+            key={o.orderId}
+            className="flex items-baseline justify-between gap-3 px-4 py-2 text-sm"
+          >
+            <span className="flex items-baseline gap-2">
+              <span className="text-muted-foreground font-mono">{o.warehouseCode}</span>
+              <Link className="underline underline-offset-4" to={`/orders/${o.orderId}`}>
+                {o.reference}
+              </Link>
+              {o.requestedDate && (
+                <span className="text-muted-foreground">
+                  {formatDate(o.requestedDate, i18n.language)}
+                </span>
+              )}
+            </span>
+            <span className="tabular-nums">
+              {quantity(o.remainingQuantity, item.unitDecimals)} {item.unit}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

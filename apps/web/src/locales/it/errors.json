@@ -42,6 +42,15 @@
   "DOCUMENT_ID_REUSED": "Il documento è cambiato dopo il primo invio: ricarica la pagina e ricomincia.",
   "STOCK_DOCUMENT_NOT_FOUND": "Documento non trovato.",
   "REORDER_LEVEL_NOT_FOUND": "Soglia di riordino non trovata.",
+  "ORDER_NOT_FOUND": "Ordine non trovato in questa azienda.",
+  "ORDER_NOT_DRAFT": "L'ordine è già confermato: non si modifica più. Per correggerlo, annullalo e duplicalo.",
+  "ORDER_NOT_OPEN": "L'ordine non è aperto: è una bozza, è già evaso o ricevuto, oppure è annullato.",
+  "ORDER_HAS_FULFILMENTS": "L'ordine ha già ricezioni o evasioni: chiudi il residuo invece di annullarlo.",
+  "ORDER_DOES_NOT_RESERVE": "Solo gli ordini cliente prenotano la merce.",
+  "NOTHING_TO_FULFIL": "Indica almeno una quantità maggiore di zero.",
+  "NOTHING_TO_CLOSE": "Non c'è residuo da chiudere.",
+  "FULFILMENT_ALREADY_REVERSED": "Questa registrazione è già stata annullata.",
+  "FULFILMENT_NOT_FOUND": "Registrazione non trovata in questo ordine.",
   "validation": {
     "required": "Campo obbligatorio.",
     "email": "Inserisci un indirizzo email valido.",
@@ -97,6 +106,13 @@
     "DATE_INVALID": "Data non valida.",
     "DATE_AFTER_DOCUMENT": "Non può essere successiva alla data del documento.",
     "ARRAY_MIN_SIZE": "Aggiungi almeno una riga.",
-    "ARRAY_MAX_SIZE": "Al massimo 200 righe."
+    "ARRAY_MAX_SIZE": "Al massimo 200 righe.",
+    "QUANTITY_OVER_REMAINING": "Più del residuo della riga.",
+    "PRICE_INVALID": "Prezzo non valido: usa la virgola per i decimali, al massimo 4.",
+    "DISCOUNT_INVALID": "Sconto non valido: da 0 a 100, al massimo 2 decimali.",
+    "REQUESTED_BEFORE_ORDER": "Non può precedere la data dell'ordine.",
+    "NO_LINES": "Aggiungi almeno una riga per confermare.",
+    "ORDER_LINE_NOT_FOUND": "Riga non trovata nell'ordine.",
+    "DUPLICATE_LINE": "Riga già presente."
   }
 }

@@ -54,7 +54,9 @@
     "title": "Below reorder",
     "description": "Items whose available (unreserved) stock is at or below their reorder point: time to order.",
     "empty": "No items below reorder.",
-    "reorderQuantity": "To order"
+    "reorderQuantity": "To order",
+    "orderFromSuppliers": "Order from suppliers",
+    "pickWarehouse": "Choose a warehouse to order from suppliers."
   },
   "item": {
     "byWarehouse": "Stock by warehouse",
@@ -85,7 +87,9 @@
       "edit": "Change the level",
       "remove": "Remove the level",
       "none": "No level"
-    }
+    },
+    "incoming": "Incoming from suppliers",
+    "incomingTotal": "{{quantity}} incoming"
   },
   "documents": {
     "title": "Movements",
