@@ -1,6 +1,7 @@
 import type { IdentityService } from '../modules/identity/index.js';
 import type { PartyInput, RegistryService } from '../modules/registry/index.js';
 import type { TenancyService } from '../modules/tenancy/index.js';
+import type { OrdersService } from '../modules/orders/index.js';
 import type { CreateStockDocumentDto, WarehouseService } from '../modules/warehouse/index.js';
 import { uuidv7 } from '../shared/uuid.js';
 import type { DbClient } from '../prisma/index.js';
@@ -238,6 +239,145 @@ export const DEMO = {
           ],
         },
       ],
+      // Per company: orders in the order they are recorded, purchases first so the goods are
+      // there when sales reserve them. Lines as [item code, quantity, unit price, discount].
+      // Every status shows up: received in two deliveries, partial, incoming, cancelled, draft;
+      // shipped, partial, reserved, uncovered and late, a shipment undone, a rest closed.
+      orders: [
+        {
+          warehouse: 'SEDE',
+          orders: [
+            order(
+              'PURCHASE',
+              '2026-10-13',
+              '0834567890',
+              [
+                ['VT-M6-20', '2000', '0.06'],
+                ['DD-M6', '1000', '0.025'],
+              ],
+              {
+                ref: 'Conf. VL 1022',
+                requested: '2026-10-20',
+                fulfil: [
+                  {
+                    date: '2026-10-16',
+                    ref: 'VL-2026/0901',
+                    lines: [
+                      ['VT-M6-20', '1000'],
+                      ['DD-M6', '1000'],
+                    ],
+                  },
+                  { date: '2026-10-21', ref: 'VL-2026/0933', lines: [['VT-M6-20', '1000']] },
+                ],
+              },
+            ),
+            order('PURCHASE', '2026-10-19', '0723456789', [['CM-PORT', '1000', '0.15']], {
+              requested: '2026-10-30',
+              fulfil: [{ date: '2026-10-22', ref: 'EN 4520', lines: [['CM-PORT', '400']] }],
+            }),
+            order(
+              'PURCHASE',
+              '2026-10-24',
+              '0834567890',
+              [
+                ['TR-18V', '10', '55'],
+                ['SM-125', '5', '40'],
+              ],
+              {
+                requested: '2026-11-05',
+              },
+            ),
+            order('PURCHASE', '2026-10-06', '0723456789', [['VR-BIA', '50', '4.5']], {
+              cancelOn: '2026-10-07',
+              notes: 'Annullato: prezzo non confermato dal fornitore.',
+            }),
+            order('PURCHASE', '2026-10-27', '0834567890', [['GU-NIT', '50', '3.2']], {
+              draft: true,
+            }),
+            order(
+              'SALES',
+              '2026-10-14',
+              '0612345678',
+              [
+                ['VT-M6-20', '500', '0.12'],
+                ['TS-8', '10', '4.90'],
+              ],
+              {
+                ref: 'ORD 2026/311',
+                fulfil: [
+                  {
+                    date: '2026-10-15',
+                    lines: [
+                      ['VT-M6-20', '500'],
+                      ['TS-8', '10'],
+                    ],
+                  },
+                ],
+              },
+            ),
+            order(
+              'SALES',
+              '2026-10-20',
+              '0723456789',
+              [
+                ['CM-PORT', '200', '0.22'],
+                ['CV-3G15', '100', '0.85'],
+              ],
+              {
+                requested: '2026-11-02',
+                fulfil: [{ date: '2026-10-21', lines: [['CM-PORT', '100']] }],
+              },
+            ),
+            order(
+              'SALES',
+              '2026-10-26',
+              '0945678901',
+              [
+                ['CH-BRU', '4', '12.50', '5'],
+                ['TR-18V', '2', '89'],
+              ],
+              {
+                requested: '2026-11-10',
+              },
+            ),
+            order('SALES', '2026-10-23', 'DE811234567', [['SM-125', '5', '64.90']], {
+              ref: 'PO 77812',
+              requested: '2026-10-25',
+              notes: 'Spedire tutto insieme quando arrivano le smerigliatrici.',
+            }),
+            order('SALES', '2026-10-09', '0612345678', [['VR-BIA', '4', '7.80']], {
+              fulfil: [{ date: '2026-10-10', lines: [['VR-BIA', '4']], reverseOn: '2026-10-11' }],
+              notes: 'Prima spedizione annullata: colore sbagliato.',
+            }),
+            order('SALES', '2026-10-16', '0612345678', [['RN-M6', '1000', '0.03']], {
+              fulfil: [{ date: '2026-10-17', lines: [['RN-M6', '600']] }],
+              closeOn: '2026-10-18',
+              notes: 'Il cliente non vuole il resto.',
+            }),
+            order(
+              'SALES',
+              '2026-10-27',
+              '0612345678',
+              [
+                ['GU-NIT', '10', '6.40'],
+                ['MAN-INST', '2', '18'],
+              ],
+              {
+                draft: true,
+              },
+            ),
+          ],
+        },
+        {
+          warehouse: 'HUB',
+          orders: [
+            order('PURCHASE', '2026-10-26', '0723456789', [['CM-PORT', '2000', '0.14']], {
+              requested: '2026-11-03',
+            }),
+            order('SALES', '2026-10-27', '0723456789', [['CM-PORT', '500', '0.20']]),
+          ],
+        },
+      ],
     },
     {
       slug: 'bianchi',
@@ -279,6 +419,8 @@ export interface SeedSummary {
   /** Warehouses and stock documents added by this run. */
   warehouses: number;
   documents: number;
+  /** Orders added by this run. */
+  orders: number;
 }
 
 /**
@@ -295,6 +437,7 @@ export async function seedDemo(
     identity: IdentityService;
     registry: RegistryService;
     warehouse: WarehouseService;
+    orders: OrdersService;
   },
   suffix = '',
 ) {
@@ -346,6 +489,7 @@ export async function seedDemo(
       'warehouse' in tenant
         ? await seedWarehouse(db, services, tenantId, tenant)
         : { warehouses: 0, documents: 0 };
+    const orders = 'orders' in tenant ? await seedOrders(db, services, tenantId, tenant) : 0;
     summary.push({
       slug: slug(tenant.slug),
       created,
@@ -354,6 +498,7 @@ export async function seedDemo(
       parties,
       items,
       ...stock,
+      orders,
     });
   }
   return { tenants: summary, userIds: [...userIds] };
@@ -435,6 +580,122 @@ async function seedWarehouse(
     }
   }
   return { warehouses, documents };
+}
+
+/**
+ * Orders of a demo tenant, added only to a company that has none. Each action goes through the
+ * same use case as the API and is recorded "on its own day", like the stock documents: created
+ * on the order date, confirmed the same day unless it stays a draft, then received or shipped,
+ * undone, closed or cancelled on the dates given.
+ */
+async function seedOrders(
+  db: DbClient,
+  services: {
+    tenancy: TenancyService;
+    registry: RegistryService;
+    warehouse: WarehouseService;
+    orders: OrdersService;
+  },
+  tenantId: string,
+  tenant: (typeof DEMO.tenants)[0],
+): Promise<number> {
+  let added = 0;
+  const companyIds = await services.tenancy.companyIdsByVat(
+    db,
+    tenantId,
+    tenant.companies.map((c) => c.vatNumber),
+  );
+  const itemIds = await services.registry.itemIdsByCode(
+    db,
+    tenantId,
+    tenant.items.map((i) => i.code),
+  );
+  for (const [index, spec] of tenant.orders.entries()) {
+    const company = { tenantId, companyId: companyIds[index]!, userId: null };
+    if (await services.orders.hasOrders(db, company.companyId)) continue;
+    const warehouse = tenant.warehouse[index]!.warehouses.find((w) => w.code === spec.warehouse)!;
+    const warehouseId = (await services.warehouse.ensureWarehouse(db, company, warehouse)).id;
+    for (const o of spec.orders) {
+      const vat = /^\d/.test(o.party) ? withCheckDigit(o.party) : o.party;
+      const id = uuidv7(Date.parse(`${o.date}T08:00:00Z`));
+      let current = await services.orders.createDraft(
+        db,
+        company,
+        {
+          id,
+          kind: o.kind,
+          orderDate: o.date,
+          partyId: (await services.registry.partyIdByVat(db, tenantId, vat))!,
+          warehouseId,
+          partyReference: o.ref ?? null,
+          requestedDate: o.requested ?? null,
+          notes: o.notes ?? null,
+          lines: o.lines.map(([code, quantity, unitPrice, discountPercent]) => ({
+            itemId: itemIds.get(code)!,
+            quantity,
+            unitPrice,
+            ...(discountPercent ? { discountPercent } : {}),
+          })),
+        },
+        o.date,
+      );
+      added++;
+      if (o.draft) continue;
+      current = await services.orders.confirm(db, company, id, current.version, o.date);
+      const lineOf = (code: string) => current.lines[o.lines.findIndex(([c]) => c === code)]!.id;
+      for (const f of o.fulfil ?? []) {
+        const fulfilmentId = uuidv7(Date.parse(`${f.date}T10:00:00Z`));
+        current = await services.orders.fulfil(
+          db,
+          company,
+          id,
+          {
+            id: fulfilmentId,
+            documentDate: f.date,
+            partyDocumentRef: f.ref ?? null,
+            lines: f.lines.map(([code, quantity]) => ({ orderLineId: lineOf(code), quantity })),
+          },
+          f.date,
+        );
+        if (f.reverseOn) {
+          current = await services.orders.reverseFulfilment(
+            db,
+            company,
+            id,
+            fulfilmentId,
+            f.reverseOn,
+          );
+        }
+      }
+      if (o.closeOn) current = await services.orders.close(db, company, id, current.version);
+      if (o.cancelOn) current = await services.orders.cancel(db, company, id, current.version);
+    }
+  }
+  return added;
+}
+
+/** A demo order: kind, date, party (VAT number, first 10 digits if Italian), lines. */
+function order(
+  kind: 'PURCHASE' | 'SALES',
+  date: string,
+  party: string,
+  lines: [code: string, quantity: string, unitPrice: string, discount?: string][],
+  extra: {
+    ref?: string;
+    requested?: string;
+    notes?: string;
+    draft?: boolean;
+    fulfil?: {
+      date: string;
+      ref?: string;
+      lines: [code: string, quantity: string][];
+      reverseOn?: string;
+    }[];
+    closeOn?: string;
+    cancelOn?: string;
+  } = {},
+) {
+  return { kind, date, party, lines, ...extra };
 }
 
 /** A demo stock document: reason, date, warehouse code, lines as [item code, quantity]. */

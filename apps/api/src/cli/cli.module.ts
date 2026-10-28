@@ -3,6 +3,7 @@ import { APP_CONFIG, loadConfig } from '../config/app-config.js';
 import { AuditModule } from '../modules/audit/index.js';
 import { AuthModule } from '../modules/auth/index.js';
 import { IdentityModule } from '../modules/identity/index.js';
+import { OrdersModule } from '../modules/orders/index.js';
 import { RegistryModule } from '../modules/registry/index.js';
 import { TenancyModule } from '../modules/tenancy/index.js';
 import { WarehouseModule } from '../modules/warehouse/index.js';
@@ -41,6 +42,7 @@ class CliConfigModule {}
     AuthModule,
     RegistryModule,
     WarehouseModule,
+    OrdersModule,
   ],
 })
 export class CliModule {}

@@ -10,6 +10,7 @@ import {
   IdentityModule,
   IdentityService,
 } from '../src/modules/identity/index.js';
+import { OrdersModule, OrdersService } from '../src/modules/orders/index.js';
 import { RegistryModule, RegistryService } from '../src/modules/registry/index.js';
 import { TenancyModule, TenancyService } from '../src/modules/tenancy/index.js';
 import { WarehouseModule, WarehouseService } from '../src/modules/warehouse/index.js';
@@ -25,6 +26,7 @@ describe('demo seed (e2e)', () => {
   let identity: IdentityService;
   let registry: RegistryService;
   let warehouse: WarehouseService;
+  let orders: OrdersService;
   let close: () => Promise<void>;
   const suffix = uniqueSuffix();
   const email = (local: string) => `${local}.${suffix}@example.com`;
@@ -41,6 +43,7 @@ describe('demo seed (e2e)', () => {
         IdentityModule,
         RegistryModule,
         WarehouseModule,
+        OrdersModule,
       ],
     }).compile();
     await moduleRef.init();
@@ -49,10 +52,11 @@ describe('demo seed (e2e)', () => {
     identity = moduleRef.get(IdentityService);
     registry = moduleRef.get(RegistryService);
     warehouse = moduleRef.get(WarehouseService);
+    orders = moduleRef.get(OrdersService);
     close = () => moduleRef.close();
 
     await admin.$transaction((tx) =>
-      seedDemo(tx, { tenancy, identity, registry, warehouse }, suffix),
+      seedDemo(tx, { tenancy, identity, registry, warehouse, orders }, suffix),
     );
     const tenants = await admin.tenant.findMany({
       where: { slug: { in: [`rossi-${suffix}`, `bianchi-${suffix}`] } },
@@ -169,12 +173,18 @@ describe('demo seed (e2e)', () => {
       ['HUB', logistica!.id],
       ['SEDE', srl!.id],
     ]);
-    // Nine documents and a reversal in Rossi Srl, two in Rossi Logistica.
-    expect(await admin.stockDocument.count({ where: { companyId: srl!.id } })).toBe(10);
+    // Nine documents and a reversal in Rossi Srl, two in Rossi Logistica; then the receipts and
+    // shipments of the demo orders, with one shipment undone.
+    expect(
+      await admin.stockDocument.count({ where: { companyId: srl!.id, originType: null } }),
+    ).toBe(10);
     expect(await admin.stockDocument.count({ where: { companyId: logistica!.id } })).toBe(2);
     expect(
+      await admin.stockDocument.count({ where: { companyId: srl!.id, originType: 'order' } }),
+    ).toBe(8);
+    expect(
       await admin.stockDocument.count({ where: { tenantId: rossi.id, reason: 'REVERSAL' } }),
-    ).toBe(1);
+    ).toBe(2);
     expect(await warehouse.verifyStock(admin)).toEqual([]);
 
     const below = await admin.$queryRaw<{ code: string }[]>`
@@ -187,6 +197,49 @@ describe('demo seed (e2e)', () => {
     expect(await admin.warehouse.count({ where: { tenantId: bianchi.id } })).toBe(0);
   });
 
+  it('records the orders of Rossi in every status, through the same rules as the API', async () => {
+    const [logistica, srl] = rossi.companies;
+    const byStatus = async (companyId: string) =>
+      (
+        await admin.order.findMany({
+          where: { companyId },
+          orderBy: [{ kind: 'asc' }, { orderDate: 'asc' }],
+        })
+      ).map((o) => `${o.kind} ${o.status}`);
+    expect((await byStatus(srl!.id)).sort()).toEqual(
+      [
+        'PURCHASE CANCELLED',
+        'PURCHASE COMPLETED',
+        'PURCHASE PARTIAL',
+        'PURCHASE CONFIRMED',
+        'PURCHASE DRAFT',
+        'SALES COMPLETED',
+        'SALES PARTIAL',
+        'SALES CONFIRMED',
+        'SALES CONFIRMED',
+        'SALES CONFIRMED',
+        'SALES COMPLETED',
+        'SALES DRAFT',
+      ].sort(),
+    );
+    expect(await byStatus(logistica!.id)).toEqual(['PURCHASE CONFIRMED', 'SALES CONFIRMED']);
+    // The smerigliatrici of the German customer: 3 of 5 reserved, the rest waits for the supplier.
+    const reserved = await admin.$queryRaw<{ code: string; reserved: string }[]>`
+      SELECT i.code, sum(r.quantity)::text AS reserved FROM stock_reservations r
+      JOIN items i ON i.id = r.item_id
+      WHERE r.tenant_id = ${rossi.id}::uuid GROUP BY i.code ORDER BY i.code`;
+    expect(reserved).toEqual([
+      { code: 'CH-BRU', reserved: '4.000' },
+      { code: 'CM-PORT', reserved: '600.000' },
+      { code: 'CV-3G15', reserved: '100.000' },
+      { code: 'SM-125', reserved: '3.000' },
+      { code: 'TR-18V', reserved: '2.000' },
+      { code: 'VR-BIA', reserved: '4.000' },
+    ]);
+    expect(await warehouse.verifyStock(admin)).toEqual([]);
+    expect(await admin.order.count({ where: { tenantId: bianchi.id } })).toBe(0);
+  });
+
   it('adds only what is missing when run again', async () => {
     const people = await admin.user.count({
       where: { email: { endsWith: `.${suffix}@example.com` } },
@@ -196,7 +249,7 @@ describe('demo seed (e2e)', () => {
     await admin.item.deleteMany({ where: { tenantId: rossi.id, code: 'MDO-ORA' } });
 
     const again = await admin.$transaction((tx) =>
-      seedDemo(tx, { tenancy, identity, registry, warehouse }, suffix),
+      seedDemo(tx, { tenancy, identity, registry, warehouse, orders }, suffix),
     );
 
     expect(again.userIds).toEqual([]);
@@ -207,6 +260,7 @@ describe('demo seed (e2e)', () => {
         items: 1,
         warehouses: 0,
         documents: 0,
+        orders: 0,
       }),
       expect.objectContaining({
         created: false,
@@ -214,6 +268,7 @@ describe('demo seed (e2e)', () => {
         items: 0,
         warehouses: 0,
         documents: 0,
+        orders: 0,
       }),
     ]);
     expect(await admin.item.count({ where: { tenantId: rossi.id } })).toBe(15);
