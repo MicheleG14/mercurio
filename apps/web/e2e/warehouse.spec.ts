@@ -99,7 +99,7 @@ test('receive goods, refuse a shortage, reverse, see what to reorder', async ({ 
   await choose(page, /Riga 1/, `PW-A-${run}`);
   await page.getByLabel(/Quantità/).fill('11');
   await page.getByRole('button', { name: 'Registra' }).click();
-  await expect(page.getByText('Giacenza insufficiente.')).toBeVisible();
+  await expect(page.getByText('Giacenza disponibile insufficiente.')).toBeVisible();
   await page.getByLabel(/Quantità/).fill('4');
   await page.getByRole('button', { name: 'Registra' }).click();
   await expect(page.getByRole('heading', { name: /^Documento SC-\d{4}\/0001$/ })).toBeVisible();

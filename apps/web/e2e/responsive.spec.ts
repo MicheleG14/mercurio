@@ -127,6 +127,78 @@ test('@phone a receipt recorded from the phone, the stock as cards', async ({ pa
   await snap(page, '6-stock');
 });
 
+test('@phone a purchase order written and received from the phone', async ({ page }) => {
+  const state = JSON.parse(readFileSync(resolve(import.meta.dirname, '.state.json'), 'utf8')) as {
+    ordersPhone: { code: string };
+  };
+  const run = randomInt(100_000, 1_000_000);
+  const code = `PO-${run}`;
+  const supplier = `Fornitore Telefono ${run} Srl`;
+  await activateAndEnter(page, state.ordersPhone.code);
+  const go = async (name: string) => {
+    await page.getByRole('button', { name: 'Apri il menu' }).click();
+    const panel = page.getByRole('dialog', { name: 'Menu principale' });
+    await panel.getByRole('link', { name }).click();
+    await expect(panel).toBeHidden();
+  };
+
+  await go('Magazzini');
+  await page.getByRole('button', { name: 'Nuovo magazzino' }).click();
+  await page.getByLabel('Codice').fill('SEDE');
+  await page.getByLabel('Nome').fill('Magazzino della sede');
+  await page.getByRole('button', { name: 'Salva' }).click();
+  await expect(page.getByText('Magazzino della sede')).toBeVisible();
+
+  await go('Articoli');
+  await page.getByRole('link', { name: 'Nuovo articolo' }).click();
+  await page.getByLabel('Codice', { exact: true }).fill(code);
+  await page.getByLabel('Descrizione').fill('Articolo ordinato dal telefono');
+  await page.getByRole('button', { name: 'Salva' }).click();
+  await expect(page.getByRole('heading', { name: new RegExp(code) })).toBeVisible();
+
+  await go('Clienti e fornitori');
+  await page.getByRole('link', { name: 'Nuovo soggetto' }).click();
+  await page.getByLabel('Ragione sociale').fill(supplier);
+  await page.getByLabel('Partita IVA').fill(newVat());
+  await page.getByRole('checkbox', { name: 'Fornitore', exact: true }).check();
+  await page.getByRole('button', { name: 'Salva' }).click();
+  await expect(page.getByRole('heading', { name: supplier })).toBeVisible();
+
+  // The order: header and a line as a card, the buttons at the bottom of the screen.
+  await go('Ordini fornitori');
+  await page.getByRole('link', { name: 'Nuovo ordine' }).click();
+  const party = page.getByRole('combobox', { name: 'Fornitore' });
+  await party.click();
+  await party.fill(String(run));
+  await page.getByRole('option', { name: new RegExp(supplier) }).click();
+  const item = page.getByRole('combobox', { name: /Riga 1/ });
+  await item.click();
+  await item.fill(code);
+  await page.getByRole('option', { name: new RegExp(code) }).click();
+  await page.getByLabel(/Quantità/).fill('8');
+  await page.getByLabel('Prezzo').fill('2,5');
+  await expectNoHorizontalScroll(page);
+  await snap(page, '7-new-order');
+  await page.getByRole('button', { name: 'Salva e conferma' }).click();
+  await expect(page.getByRole('heading', { name: /^Ordine OF-/ })).toBeVisible();
+  await expectNoHorizontalScroll(page);
+  await snap(page, '8-order');
+
+  // Received at the gate: the quantity is proposed, Record at the bottom.
+  await page.getByRole('link', { name: 'Ricevi' }).click();
+  await expect(page.getByLabel(/Arrivata/)).toHaveValue('8');
+  await page.getByLabel(/Arrivata/).fill('5');
+  await expectNoHorizontalScroll(page);
+  await snap(page, '9-receive');
+  await page.getByRole('button', { name: 'Registra la ricezione' }).click();
+  await expect(page.getByText('Ricevuto in parte', { exact: true })).toBeVisible();
+
+  await go('Ordini fornitori');
+  await expect(page.getByRole('table')).toHaveCount(0);
+  await expectNoHorizontalScroll(page);
+  await snap(page, '10-orders');
+});
+
 test('@tablet icons-only sidebar, the table without secondary columns', async ({ page }) => {
   await signInAs(page, 'marco.verdi@example.com');
   await expect(page.getByRole('navigation', { name: 'Menu principale' })).toBeVisible();
@@ -143,6 +215,15 @@ test('@tablet icons-only sidebar, the table without secondary columns', async ({
     page.getByRole('dialog', { name: 'Menu principale' }).getByText('Anagrafiche'),
   ).toBeVisible();
   await snap(page, '2-menu');
+
+  // The orders of the demo company, as a table that fits.
+  await page
+    .getByRole('dialog', { name: 'Menu principale' })
+    .getByRole('link', { name: 'Ordini clienti' })
+    .click();
+  await expect(page.getByRole('link', { name: /^OC-/ }).first()).toBeVisible();
+  await expectNoHorizontalScroll(page);
+  await snap(page, '3-orders');
 });
 
 test('@desktop the sidebar and the list on a desktop', async ({ page }) => {

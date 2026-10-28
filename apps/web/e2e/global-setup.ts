@@ -70,12 +70,12 @@ export default function globalSetup(): void {
 
   // The warehouse, from the desktop and from a phone: one new tenant each, with its own
   // administrator, so the two tests never spend the same one-time code.
-  const warehouseTenant = (key: string, vatFirst10: string) => {
+  const warehouseTenant = (key: string, vatFirst10: string, modules = 'registry,warehouse') => {
     const admin = `browser-${key}-${run}@example.com`;
     const output = cli(
       'create-tenant',
       ...['--name', `Browser Magazzino ${key} ${run}`, '--slug', `browser-${key}-${run}`],
-      ...['--modules', 'registry,warehouse'],
+      ...['--modules', modules],
       ...['--company-name', `Magazzino ${key} Srl`, '--vat', vat(vatFirst10)],
       ...['--admin-email', admin, '--admin-name', `Magazziniere ${key}`],
     );
@@ -91,6 +91,9 @@ export default function globalSetup(): void {
       second: second.name,
       warehouseDesktop: warehouseTenant('wd', '0612345678'),
       warehousePhone: warehouseTenant('wp', '0723456789'),
+      // Orders, likewise: one tenant for the desktop flow, one for the phone.
+      ordersDesktop: warehouseTenant('od', '0834567890', 'registry,warehouse,orders'),
+      ordersPhone: warehouseTenant('op', '0945678901', 'registry,warehouse,orders'),
     }),
   );
 }
