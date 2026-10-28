@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, formatTime } from '@/lib/format';
 import { uuidv7 } from '@/lib/uuid';
 import { useOrderRights, useQuantity } from './hooks';
+import { vatShortLabel } from './order-form';
 import { OrderStatusBadges, OrderTotals } from './parts';
 import { type Order, type OrderLine, useDeleteOrder, useOrder, useOrderAction } from './queries';
 
@@ -327,7 +328,7 @@ function LineCard({ order, line }: { order: Order; line: OrderLine }) {
             </>
           )}
           {' · '}
-          {t('detail.vat', { code: line.vatCode })}
+          {t('detail.vat', { code: vatShortLabel(line.vatCode, line.vatRate) })}
         </span>
       </div>
       {confirmed ? (

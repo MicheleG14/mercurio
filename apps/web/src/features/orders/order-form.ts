@@ -225,3 +225,8 @@ export function formPath(field: string): string {
     .replace(/\.itemId$/, '.item')
     .replace(/^partyId$/, 'party');
 }
+
+/** "22%" for an ordinary rate, the nature ("N4") for an operation at 0%: short, for totals. */
+export function vatShortLabel(code: string, rate: string): string {
+  return rate === '0.00' ? code : `${code}%`;
+}
