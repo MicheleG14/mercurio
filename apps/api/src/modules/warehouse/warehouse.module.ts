@@ -4,6 +4,7 @@ import { IdentityModule } from '../identity/index.js';
 import { RegistryModule } from '../registry/index.js';
 import { StockDocumentsController } from './stock-documents.controller.js';
 import { StockDocumentsRepository } from './stock-documents.repository.js';
+import { ReservationsService } from './reservations.service.js';
 import { StockDocumentsService } from './stock-documents.service.js';
 import { StockController } from './stock.controller.js';
 import { StockRepository } from './stock.repository.js';
@@ -28,6 +29,7 @@ import { WarehousesService } from './warehouses.service.js';
     StockDocumentsService,
     StockRepository,
     StockService,
+    ReservationsService,
     WarehouseService,
   ],
   exports: [WarehouseService],

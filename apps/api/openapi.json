@@ -3932,7 +3932,18 @@
           },
           "quantity": {
             "type": "string",
-            "example": "12.000"
+            "example": "12.000",
+            "description": "Physical stock"
+          },
+          "reservedQuantity": {
+            "type": "string",
+            "nullable": true,
+            "description": "Promised to orders; null for stock at a past date"
+          },
+          "availableQuantity": {
+            "type": "string",
+            "nullable": true,
+            "description": "Quantity less reserved; null for stock at a past date"
           },
           "reorderPoint": {
             "type": "string",
@@ -3943,7 +3954,8 @@
             "nullable": true
           },
           "belowReorder": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Available stock at or below the reorder point"
           }
         },
         "required": [
@@ -3954,6 +3966,8 @@
           "unitDecimals",
           "itemArchived",
           "quantity",
+          "reservedQuantity",
+          "availableQuantity",
           "reorderPoint",
           "reorderQuantity",
           "belowReorder"
@@ -4025,6 +4039,11 @@
             "type": "string",
             "nullable": true,
             "description": "Stock in the warehouse asked for"
+          },
+          "availableQuantity": {
+            "type": "string",
+            "nullable": true,
+            "description": "Of that stock, what is not reserved: what an issue may take"
           }
         },
         "required": [
@@ -4034,7 +4053,8 @@
           "unit",
           "unitDecimals",
           "archived",
-          "quantity"
+          "quantity",
+          "availableQuantity"
         ]
       },
       "PartyOptionDto": {
@@ -4075,6 +4095,12 @@
           "quantity": {
             "type": "string"
           },
+          "reservedQuantity": {
+            "type": "string"
+          },
+          "availableQuantity": {
+            "type": "string"
+          },
           "reorderPoint": {
             "type": "string",
             "nullable": true
@@ -4098,10 +4124,45 @@
           "warehouseName",
           "warehouseArchived",
           "quantity",
+          "reservedQuantity",
+          "availableQuantity",
           "reorderPoint",
           "reorderQuantity",
           "reorderVersion",
           "belowReorder"
+        ]
+      },
+      "ItemReservationDto": {
+        "type": "object",
+        "properties": {
+          "warehouseId": {
+            "type": "string"
+          },
+          "warehouseCode": {
+            "type": "string"
+          },
+          "originType": {
+            "type": "string",
+            "example": "order"
+          },
+          "originId": {
+            "type": "string"
+          },
+          "originReference": {
+            "type": "string",
+            "example": "OC-2026/0012"
+          },
+          "quantity": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "warehouseId",
+          "warehouseCode",
+          "originType",
+          "originId",
+          "originReference",
+          "quantity"
         ]
       },
       "ItemStockDto": {
@@ -4132,10 +4193,22 @@
             "type": "string",
             "description": "Sum over the warehouses of the company"
           },
+          "reservedQuantity": {
+            "type": "string"
+          },
+          "availableQuantity": {
+            "type": "string"
+          },
           "warehouses": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ItemStockWarehouseDto"
+            }
+          },
+          "reservations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemReservationDto"
             }
           }
         },
@@ -4148,7 +4221,10 @@
           "itemArchived",
           "stockManaged",
           "quantity",
-          "warehouses"
+          "reservedQuantity",
+          "availableQuantity",
+          "warehouses",
+          "reservations"
         ]
       },
       "MovementRowDto": {
@@ -4285,6 +4361,27 @@
           "reference"
         ]
       },
+      "OriginDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "order"
+          },
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "example": "OF-2026/0007"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "reference"
+        ]
+      },
       "StockDocumentSummaryDto": {
         "type": "object",
         "properties": {
@@ -4369,6 +4466,15 @@
               }
             ]
           },
+          "origin": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OriginDto"
+              }
+            ]
+          },
           "createdAt": {
             "type": "string"
           }
@@ -4389,6 +4495,7 @@
           "lineCount",
           "reverses",
           "reversedBy",
+          "origin",
           "createdAt"
         ]
       },
@@ -4540,6 +4647,15 @@
               }
             ]
           },
+          "origin": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OriginDto"
+              }
+            ]
+          },
           "createdAt": {
             "type": "string"
           },
@@ -4594,6 +4710,7 @@
           "lineCount",
           "reverses",
           "reversedBy",
+          "origin",
           "createdAt",
           "partyDocumentDate",
           "notes",

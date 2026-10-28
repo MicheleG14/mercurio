@@ -339,22 +339,24 @@ export const COMMANDS: Record<string, Command> = {
 
   'verify-stock': {
     summary:
-      'Check that every stock balance equals the sum of its movements (reports, never fixes)',
+      'Check that every stock balance equals the sum of its movements, and what it has reserved the sum of its reservations (reports, never fixes)',
     options: {},
     required: [],
     async run({ prisma, warehouse }, _v, io) {
       const differences = await warehouse.verifyStock(prisma);
       if (differences.length === 0) {
-        io.out('Stock is consistent: every balance equals the sum of its movements.');
+        io.out(
+          'Stock is consistent: every balance equals the sum of its movements, and of its reservations.',
+        );
         return;
       }
       for (const d of differences) {
         io.err(
-          `tenant ${d.tenantId} warehouse ${d.warehouseId} item ${d.itemId}: balance ${d.balance.toString()}, movements ${d.movements.toString()}`,
+          `tenant ${d.tenantId} warehouse ${d.warehouseId} item ${d.itemId}: balance ${d.balance.toString()}, movements ${d.movements.toString()}, reserved ${d.reserved.toString()}, reservations ${d.reservations.toString()}`,
         );
       }
       throw new DomainException('STOCK_INCONSISTENT', HttpStatus.CONFLICT, {
-        detail: `${differences.length} balance(s) differ from their movements`,
+        detail: `${differences.length} balance(s) differ from their movements or reservations`,
       });
     },
   },

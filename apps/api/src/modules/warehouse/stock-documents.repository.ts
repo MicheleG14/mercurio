@@ -16,8 +16,15 @@ export type DocumentRow = Prisma.StockDocumentGetPayload<object> & {
 
 const LINK = { id: true, series: true, year: true, number: true } as const;
 
+/** A reservation as the use cases see it. */
+export interface ReservationRow extends StockKey {
+  id: string;
+  originLineId: string;
+  quantity: Prisma.Decimal;
+}
+
 /**
- * The only code that touches documents, movements, balances and counters. The locking queries are
+ * The only code that touches documents, movements, balances, reservations and counters. The locking queries are
  * SQL written by hand: Prisma cannot express SELECT ... FOR UPDATE or ON CONFLICT ... RETURNING.
  * They join only this module's tables (docs/adr/0022; checked by a test).
  * Queries run one after the other: inside a transaction they share one connection, and Prisma's
@@ -112,7 +119,9 @@ export class StockDocumentsRepository {
     db: DbClient,
     owner: { tenantId: string; companyId: string },
     keys: readonly StockKey[],
-  ): Promise<{ warehouseId: string; itemId: string; quantity: Prisma.Decimal }[]> {
+  ): Promise<
+    { warehouseId: string; itemId: string; quantity: Prisma.Decimal; reserved: Prisma.Decimal }[]
+  > {
     if (keys.length === 0) return [];
     const warehouseIds = keys.map((k) => k.warehouseId);
     const itemIds = keys.map((k) => k.itemId);
@@ -123,8 +132,11 @@ export class StockDocumentsRepository {
         AS k(warehouse_id, item_id, position)
       ORDER BY k.position
       ON CONFLICT (warehouse_id, item_id) DO NOTHING`;
-    return db.$queryRaw<{ warehouseId: string; itemId: string; quantity: Prisma.Decimal }[]>`
-      SELECT b.warehouse_id AS "warehouseId", b.item_id AS "itemId", b.quantity
+    return db.$queryRaw<
+      { warehouseId: string; itemId: string; quantity: Prisma.Decimal; reserved: Prisma.Decimal }[]
+    >`
+      SELECT b.warehouse_id AS "warehouseId", b.item_id AS "itemId", b.quantity,
+             b.reserved_quantity AS reserved
       FROM stock_balances b
       JOIN unnest(${warehouseIds}::uuid[], ${itemIds}::uuid[]) AS k(warehouse_id, item_id)
         ON b.warehouse_id = k.warehouse_id AND b.item_id = k.item_id
@@ -132,20 +144,93 @@ export class StockDocumentsRepository {
       FOR UPDATE OF b`;
   }
 
-  /** Applies the net changes to balances already locked by lockBalances. */
+  /**
+   * Applies the net changes to balances already locked by lockBalances: to the quantity and to
+   * what is reserved, in one statement, since the check reserved <= quantity holds on each row
+   * after each statement (an issue that consumes its reservation lowers both).
+   */
   async applyChanges(
     db: DbClient,
-    changes: readonly (StockKey & { change: Prisma.Decimal })[],
+    changes: readonly (StockKey & { change?: Prisma.Decimal; reservedChange?: Prisma.Decimal })[],
   ): Promise<void> {
     if (changes.length === 0) return;
+    const zero = (value?: Prisma.Decimal) => (value ?? new Prisma.Decimal(0)).toString();
     await db.$executeRaw`
-      UPDATE stock_balances b SET quantity = b.quantity + c.change, updated_at = now()
+      UPDATE stock_balances b
+      SET quantity = b.quantity + c.change,
+          reserved_quantity = b.reserved_quantity + c.reserved_change,
+          updated_at = now()
       FROM unnest(
         ${changes.map((c) => c.warehouseId)}::uuid[],
         ${changes.map((c) => c.itemId)}::uuid[],
-        ${changes.map((c) => c.change.toString())}::numeric[]
-      ) AS c(warehouse_id, item_id, change)
+        ${changes.map((c) => zero(c.change))}::numeric[],
+        ${changes.map((c) => zero(c.reservedChange))}::numeric[]
+      ) AS c(warehouse_id, item_id, change, reserved_change)
       WHERE b.warehouse_id = c.warehouse_id AND b.item_id = c.item_id`;
+  }
+
+  /**
+   * Locks the reservations of these lines of one kind of origin, after their balances (B34).
+   * Lines without a reservation are simply absent.
+   */
+  lockReservations(db: DbClient, originType: string, lineIds: readonly string[]) {
+    if (lineIds.length === 0) return Promise.resolve([] as ReservationRow[]);
+    return db.$queryRaw<ReservationRow[]>`
+      SELECT r.id, r.warehouse_id AS "warehouseId", r.item_id AS "itemId",
+             r.origin_line_id AS "originLineId", r.quantity
+      FROM stock_reservations r
+      WHERE r.origin_type = ${originType} AND r.origin_line_id = ANY(${[...lineIds]}::uuid[])
+      ORDER BY r.origin_line_id
+      FOR UPDATE`;
+  }
+
+  /** The same rows without locking: to learn which balances to lock first. */
+  findReservations(db: DbClient, originType: string, lineIds: readonly string[]) {
+    return db.stockReservation.findMany({
+      where: { originType, originLineId: { in: [...lineIds] } },
+      select: { id: true, warehouseId: true, itemId: true, originLineId: true, quantity: true },
+    });
+  }
+
+  /** A reservation's new quantity; at zero the row goes (rows hold positive quantities). */
+  async setReservationQuantity(db: DbClient, id: string, quantity: Prisma.Decimal) {
+    if (quantity.isZero()) await db.stockReservation.delete({ where: { id } });
+    else await db.stockReservation.update({ where: { id }, data: { quantity } });
+  }
+
+  /**
+   * Writes what each reservation becomes: created, changed, or deleted at zero (a row holds a
+   * positive quantity). The balances' reserved_quantity is the caller's, through applyChanges.
+   */
+  async saveReservations(
+    db: DbClient,
+    owner: { tenantId: string; companyId: string },
+    origin: { type: string; id: string; reference: string },
+    rows: readonly (StockKey & {
+      originLineId: string;
+      existingId: string | null;
+      quantity: Prisma.Decimal;
+    })[],
+  ): Promise<void> {
+    for (const row of rows) {
+      if (row.existingId) {
+        await this.setReservationQuantity(db, row.existingId, row.quantity);
+      } else if (!row.quantity.isZero()) {
+        await db.stockReservation.create({
+          data: {
+            tenantId: owner.tenantId,
+            companyId: owner.companyId,
+            warehouseId: row.warehouseId,
+            itemId: row.itemId,
+            originType: origin.type,
+            originId: origin.id,
+            originLineId: row.originLineId,
+            originReference: origin.reference,
+            quantity: row.quantity,
+          },
+        });
+      }
+    }
   }
 
   /**

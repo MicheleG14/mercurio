@@ -216,3 +216,89 @@ export function shortages(
       ],
     }));
 }
+
+/** A balance as locked: what is there and how much of it is promised (docs/adr/0025). */
+export interface BalanceState {
+  quantity: Prisma.Decimal;
+  reserved: Prisma.Decimal;
+}
+
+/** Stock not promised to anyone: what a free issue may take. */
+export function availableOf(balance: BalanceState | undefined): Prisma.Decimal {
+  return balance ? balance.quantity.minus(balance.reserved) : new Prisma.Decimal(0);
+}
+
+export interface ReservationRequest extends StockKey {
+  originLineId: string;
+  /** What the line holds now (zero when it holds nothing). */
+  current: Prisma.Decimal;
+  /** What it should hold: more grows it as far as stock allows, less releases the difference. */
+  wanted: Prisma.Decimal;
+}
+
+/**
+ * What each reservation becomes. Releases come first, so goods freed by one line can serve
+ * another in the same call; then growths in the order given (the caller's line order), each
+ * taking what is still available on its balance. A growth that finds nothing keeps what it has.
+ */
+export function planReservations(
+  requests: readonly ReservationRequest[],
+  balances: ReadonlyMap<string, BalanceState>,
+): (ReservationRequest & { reserved: Prisma.Decimal })[] {
+  const available = new Map(
+    [...balances].map(([key, balance]) => [key, availableOf(balance)] as const),
+  );
+  const result = new Map<string, Prisma.Decimal>();
+  for (const request of requests.filter((r) => r.wanted.lessThan(r.current))) {
+    const key = keyOf(request);
+    available.set(
+      key,
+      (available.get(key) ?? new Prisma.Decimal(0)).plus(request.current.minus(request.wanted)),
+    );
+    result.set(request.originLineId, request.wanted);
+  }
+  for (const request of requests.filter((r) => r.wanted.greaterThanOrEqualTo(r.current))) {
+    const key = keyOf(request);
+    const free = available.get(key) ?? new Prisma.Decimal(0);
+    const grown = Prisma.Decimal.min(request.wanted.minus(request.current), free);
+    available.set(key, free.minus(grown));
+    result.set(request.originLineId, request.current.plus(grown));
+  }
+  return requests.map((request) => ({ ...request, reserved: result.get(request.originLineId)! }));
+}
+
+/**
+ * How much of its reservation each line of an issue takes: all of the line's quantity if the
+ * reservation holds that much, otherwise the whole reservation (the rest comes from free stock).
+ * `reserved` is per line, null for a line without a reservation.
+ */
+export function plannedConsumption(
+  lines: readonly { quantity: Prisma.Decimal }[],
+  reserved: readonly (Prisma.Decimal | null)[],
+): Prisma.Decimal[] {
+  return lines.map((line, index) => {
+    const held = reserved[index];
+    return held ? Prisma.Decimal.min(held, line.quantity) : new Prisma.Decimal(0);
+  });
+}
+
+/**
+ * Available stock per balance once this document's own reservations are consumed: the stock a
+ * document may take out. Lines must already be in `stock` (locked).
+ */
+export function availableAfterConsumption(
+  stock: ReadonlyMap<string, BalanceState>,
+  consumed: readonly (StockKey & { quantity: Prisma.Decimal })[],
+): Map<string, Prisma.Decimal> {
+  const released = new Map<string, Prisma.Decimal>();
+  for (const entry of consumed) {
+    const key = keyOf(entry);
+    released.set(key, (released.get(key) ?? new Prisma.Decimal(0)).plus(entry.quantity));
+  }
+  return new Map(
+    [...stock].map(([key, balance]) => [
+      key,
+      availableOf(balance).plus(released.get(key) ?? new Prisma.Decimal(0)),
+    ]),
+  );
+}

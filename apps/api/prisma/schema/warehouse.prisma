@@ -34,13 +34,14 @@ model Warehouse {
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  tenant            Tenant          @relation(fields: [tenantId], references: [id])
-  company           Company         @relation(fields: [tenantId, companyId], references: [tenantId, id])
-  documents         StockDocument[] @relation("DocumentWarehouse")
-  incomingTransfers StockDocument[] @relation("DocumentTargetWarehouse")
+  tenant            Tenant             @relation(fields: [tenantId], references: [id])
+  company           Company            @relation(fields: [tenantId, companyId], references: [tenantId, id])
+  documents         StockDocument[]    @relation("DocumentWarehouse")
+  incomingTransfers StockDocument[]    @relation("DocumentTargetWarehouse")
   movements         StockMovement[]
   balances          StockBalance[]
   reorderLevels     ReorderLevel[]
+  reservations      StockReservation[]
 
   @@unique([tenantId, id])
   /// Target of the foreign keys of documents and movements: they stay in the same company.
@@ -73,6 +74,12 @@ model StockDocument {
   /// The document this one reverses. Unique: a document is reversed at most once.
   reversesId        String?     @map("reverses_id") @db.Uuid
   notes             String?
+  /// What created the document in another module (an order), as an opaque reference: the
+  /// warehouse keeps it without knowing that module (B35). Such a document is reversed only there.
+  originType        String?     @map("origin_type")
+  originId          String?     @map("origin_id") @db.Uuid
+  /// How people refer to the origin: "OF-2026/0007".
+  originReference   String?     @map("origin_reference")
   /// Empty for the platform operator working from the terminal (the demo seed).
   createdById       String?     @map("created_by_id") @db.Uuid
   createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -91,6 +98,7 @@ model StockDocument {
   @@unique([tenantId, companyId, series, year, number])
   @@unique([tenantId, companyId, reversesId])
   @@index([tenantId, companyId, documentDate(sort: Desc)])
+  @@index([tenantId, originType, originId])
   @@map("stock_documents")
 }
 
@@ -124,20 +132,53 @@ model StockMovement {
 
 /// Stock of an item in a warehouse now: the sum of its movements, kept with them (B11).
 model StockBalance {
-  tenantId    String   @map("tenant_id") @db.Uuid
-  companyId   String   @map("company_id") @db.Uuid
-  warehouseId String   @map("warehouse_id") @db.Uuid
-  itemId      String   @map("item_id") @db.Uuid
-  quantity    Decimal  @default(0) @db.Decimal(14, 3)
-  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  tenantId         String   @map("tenant_id") @db.Uuid
+  companyId        String   @map("company_id") @db.Uuid
+  warehouseId      String   @map("warehouse_id") @db.Uuid
+  itemId           String   @map("item_id") @db.Uuid
+  quantity         Decimal  @default(0) @db.Decimal(14, 3)
+  /// The sum of the reservations on this balance, kept with them; never more than the quantity.
+  /// Available stock is quantity − reserved (docs/adr/0025).
+  reservedQuantity Decimal  @default(0) @map("reserved_quantity") @db.Decimal(14, 3)
+  updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
-  tenant    Tenant    @relation(fields: [tenantId], references: [id])
-  warehouse Warehouse @relation(fields: [tenantId, companyId, warehouseId], references: [tenantId, companyId, id])
-  item      Item      @relation(fields: [tenantId, itemId], references: [tenantId, id])
+  tenant       Tenant             @relation(fields: [tenantId], references: [id])
+  warehouse    Warehouse          @relation(fields: [tenantId, companyId, warehouseId], references: [tenantId, companyId, id])
+  item         Item               @relation(fields: [tenantId, itemId], references: [tenantId, id])
+  reservations StockReservation[]
 
   @@id([warehouseId, itemId])
   @@index([tenantId, itemId])
   @@map("stock_balances")
+}
+
+/// Goods of a balance promised to a line of another module (an order line). The origin is an
+/// opaque reference (B35): the warehouse keeps who reserved, without a foreign key to them.
+model StockReservation {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  companyId       String   @map("company_id") @db.Uuid
+  warehouseId     String   @map("warehouse_id") @db.Uuid
+  itemId          String   @map("item_id") @db.Uuid
+  /// What reserved: the kind of document ("order"), the document and its line.
+  originType      String   @map("origin_type")
+  originId        String   @map("origin_id") @db.Uuid
+  originLineId    String   @map("origin_line_id") @db.Uuid
+  /// How people refer to the document: "OC-2026/0012".
+  originReference String   @map("origin_reference")
+  quantity        Decimal  @db.Decimal(14, 3)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id])
+  warehouse Warehouse    @relation(fields: [tenantId, companyId, warehouseId], references: [tenantId, companyId, id])
+  item      Item         @relation(fields: [tenantId, itemId], references: [tenantId, id])
+  /// A reservation always sits on a balance row.
+  balance   StockBalance @relation(fields: [warehouseId, itemId], references: [warehouseId, itemId])
+
+  @@unique([tenantId, originType, originLineId])
+  @@index([tenantId, warehouseId, itemId])
+  @@map("stock_reservations")
 }
 
 /// Below the reorder point an item is "below reorder"; the quantity is what to order then.
