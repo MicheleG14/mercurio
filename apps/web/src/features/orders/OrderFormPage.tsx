@@ -263,7 +263,7 @@ function OrderForm({
           legend={t('form.section.lines')}
           error={msg(errors.lines?.message)}
           keys={lines.fields.map((line) => line.id)}
-          columns="md:grid-cols-[minmax(12rem,1fr)_7rem_8rem_5rem_8rem_auto]"
+          columns="md:grid-cols-[minmax(12rem,1fr)_7rem_8rem_5rem_8rem_7rem]"
           minLines={0}
           renderLine={(index) => (
             <LineFields index={index} form={form} kind={kind} warehouseId={warehouseId} />

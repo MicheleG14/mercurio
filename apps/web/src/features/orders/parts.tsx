@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { MoneyAmount } from '@/components/shared/MoneyAmount';
 import { Badge } from '@/components/ui/badge';
+import { vatShortLabel } from './order-form';
 import type { OrderKind, OrderStatus } from './queries';
 
 /**
@@ -58,7 +59,7 @@ export function OrderTotals({
       {rows.map((row) => (
         <div key={row.vatCode} className="flex justify-between gap-4">
           <dt className="text-muted-foreground">
-            {t('totals.vatRow', { code: row.vatCode })}{' '}
+            {t('totals.vatRow', { code: vatShortLabel(row.vatCode, row.rate) })}{' '}
             <MoneyAmount value={row.taxable} className="text-xs" />
           </dt>
           <dd>
