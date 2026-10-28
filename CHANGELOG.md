@@ -5,7 +5,7 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
-## [Unreleased]
+## [0.7.0] - 2026-10-28
 
 Phase 4: orders. Purchase and sales orders from the database to the browser, moving goods only
 through the warehouse.
@@ -227,6 +227,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[0.7.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.7.0
 [0.6.1]: https://github.com/MicheleG14/mercurio/releases/tag/v0.6.1
 [0.6.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.5.0
