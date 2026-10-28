@@ -77,6 +77,9 @@ export class StockService {
         unitDecimals: unitDecimals(row.unit),
         itemArchived: row.archived,
         quantity: quantity(row.quantity),
+        reservedQuantity: optionalQuantity(row.reserved),
+        availableQuantity:
+          row.reserved === null ? null : quantity(row.quantity.minus(row.reserved)),
         reorderPoint: optionalQuantity(row.reorderPoint),
         reorderQuantity: optionalQuantity(row.reorderQuantity),
         belowReorder: row.below,
@@ -93,7 +96,9 @@ export class StockService {
       const [item] = await this.registry.findItemRefs(tx, [itemId]);
       if (!item) throw new DomainException('ITEM_NOT_FOUND', HttpStatus.NOT_FOUND);
       const rows = await this.repository.itemByWarehouse(tx, company.companyId, itemId);
+      const reservations = await this.repository.reservationsOfItem(tx, company.companyId, itemId);
       const total = rows.reduce((sum, row) => sum.plus(row.quantity), new Prisma.Decimal(0));
+      const reserved = rows.reduce((sum, row) => sum.plus(row.reserved), new Prisma.Decimal(0));
       return {
         itemId: item.id,
         itemCode: item.code,
@@ -103,17 +108,30 @@ export class StockService {
         itemArchived: item.archived,
         stockManaged: item.stockManaged,
         quantity: quantity(total),
+        reservedQuantity: quantity(reserved),
+        availableQuantity: quantity(total.minus(reserved)),
         warehouses: rows.map((row) => ({
           warehouseId: row.warehouseId,
           warehouseCode: row.code,
           warehouseName: row.name,
           warehouseArchived: row.archived,
           quantity: quantity(row.quantity),
+          reservedQuantity: quantity(row.reserved),
+          availableQuantity: quantity(row.quantity.minus(row.reserved)),
           reorderPoint: optionalQuantity(row.reorderPoint),
           reorderQuantity: optionalQuantity(row.reorderQuantity),
           reorderVersion: row.reorderVersion,
           belowReorder:
-            row.reorderPoint !== null && row.quantity.lessThanOrEqualTo(row.reorderPoint),
+            row.reorderPoint !== null &&
+            row.quantity.minus(row.reserved).lessThanOrEqualTo(row.reorderPoint),
+        })),
+        reservations: reservations.map((row) => ({
+          warehouseId: row.warehouseId,
+          warehouseCode: row.warehouseCode,
+          originType: row.originType,
+          originId: row.originId,
+          originReference: row.originReference,
+          quantity: quantity(row.quantity),
         })),
       };
     });
@@ -167,6 +185,7 @@ export class StockService {
       unitDecimals: unitDecimals(row.unit),
       archived: row.archived,
       quantity: optionalQuantity(row.quantity),
+      availableQuantity: optionalQuantity(row.available),
     }));
   }
 

@@ -27,6 +27,8 @@ const row = (overrides: Partial<StockRow> = {}): StockRow => ({
   unitDecimals: 3,
   itemArchived: false,
   quantity: '1250.500',
+  reservedQuantity: '0.000',
+  availableQuantity: '1250.500',
   reorderPoint: null,
   reorderQuantity: null,
   belowReorder: false,
@@ -41,6 +43,7 @@ const option = (overrides: Partial<ItemOption> = {}): ItemOption => ({
   unitDecimals: 3,
   archived: false,
   quantity: '7.000',
+  availableQuantity: '7.000',
   ...overrides,
 });
 
@@ -53,6 +56,8 @@ const itemStock = (quantity = '7.000'): ItemStock => ({
   itemArchived: false,
   stockManaged: true,
   quantity,
+  reservedQuantity: '0.000',
+  availableQuantity: quantity,
   warehouses: [
     {
       warehouseId: 'w1',
@@ -60,12 +65,15 @@ const itemStock = (quantity = '7.000'): ItemStock => ({
       warehouseName: 'Magazzino della sede',
       warehouseArchived: false,
       quantity,
+      reservedQuantity: '0.000',
+      availableQuantity: quantity,
       reorderPoint: null,
       reorderQuantity: null,
       reorderVersion: null,
       belowReorder: false,
     },
   ],
+  reservations: [],
 });
 
 const document = (overrides: Partial<StockDocument> = {}): StockDocument => ({
@@ -85,6 +93,7 @@ const document = (overrides: Partial<StockDocument> = {}): StockDocument => ({
   lineCount: 1,
   reverses: null,
   reversedBy: null,
+  origin: null,
   createdAt: '2026-10-22T08:00:00.000Z',
   notes: null,
   createdByName: 'Marco Verdi',

@@ -413,10 +413,14 @@ async function seedWarehouse(
             ...(counted ? { countedQuantity: quantity } : { quantity }),
           })),
         };
-        const posted = await services.warehouse.postDocument(db, company, dto, spec_.date);
+        const posted = await services.warehouse.postDocument(db, company, dto, {
+          today: spec_.date,
+        });
         documents++;
         if (spec_.reverseOn) {
-          await services.warehouse.reverseDocument(db, company, posted.id, spec_.reverseOn);
+          await services.warehouse.reverseDocument(db, company, posted.id, {
+            today: spec_.reverseOn,
+          });
           documents++;
         }
       }

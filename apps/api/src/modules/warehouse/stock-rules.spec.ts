@@ -10,12 +10,16 @@ import {
 } from './reasons.js';
 import {
   addDays,
+  availableAfterConsumption,
+  availableOf,
   balanceChanges,
   businessToday,
   documentDateError,
   keyOf,
   lockOrder,
   planMovements,
+  plannedConsumption,
+  planReservations,
   quantityError,
   reverseMovements,
   shortages,
@@ -207,5 +211,71 @@ describe('movements', () => {
         ]),
       ),
     ).toEqual([]);
+  });
+});
+
+describe('reservations', () => {
+  const L1 = '0198a000-0000-7000-8000-0000000000c1';
+  const L2 = '0198a000-0000-7000-8000-0000000000c2';
+  const L3 = '0198a000-0000-7000-8000-0000000000c3';
+  const balance = (quantity: number, reserved: number) => ({
+    quantity: d(quantity),
+    reserved: d(reserved),
+  });
+  const request = (originLineId: string, itemId: string, current: number, wanted: number) => ({
+    originLineId,
+    warehouseId: W1,
+    itemId,
+    current: d(current),
+    wanted: d(wanted),
+  });
+  const reserved = (plan: ReturnType<typeof planReservations>) =>
+    Object.fromEntries(plan.map((p) => [p.originLineId, p.reserved.toString()]));
+
+  it('counts as available what is not promised', () => {
+    expect(availableOf(balance(10, 4)).toString()).toBe('6');
+    expect(availableOf(undefined).toString()).toBe('0');
+  });
+
+  it('reserves what is available, the rest stays uncovered', () => {
+    const stock = new Map([[keyOf({ warehouseId: W1, itemId: A }), balance(5, 2)]]);
+    expect(reserved(planReservations([request(L1, A, 0, 10)], stock))).toEqual({ [L1]: '3' });
+  });
+
+  it('serves lines in the order given, each from what the previous ones left', () => {
+    const stock = new Map([[keyOf({ warehouseId: W1, itemId: A }), balance(5, 0)]]);
+    const plan = planReservations([request(L1, A, 0, 3), request(L2, A, 0, 3)], stock);
+    expect(reserved(plan)).toEqual({ [L1]: '3', [L2]: '2' });
+  });
+
+  it('releases first, so freed goods serve another line of the same call', () => {
+    const stock = new Map([[keyOf({ warehouseId: W1, itemId: A }), balance(5, 5)]]);
+    const plan = planReservations([request(L2, A, 0, 4), request(L1, A, 5, 1)], stock);
+    expect(reserved(plan)).toEqual({ [L1]: '1', [L2]: '4' });
+  });
+
+  it('keeps what a line holds when nothing more is available, and grows it when there is', () => {
+    const stock = new Map([
+      [keyOf({ warehouseId: W1, itemId: A }), balance(2, 2)],
+      [keyOf({ warehouseId: W1, itemId: B }), balance(9, 2)],
+    ]);
+    const plan = planReservations([request(L1, A, 2, 6), request(L3, B, 2, 6)], stock);
+    expect(reserved(plan)).toEqual({ [L1]: '2', [L3]: '6' });
+  });
+
+  it('takes from the reservation first, the rest from free stock', () => {
+    const lines = [{ quantity: d(5) }, { quantity: d(2) }, { quantity: d(1) }];
+    expect(plannedConsumption(lines, [d(3), d(4), null]).map(String)).toEqual(['3', '2', '0']);
+  });
+
+  it('lets a document take back what its own reservations release', () => {
+    const key = keyOf({ warehouseId: W1, itemId: A });
+    const stock = new Map([[key, balance(10, 8)]]);
+    const available = availableAfterConsumption(stock, [
+      { warehouseId: W1, itemId: A, quantity: d(3) },
+      { warehouseId: W1, itemId: A, quantity: d(2) },
+    ]);
+    expect(available.get(key)!.toString()).toBe('7');
+    expect(availableAfterConsumption(stock, []).get(key)!.toString()).toBe('2');
   });
 });

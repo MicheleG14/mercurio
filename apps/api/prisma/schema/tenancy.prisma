@@ -25,6 +25,7 @@ model Tenant {
   stockBalances         StockBalance[]
   reorderLevels         ReorderLevel[]
   stockDocumentCounters StockDocumentCounter[]
+  stockReservations     StockReservation[]
 
   @@map("tenants")
 }

@@ -135,6 +135,13 @@ export class DocumentLinkDto {
   @ApiProperty({ example: 'CA-2026/0042' }) reference!: string;
 }
 
+/** The document of another module that made this one (an order): only it can undo it. */
+export class OriginDto {
+  @ApiProperty({ example: 'order' }) type!: string;
+  @ApiProperty() id!: string;
+  @ApiProperty({ example: 'OF-2026/0007' }) reference!: string;
+}
+
 export class StockLineDto {
   @ApiProperty() lineNo!: number;
   @ApiProperty() itemId!: string;
@@ -166,6 +173,7 @@ export class StockDocumentSummaryDto {
   @ApiProperty() lineCount!: number;
   @ApiProperty({ type: DocumentLinkDto, nullable: true }) reverses!: DocumentLinkDto | null;
   @ApiProperty({ type: DocumentLinkDto, nullable: true }) reversedBy!: DocumentLinkDto | null;
+  @ApiProperty({ type: OriginDto, nullable: true }) origin!: OriginDto | null;
   @ApiProperty() createdAt!: string;
 }
 

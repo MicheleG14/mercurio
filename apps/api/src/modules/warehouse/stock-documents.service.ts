@@ -31,8 +31,11 @@ import type {
   StockLineDto,
 } from './stock-documents.dto.js';
 import { type DocumentRow, StockDocumentsRepository } from './stock-documents.repository.js';
+import type { Origin, PostOptions, ReverseOptions } from './origins.js';
 import {
+  availableAfterConsumption,
   balanceChanges,
+  type BalanceState,
   businessToday,
   documentDateError,
   fromDbDate,
@@ -40,6 +43,7 @@ import {
   keyOf,
   lockOrder,
   planMovements,
+  plannedConsumption,
   type PlannedLine,
   type PlannedMovement,
   quantityError,
@@ -102,8 +106,9 @@ export class StockDocumentsService {
     tx: TenantTransaction,
     company: CompanyContext,
     dto: CreateStockDocumentDto,
-    today = businessToday(),
+    options: PostOptions = {},
   ): Promise<StockDocumentDto> {
+    const today = options.today ?? businessToday();
     const rule = STOCK_REASONS[dto.reason];
     const errors = new FieldErrors();
     const documentDate = dto.documentDate ?? today;
@@ -158,14 +163,17 @@ export class StockDocumentsService {
     // Balances, locked in lock order; an adjustment reads the stock only now, under the lock.
     const header = { warehouseId: dto.warehouseId, targetWarehouseId: target };
     const stock = await this.lockStock(tx, company, touchedKeys(rule.direction, header, lines));
-    const movements = planMovements(rule.direction, header, lines, stock);
+    const physical = new Map([...stock].map(([key, balance]) => [key, balance.quantity]));
+    const movements = planMovements(rule.direction, header, lines, physical);
     if (rule.direction === 'counted') {
       for (const movement of movements.filter((m) => m.quantity.isZero())) {
         errors.add(`lines[${movement.lineNo - 1}].countedQuantity`, 'NO_DIFFERENCE');
       }
       errors.throwIfAny();
     }
-    this.assertStock(movements, stock);
+    // Then the reservations this document takes its goods from (B34: after the balances).
+    const consumed = await this.consumeReservations(tx, dto, lines, options);
+    this.assertStock(movements, availableAfterConsumption(stock, consumed), rule.direction);
 
     const year = Number(documentDate.slice(0, 4));
     const number = await this.repository.nextNumber(tx, company, rule.series, year);
@@ -182,7 +190,9 @@ export class StockDocumentsService {
       partyDocumentRef,
       partyDocumentDate: partyDocumentDate ? toDbDate(partyDocumentDate) : null,
       notes,
+      ...originColumns(options.origin),
       movements,
+      consumed,
     });
     await this.recordEvent(tx, company, 'STOCK_DOCUMENT_POSTED', created.id, {
       reference: documentReference({ series: rule.series, year, number }),
@@ -198,6 +208,7 @@ export class StockDocumentsService {
   async reverse(id: string): Promise<StockDocumentDto> {
     const company = companyOf(this.contexts.require());
     try {
+      // Through the API never with an origin: a document made by an order is undone there (B35).
       return await this.db.run((tx) => this.reverseIn(tx, company, id));
     } catch (error) {
       if (isUniqueViolation(error)) {
@@ -211,11 +222,17 @@ export class StockDocumentsService {
     tx: TenantTransaction,
     company: CompanyContext,
     id: string,
-    today = businessToday(),
+    options: ReverseOptions = {},
   ): Promise<StockDocumentDto> {
+    const today = options.today ?? businessToday();
     const original = await this.require(tx, company.companyId, id);
     if (original.reason === 'REVERSAL') {
       throw new DomainException('CANNOT_REVERSE_REVERSAL', HttpStatus.CONFLICT);
+    }
+    if (original.originType && !sameOrigin(original, options.origin)) {
+      throw new DomainException('DOCUMENT_HAS_ORIGIN', HttpStatus.CONFLICT, {
+        detail: `Made by ${original.originReference}: undo it from there`,
+      });
     }
     if (original.reversedBy) throw new DomainException('ALREADY_REVERSED', HttpStatus.CONFLICT);
 
@@ -239,7 +256,7 @@ export class StockDocumentsService {
     if ((await this.repository.findById(tx, company.companyId, id))?.reversedBy) {
       throw new DomainException('ALREADY_REVERSED', HttpStatus.CONFLICT);
     }
-    this.assertStock(movements, stock);
+    this.assertStock(movements, availableAfterConsumption(stock, []), 'out');
 
     const year = Number(today.slice(0, 4));
     const number = await this.repository.nextNumber(tx, company, original.series, year);
@@ -256,7 +273,11 @@ export class StockDocumentsService {
       partyDocumentDate: original.partyDocumentDate,
       reversesId: original.id,
       notes: null,
+      originType: original.originType,
+      originId: original.originId,
+      originReference: original.originReference,
       movements,
+      consumed: [],
     });
     await this.recordEvent(tx, company, 'STOCK_DOCUMENT_REVERSED', created.id, {
       reference: documentReference({ series: original.series, year, number }),
@@ -414,23 +435,86 @@ export class StockDocumentsService {
     tx: TenantTransaction,
     company: CompanyContext,
     keys: StockKey[],
-  ): Promise<Map<string, Prisma.Decimal>> {
+  ): Promise<Map<string, BalanceState>> {
     const rows = await this.repository.lockBalances(tx, company, lockOrder(keys));
-    return new Map(rows.map((row) => [keyOf(row), new Prisma.Decimal(row.quantity)]));
+    return new Map(
+      rows.map((row) => [
+        keyOf(row),
+        { quantity: new Prisma.Decimal(row.quantity), reserved: new Prisma.Decimal(row.reserved) },
+      ]),
+    );
   }
 
-  /** 409 STOCK_INSUFFICIENT, on every line that takes out more than there is. */
-  private assertStock(movements: PlannedMovement[], stock: Map<string, Prisma.Decimal>) {
-    const missing = shortages(movements, stock);
+  /**
+   * 409 on every line that takes out more than is available, that is, not promised to an order
+   * (docs/adr/0025). An inventory count below what is reserved is STOCK_RESERVED: the goods are
+   * promised, so someone has to release them from the orders first.
+   */
+  private assertStock(
+    movements: PlannedMovement[],
+    available: Map<string, Prisma.Decimal>,
+    direction: string,
+  ) {
+    const missing = shortages(movements, available);
     if (missing.length === 0) return;
-    throw new DomainException('STOCK_INSUFFICIENT', HttpStatus.CONFLICT, {
+    const [code, field] =
+      direction === 'counted'
+        ? ['STOCK_RESERVED', 'countedQuantity']
+        : ['STOCK_INSUFFICIENT', 'quantity'];
+    throw new DomainException(code, HttpStatus.CONFLICT, {
       errors: missing.flatMap((shortage) =>
-        shortage.lineNos.map((lineNo) => ({
-          field: `lines[${lineNo - 1}].quantity`,
-          code: 'STOCK_INSUFFICIENT',
-        })),
+        shortage.lineNos.map((lineNo) => ({ field: `lines[${lineNo - 1}].${field}`, code })),
       ),
     });
+  }
+
+  /**
+   * Locks the reservations the lines of an issue take goods from, and says how much each gives:
+   * the line's quantity, or the whole reservation if it holds less (the rest must be free stock).
+   * A reservation of another item or warehouse, or used by two lines, is a bug of the caller.
+   */
+  private async consumeReservations(
+    tx: TenantTransaction,
+    dto: CreateStockDocumentDto,
+    lines: PlannedLine[],
+    options: PostOptions,
+  ): Promise<ConsumedReservation[]> {
+    const wanted = options.reservations ?? [];
+    const lineIds = wanted.filter((id): id is string => id !== null);
+    if (lineIds.length === 0) return [];
+    if (!options.origin || STOCK_REASONS[dto.reason].direction !== 'out') {
+      throw new Error('Only an issue with an origin takes goods from reservations');
+    }
+    if (new Set(lineIds).size !== lineIds.length) {
+      throw new Error('Two lines of a document take goods from the same reservation');
+    }
+    const rows = await this.repository.lockReservations(tx, options.origin.type, lineIds);
+    const byLine = new Map(rows.map((row) => [row.originLineId, row]));
+    const held = lines.map((line, index) => {
+      const row = wanted[index] ? byLine.get(wanted[index]) : undefined;
+      if (row && (row.itemId !== line.itemId || row.warehouseId !== dto.warehouseId)) {
+        throw new Error(`Reservation ${row.id} is not for line ${index + 1}`);
+      }
+      return row ?? null;
+    });
+    const amounts = plannedConsumption(
+      lines.map((line) => ({ quantity: line.quantity! })),
+      held.map((row) => (row ? new Prisma.Decimal(row.quantity) : null)),
+    );
+    return held.flatMap((row, index) =>
+      row && !amounts[index]!.isZero()
+        ? [
+            {
+              id: row.id,
+              warehouseId: row.warehouseId,
+              itemId: row.itemId,
+              originLineId: row.originLineId,
+              held: new Prisma.Decimal(row.quantity),
+              quantity: amounts[index]!,
+            },
+          ]
+        : [],
+    );
   }
 
   private async write(
@@ -438,9 +522,10 @@ export class StockDocumentsService {
     company: CompanyContext,
     data: Omit<Prisma.StockDocumentUncheckedCreateInput, 'tenantId' | 'companyId'> & {
       movements: PlannedMovement[];
+      consumed: ConsumedReservation[];
     },
   ) {
-    const { movements, ...document } = data;
+    const { movements, consumed, ...document } = data;
     const created = await this.repository.create(
       tx,
       {
@@ -460,7 +545,29 @@ export class StockDocumentsService {
         movementDate: document.documentDate,
       })),
     );
-    await this.repository.applyChanges(tx, balanceChanges(movements));
+    // Reservations first, then quantity and reserved together on each balance.
+    for (const reservation of consumed) {
+      await this.repository.setReservationQuantity(
+        tx,
+        reservation.id,
+        reservation.held.minus(reservation.quantity),
+      );
+    }
+    const reservedChanges = new Map<string, Prisma.Decimal>();
+    for (const reservation of consumed) {
+      const key = keyOf(reservation);
+      reservedChanges.set(
+        key,
+        (reservedChanges.get(key) ?? new Prisma.Decimal(0)).minus(reservation.quantity),
+      );
+    }
+    await this.repository.applyChanges(
+      tx,
+      balanceChanges(movements).map((change) => ({
+        ...change,
+        reservedChange: reservedChanges.get(keyOf(change)),
+      })),
+    );
     return created;
   }
 
@@ -533,6 +640,32 @@ export class StockDocumentsService {
   }
 }
 
+/** What an issue takes from one reservation: `quantity` out of the `held` it had. */
+interface ConsumedReservation extends StockKey {
+  id: string;
+  originLineId: string;
+  held: Prisma.Decimal;
+  quantity: Prisma.Decimal;
+}
+
+function originColumns(origin: Origin | undefined) {
+  return {
+    originType: origin?.type ?? null,
+    originId: origin?.id ?? null,
+    originReference: origin?.reference ?? null,
+  };
+}
+
+/** Whether the caller is the owner of the document's origin (same kind, same document). */
+function sameOrigin(
+  document: { originType: string | null; originId: string | null },
+  origin: Origin | undefined,
+): boolean {
+  return (
+    origin !== undefined && document.originType === origin.type && document.originId === origin.id
+  );
+}
+
 function toPlanned(movement: StockMovement): PlannedMovement {
   return {
     lineNo: movement.lineNo,
@@ -567,6 +700,10 @@ function summary(document: DocumentRow, partyName: string | null): StockDocument
     lineCount: document._count.movements / (type === 'transfer' ? 2 : 1),
     reverses: link(document.reverses),
     reversedBy: link(document.reversedBy),
+    origin:
+      document.originType && document.originId && document.originReference
+        ? { type: document.originType, id: document.originId, reference: document.originReference }
+        : null,
     createdAt: document.createdAt.toISOString(),
   };
 }

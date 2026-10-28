@@ -1139,10 +1139,18 @@ export interface components {
             /** @description Decimals a quantity may have in this unit */
             unitDecimals: number;
             itemArchived: boolean;
-            /** @example 12.000 */
+            /**
+             * @description Physical stock
+             * @example 12.000
+             */
             quantity: string;
+            /** @description Promised to orders; null for stock at a past date */
+            reservedQuantity: string | null;
+            /** @description Quantity less reserved; null for stock at a past date */
+            availableQuantity: string | null;
             reorderPoint: string | null;
             reorderQuantity: string | null;
+            /** @description Available stock at or below the reorder point */
             belowReorder: boolean;
         };
         StockPageDto: {
@@ -1164,6 +1172,8 @@ export interface components {
             archived: boolean;
             /** @description Stock in the warehouse asked for */
             quantity: string | null;
+            /** @description Of that stock, what is not reserved: what an issue may take */
+            availableQuantity: string | null;
         };
         PartyOptionDto: {
             id: string;
@@ -1176,11 +1186,23 @@ export interface components {
             warehouseName: string;
             warehouseArchived: boolean;
             quantity: string;
+            reservedQuantity: string;
+            availableQuantity: string;
             reorderPoint: string | null;
             reorderQuantity: string | null;
             /** @description Version of the reorder level (B29) */
             reorderVersion: number | null;
             belowReorder: boolean;
+        };
+        ItemReservationDto: {
+            warehouseId: string;
+            warehouseCode: string;
+            /** @example order */
+            originType: string;
+            originId: string;
+            /** @example OC-2026/0012 */
+            originReference: string;
+            quantity: string;
         };
         ItemStockDto: {
             itemId: string;
@@ -1192,7 +1214,10 @@ export interface components {
             stockManaged: boolean;
             /** @description Sum over the warehouses of the company */
             quantity: string;
+            reservedQuantity: string;
+            availableQuantity: string;
             warehouses: components["schemas"]["ItemStockWarehouseDto"][];
+            reservations: components["schemas"]["ItemReservationDto"][];
         };
         MovementRowDto: {
             id: string;
@@ -1236,6 +1261,13 @@ export interface components {
             /** @example CA-2026/0042 */
             reference: string;
         };
+        OriginDto: {
+            /** @example order */
+            type: string;
+            id: string;
+            /** @example OF-2026/0007 */
+            reference: string;
+        };
         StockDocumentSummaryDto: {
             id: string;
             /** @example CA-2026/0042 */
@@ -1256,6 +1288,7 @@ export interface components {
             lineCount: number;
             reverses: components["schemas"]["DocumentLinkDto"] | null;
             reversedBy: components["schemas"]["DocumentLinkDto"] | null;
+            origin: components["schemas"]["OriginDto"] | null;
             createdAt: string;
         };
         StockDocumentPageDto: {
@@ -1297,6 +1330,7 @@ export interface components {
             lineCount: number;
             reverses: components["schemas"]["DocumentLinkDto"] | null;
             reversedBy: components["schemas"]["DocumentLinkDto"] | null;
+            origin: components["schemas"]["OriginDto"] | null;
             createdAt: string;
             partyDocumentDate: string | null;
             notes: string | null;

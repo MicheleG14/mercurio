@@ -95,7 +95,8 @@ describe('tenant tables (guard)', () => {
       WHERE grantee = 'mercurio_app' AND privilege_type IN ('INSERT', 'UPDATE', 'DELETE', 'TRUNCATE')
         AND table_name NOT LIKE 'test\\_%'
       ORDER BY table_name, privilege_type`;
-    // Stock documents and movements: insert only (B32). Reorder levels are settings: deletable.
+    // Stock documents and movements: insert only (B32). Reorder levels are settings, and a
+    // reservation goes when it reaches zero: both deletable.
     expect(tableWrites).toEqual([
       { table: 'audit_events', privilege: 'INSERT' },
       { table: 'auth_events', privilege: 'INSERT' },
@@ -109,6 +110,8 @@ describe('tenant tables (guard)', () => {
       { table: 'stock_document_counters', privilege: 'INSERT' },
       { table: 'stock_documents', privilege: 'INSERT' },
       { table: 'stock_movements', privilege: 'INSERT' },
+      { table: 'stock_reservations', privilege: 'DELETE' },
+      { table: 'stock_reservations', privilege: 'INSERT' },
       { table: 'warehouses', privilege: 'INSERT' },
     ]);
 
@@ -142,9 +145,10 @@ describe('tenant tables (guard)', () => {
     expect(byTable('items')).toEqual(
       itemColumns.filter((column) => ![...identity, 'code'].includes(column)).sort(),
     );
-    // Warehouse: a balance changes only in quantity, a warehouse never in code or company, a
-    // counter only in its last number.
-    expect(byTable('stock_balances')).toEqual(['quantity', 'updated_at']);
+    // Warehouse: a balance changes only in quantity and what is reserved, a reservation only in
+    // quantity, a warehouse never in code or company, a counter only in its last number.
+    expect(byTable('stock_balances')).toEqual(['quantity', 'reserved_quantity', 'updated_at']);
+    expect(byTable('stock_reservations')).toEqual(['quantity', 'updated_at']);
     expect(byTable('warehouses')).toEqual(['archived_at', 'name', 'updated_at', 'version']);
     expect(byTable('reorder_levels')).toEqual([
       'reorder_point',
@@ -162,6 +166,7 @@ describe('tenant tables (guard)', () => {
       'sessions',
       'stock_balances',
       'stock_document_counters',
+      'stock_reservations',
       'warehouses',
     ]);
   });

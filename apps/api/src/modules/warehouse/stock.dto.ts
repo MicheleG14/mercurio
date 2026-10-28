@@ -55,10 +55,23 @@ export class StockRowDto {
   @ApiProperty() unit!: string;
   @ApiProperty({ description: 'Decimals a quantity may have in this unit' }) unitDecimals!: number;
   @ApiProperty() itemArchived!: boolean;
-  @ApiProperty({ example: '12.000' }) quantity!: string;
+  @ApiProperty({ example: '12.000', description: 'Physical stock' }) quantity!: string;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: 'Promised to orders; null for stock at a past date',
+  })
+  reservedQuantity!: string | null;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: 'Quantity less reserved; null for stock at a past date',
+  })
+  availableQuantity!: string | null;
   @ApiProperty({ type: String, nullable: true }) reorderPoint!: string | null;
   @ApiProperty({ type: String, nullable: true }) reorderQuantity!: string | null;
-  @ApiProperty() belowReorder!: boolean;
+  @ApiProperty({ description: 'Available stock at or below the reorder point' })
+  belowReorder!: boolean;
 }
 
 export class StockPageDto {
@@ -74,11 +87,23 @@ export class ItemStockWarehouseDto {
   @ApiProperty() warehouseName!: string;
   @ApiProperty() warehouseArchived!: boolean;
   @ApiProperty() quantity!: string;
+  @ApiProperty() reservedQuantity!: string;
+  @ApiProperty() availableQuantity!: string;
   @ApiProperty({ type: String, nullable: true }) reorderPoint!: string | null;
   @ApiProperty({ type: String, nullable: true }) reorderQuantity!: string | null;
   @ApiProperty({ type: Number, nullable: true, description: 'Version of the reorder level (B29)' })
   reorderVersion!: number | null;
   @ApiProperty() belowReorder!: boolean;
+}
+
+/** Who has goods of the item promised, in which warehouse. */
+export class ItemReservationDto {
+  @ApiProperty() warehouseId!: string;
+  @ApiProperty() warehouseCode!: string;
+  @ApiProperty({ example: 'order' }) originType!: string;
+  @ApiProperty() originId!: string;
+  @ApiProperty({ example: 'OC-2026/0012' }) originReference!: string;
+  @ApiProperty() quantity!: string;
 }
 
 export class ItemStockDto {
@@ -90,7 +115,10 @@ export class ItemStockDto {
   @ApiProperty() itemArchived!: boolean;
   @ApiProperty() stockManaged!: boolean;
   @ApiProperty({ description: 'Sum over the warehouses of the company' }) quantity!: string;
+  @ApiProperty() reservedQuantity!: string;
+  @ApiProperty() availableQuantity!: string;
   @ApiProperty({ type: [ItemStockWarehouseDto] }) warehouses!: ItemStockWarehouseDto[];
+  @ApiProperty({ type: [ItemReservationDto] }) reservations!: ItemReservationDto[];
 }
 
 export class MovementsQuery extends PageQuery {
@@ -138,6 +166,12 @@ export class ItemOptionDto {
   @ApiProperty() archived!: boolean;
   @ApiProperty({ type: String, nullable: true, description: 'Stock in the warehouse asked for' })
   quantity!: string | null;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: 'Of that stock, what is not reserved: what an issue may take',
+  })
+  availableQuantity!: string | null;
 }
 
 export class PartySearchQuery {
