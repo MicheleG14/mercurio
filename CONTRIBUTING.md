@@ -94,8 +94,14 @@ The warehouse is the reference ([ADR 0021](docs/adr/0021-warehouse-documents-and
    answers `200` with what was recorded.
 4. **Other modules' data**: checks through their public service, lists through the views they
    publish ([ADR 0022](docs/adr/0022-module-boundaries-in-sql.md)); never their tables.
-5. **Web app**: `SearchCombobox` to choose records on a line, quantities with the decimals of their
-   unit (`lib/decimal.ts`), field errors of the API mapped to the line they belong to.
+5. **Web app**: `LinesEditor` lays out the lines (a row on wide screens, a card on a phone),
+   `SearchCombobox` chooses records on a line, quantities have the decimals of their unit
+   (`lib/decimal.ts`), amounts are previewed with `lib/money.ts`, and field errors of the API go to
+   the line they belong to.
+6. **Moving goods from another module**: call the warehouse's public service in your own
+   transaction, after locking your own document, and pass an origin; undo through the same service
+   (B35, [ADR 0024](docs/adr/0024-orders-move-goods-through-the-warehouse.md)). Orders are the
+   reference.
 
 ## Commits
 

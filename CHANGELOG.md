@@ -5,6 +5,38 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [Unreleased]
+
+Phase 4: orders. Purchase and sales orders from the database to the browser, moving goods only
+through the warehouse.
+
+### Added
+
+- Purchase orders (`OF`) and sales orders (`OC`): drafts without a number, free to change and to
+  delete; confirmation numbers them per company and year, without gaps, and they stop changing.
+- Receipts and shipments in parts, each one a stock document recorded in the same transaction as
+  the order, which knows its origin and links back to it; undone only from the order.
+- Reservations: a confirmed sales order reserves what is available, the rest stays uncovered and is
+  reserved later with "Reserve available"; stock lists, items and the overview show reserved and
+  available stock, and the reorder point is compared with what is available.
+- Closing what is left of an order, cancelling a confirmed order nothing has moved for, duplicating
+  an order into a new draft.
+- Prices, discount and VAT on order lines; totals with the VAT summary per rate, previewed while a
+  draft is typed with the same rounding as the API.
+- What suppliers still bring of an item; a purchase order proposed from the items below reorder.
+- Permission `orders:fulfil` (warehouse keepers move goods; accountants take orders); the activity
+  log shows order events; the demo seed adds orders in every status to the Rossi demo tenant.
+- ADR 0024-0026; conventions B34 (across modules), B35, B36.
+
+### Changed
+
+- Free issues, transfers and reversals of a receipt take only available stock: reserved goods stay
+  for their order (`STOCK_INSUFFICIENT`). An inventory count below what is reserved is refused
+  (`STOCK_RESERVED`).
+- `verify-stock` also compares reserved quantities with the reservations.
+- An item's "stock managed" is no longer written when the item changes; the database privilege on
+  it goes in the next release.
+
 ## [0.6.1] - 2026-10-23
 
 ### Fixed

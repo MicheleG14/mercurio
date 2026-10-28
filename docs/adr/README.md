@@ -29,6 +29,9 @@ a decision that changes gets a new record that supersedes the old one.
 | [0021](0021-warehouse-documents-and-computed-stock.md)  | Warehouse: immutable stock documents, stock computed from movements       | Accepted |
 | [0022](0022-module-boundaries-in-sql.md)                | Module boundaries in SQL: published views                                 | Accepted |
 | [0023](0023-client-chosen-document-ids.md)              | Documents created once: the client chooses the id                         | Accepted |
+| [0024](0024-orders-move-goods-through-the-warehouse.md) | Orders move goods only through the warehouse                              | Accepted |
+| [0025](0025-reservations-and-available-stock.md)        | Reservations and available stock                                          | Accepted |
+| [0026](0026-amounts-and-vat-rounding.md)                | Amounts and VAT: rounding once, in one place                              | Accepted |
 
 ## Template
 
