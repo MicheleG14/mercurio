@@ -12,7 +12,7 @@ import { type Page, parseSort, skipAndTake } from '../../shared/pagination.js';
 import { editConflict } from '../../shared/versioning.js';
 import { AuditService } from '../audit/index.js';
 import { RegistryService, unitDecimals } from '../registry/index.js';
-import { type CompanyContext, companyOf } from './company-context.js';
+import { type CompanyContext, companyOf } from '../../prisma/index.js';
 import { documentReference } from './reasons.js';
 import { StockDocumentsRepository } from './stock-documents.repository.js';
 import { businessToday, fromDbDate, quantityError, toDbDate } from './stock-rules.js';

@@ -2,7 +2,7 @@ import { MembershipRole } from '../../generated/prisma/client.js';
 import { PERMISSIONS, type Permission, permissionsFor } from './permissions.js';
 
 // The matrix, row by row: a change here must be a deliberate decision (docs/adr/0014, 0018
-// for the registry, 0021 for the warehouse), not a side effect.
+// for the registry, 0021 for the warehouse, 0024 for orders), not a side effect.
 const EXPECTED: Record<MembershipRole, Permission[]> = {
   ADMIN: [...PERMISSIONS],
   WAREHOUSE_KEEPER: [
@@ -13,6 +13,7 @@ const EXPECTED: Record<MembershipRole, Permission[]> = {
     'stock:write',
     'orders:read',
     'orders:write',
+    'orders:fulfil',
   ],
   ACCOUNTANT: [
     'parties:read',
@@ -20,6 +21,7 @@ const EXPECTED: Record<MembershipRole, Permission[]> = {
     'items:read',
     'stock:read',
     'orders:read',
+    'orders:write',
     'invoicing:read',
     'invoicing:write',
     'invoicing:issue',

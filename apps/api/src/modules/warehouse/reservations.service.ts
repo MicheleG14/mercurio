@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { TenantTransaction } from '../../prisma/index.js';
 import { DomainException } from '../../shared/errors/index.js';
-import type { CompanyContext } from './company-context.js';
+import type { CompanyContext } from '../../prisma/index.js';
 import type { Origin } from './origins.js';
 import { StockDocumentsRepository } from './stock-documents.repository.js';
 import { type BalanceState, keyOf, lockOrder, planReservations } from './stock-rules.js';

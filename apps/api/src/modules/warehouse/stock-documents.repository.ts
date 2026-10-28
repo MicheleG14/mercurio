@@ -43,6 +43,11 @@ export class StockDocumentsRepository {
     return document ? ((await this.withLinks(db, [document]))[0] ?? null) : null;
   }
 
+  /** Numbers of these documents, to print their references; missing ones are absent. */
+  numbersOf(db: DbClient, ids: readonly string[]) {
+    return db.stockDocument.findMany({ where: { id: { in: [...ids] } }, select: LINK });
+  }
+
   movementsOf(db: DbClient, documentId: string) {
     return db.stockMovement.findMany({
       where: { documentId },

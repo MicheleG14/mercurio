@@ -13,7 +13,7 @@ import { escapeLike } from '../../shared/text.js';
 import { AuditService } from '../audit/index.js';
 import { IdentityService } from '../identity/index.js';
 import { type ItemRef, RegistryService, unitDecimals } from '../registry/index.js';
-import { type CompanyContext, companyOf } from './company-context.js';
+import { type CompanyContext, companyOf } from '../../prisma/index.js';
 import {
   documentReference,
   type DocumentType,
