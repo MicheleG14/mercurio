@@ -89,7 +89,12 @@ export class ItemsService {
       const fields = changedFields(dataOf(current), withPriceScale(data));
       if (fields.length === 0) return current;
 
-      const updated = await this.repository.updateAtVersion(tx, id, version, toColumns(data));
+      const updated = await this.repository.updateAtVersion(
+        tx,
+        id,
+        version,
+        toUpdatedColumns(data),
+      );
       if (!updated) throw editConflict();
       await this.record(tx, 'ITEM_UPDATED', updated, { fields });
       return updated;
@@ -176,6 +181,15 @@ function dataOf(item: Item): ItemData {
 
 function toColumns(data: ItemData) {
   return { ...data, salePrice: data.salePrice === null ? null : toDecimal(data.salePrice) };
+}
+
+/**
+ * The columns an update writes: never stock_managed, which is fixed at creation. Writing it even
+ * unchanged would need a privilege the API role is going to lose (B13, docs/adr/0021).
+ */
+function toUpdatedColumns(data: ItemData) {
+  const { stockManaged: _fixed, ...columns } = toColumns(data);
+  return columns;
 }
 
 /** "12.5" as stored and read back, "12.5000", so that an unchanged price compares equal. */

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { DbClient } from '../../prisma/index.js';
-import { toDecimal } from '../../shared/decimal.js';
+import { fromDecimal, PRICE, toDecimal } from '../../shared/decimal.js';
 import { FieldErrors } from '../../shared/errors/index.js';
 import { type ItemInput, normalizeItem, normalizeItemCode } from './item-rules.js';
 import { ItemsRepository } from './items.repository.js';
@@ -15,6 +15,9 @@ export interface ItemRef {
   unit: string;
   stockManaged: boolean;
   archived: boolean;
+  /** List price, unit price precision (B8, B30): what an order line proposes. */
+  salePrice: string | null;
+  vatCode: string;
 }
 
 /** What other modules may know of a party (the columns of the view registry_party_refs). */
@@ -84,6 +87,8 @@ export class RegistryService {
       unit: item.unit,
       stockManaged: item.stockManaged,
       archived: item.archivedAt !== null,
+      salePrice: fromDecimal(item.salePrice, PRICE),
+      vatCode: item.vatCode,
     }));
   }
 
