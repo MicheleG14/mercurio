@@ -50,37 +50,45 @@ term; the interface uses the term of the selected language.
 
 ## Warehouse
 
-| Code (English)       | Italiano               | Meaning                                                                                 |
-| -------------------- | ---------------------- | --------------------------------------------------------------------------------------- |
-| warehouse            | magazzino              | A place where a company keeps goods; it has a short code printed on documents           |
-| stock document       | documento di magazzino | A recorded move of goods with a reason and lines, numbered per series and year          |
-| reason               | causale                | Why goods move (receipt from a supplier, internal use, loss…): decides series and sign  |
-| stock movement       | movimento di magazzino | One line of a document in one warehouse, signed; never edited or deleted                |
-| receipt              | carico                 | A document that brings goods in (series `CA`), e.g. from a supplier                     |
-| goods receipt        | ricevimento merce      | A receipt from a supplier, with their delivery note; from phase 4 also against an order |
-| issue                | scarico                | A document that takes goods out (series `SC`)                                           |
-| inventory adjustment | rettifica inventariale | A count: the movement is the difference between what was counted and the stock          |
-| transfer             | trasferimento          | Goods moved between two warehouses of the same company (series `TR`)                    |
-| reversal             | storno                 | A document with the opposite movements of another one, which it corrects; once only     |
-| stock level          | giacenza               | Quantity on hand, always the sum of the movements                                       |
-| stock at a date      | giacenza alla data     | The sum of the movements up to the end of a given day                                   |
-| reorder point        | punto di riordino      | Stock at or below which an item is "below reorder"                                      |
-| reorder quantity     | quantità da riordinare | How much to order when an item is below reorder                                         |
-| below reorder        | sotto scorta           | At or below the reorder point                                                           |
-| delivery note        | documento di trasporto | DDT: the document that comes with goods; a receipt records the supplier's               |
-| reserved quantity    | quantità impegnata     | Stock set aside for open sales orders (phase 4)                                         |
-| available quantity   | disponibilità          | Stock level minus reserved quantity (phase 4)                                           |
+| Code (English)       | Italiano               | Meaning                                                                                |
+| -------------------- | ---------------------- | -------------------------------------------------------------------------------------- |
+| warehouse            | magazzino              | A place where a company keeps goods; it has a short code printed on documents          |
+| stock document       | documento di magazzino | A recorded move of goods with a reason and lines, numbered per series and year         |
+| reason               | causale                | Why goods move (receipt from a supplier, internal use, loss…): decides series and sign |
+| stock movement       | movimento di magazzino | One line of a document in one warehouse, signed; never edited or deleted               |
+| receipt              | carico                 | A document that brings goods in (series `CA`), e.g. from a supplier                    |
+| goods receipt        | ricevimento merce      | A receipt from a supplier, with their delivery note, free or against a purchase order  |
+| issue                | scarico                | A document that takes goods out (series `SC`)                                          |
+| inventory adjustment | rettifica inventariale | A count: the movement is the difference between what was counted and the stock         |
+| transfer             | trasferimento          | Goods moved between two warehouses of the same company (series `TR`)                   |
+| reversal             | storno                 | A document with the opposite movements of another one, which it corrects; once only    |
+| stock level          | giacenza               | Quantity on hand, always the sum of the movements                                      |
+| stock at a date      | giacenza alla data     | The sum of the movements up to the end of a given day                                  |
+| reorder point        | punto di riordino      | Stock at or below which an item is "below reorder"                                     |
+| reorder quantity     | quantità da riordinare | How much to order when an item is below reorder                                        |
+| below reorder        | sotto scorta           | At or below the reorder point                                                          |
+| delivery note        | documento di trasporto | DDT: the document that comes with goods; a receipt records the supplier's              |
+| reserved quantity    | quantità prenotata     | Stock promised to open sales orders; never more than the stock level                   |
+| available quantity   | disponibilità          | Stock level minus reserved quantity: what a free issue may take                        |
 
 ## Orders
 
-| Code (English) | Italiano                     | Meaning                                               |
-| -------------- | ---------------------------- | ----------------------------------------------------- |
-| purchase order | ordine fornitore             | Order placed with a supplier                          |
-| sales order    | ordine cliente               | Order received from a customer                        |
-| order line     | riga d'ordine                | One item, quantity and price within an order          |
-| reservation    | prenotazione / impegno       | Setting stock aside for a sales order                 |
-| fulfilment     | evasione                     | Shipping the goods of a sales order, possibly in part |
-| delivery note  | documento di trasporto (DDT) | Document that accompanies goods shipped to a customer |
+| Code (English)           | Italiano                     | Meaning                                                                                |
+| ------------------------ | ---------------------------- | -------------------------------------------------------------------------------------- |
+| purchase order           | ordine fornitore             | Order placed with a supplier, numbered `OF`; its goods are received                    |
+| sales order              | ordine cliente               | Order received from a customer, numbered `OC`; its goods are reserved and shipped      |
+| draft                    | bozza                        | An order being prepared: no number, free to change and to delete                       |
+| confirmation             | conferma                     | The order gets its number and stops changing; a sales order reserves what is available |
+| order line               | riga d'ordine                | One item, quantity, price, discount and VAT within an order                            |
+| reservation              | prenotazione                 | Stock promised to a line of a sales order, kept by the warehouse                       |
+| uncovered                | scoperto                     | A sales order with lines not fully reserved                                            |
+| incoming                 | in arrivo                    | Ordered from suppliers and not received yet                                            |
+| fulfilment               | evasione / ricezione         | Shipping (sales) or receiving (purchase) some lines, recorded as one stock document    |
+| remaining                | residuo                      | Ordered, less moved, less closed: what a line still has to receive or ship             |
+| close the rest           | chiusura del residuo         | Deciding that what is left on some lines will not come or go any more                  |
+| order from below reorder | proposta di riordino         | A purchase draft with the items below reorder, less what is incoming                   |
+| origin                   | origine                      | The order that made a stock document or a reservation; only it can undo them           |
+| delivery note            | documento di trasporto (DDT) | Document that accompanies goods shipped to a customer (printed with phase 5)           |
 
 ## Invoicing
 

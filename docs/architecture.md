@@ -208,9 +208,9 @@ flowchart TB
         audit[audit<br/>security and tenant events]
         registry[registry<br/>parties · items · catalogs]
         warehouse[warehouse<br/>warehouses · documents · stock]
-        orders[orders]
+        orders[orders<br/>purchase and sales orders · fulfilments]
         invoicing[invoicing]
-        shared[shared<br/>errors · text · decimals · Italian identifiers]
+        shared[shared<br/>errors · text · decimals · money · dates · Italian identifiers]
     end
 
     ui -- REST + OpenAPI client --> api
@@ -221,17 +221,18 @@ flowchart TB
     registry -- public service --> audit
     warehouse -- public service, views --> registry
     warehouse -- public service --> audit
-    orders -- public service --> registry
-    orders -- public service --> warehouse
+    orders -- public service, views --> registry
+    orders -- public service, views --> warehouse
+    orders -- public service --> audit
     orders -. OrderFulfilledEvent .-> invoicing
     invoicing -- public service --> registry
 
     classDef planned stroke-dasharray: 5 5
-    class orders,invoicing planned
+    class invoicing planned
 ```
 
 Dashed boxes are planned (see the roadmap in the [README](../README.md#roadmap)). Today the API has
-the modules `tenancy`, `identity`, `auth`, `audit`, `registry` and `warehouse` (in `src/modules/`), `health`, the
+the modules `tenancy`, `identity`, `auth`, `audit`, `registry`, `warehouse` and `orders` (in `src/modules/`), `health`, the
 technical modules `config`, `prisma` and `web`, and the terminal commands in `src/cli/`.
 
 Each module can be sold on its own: the catalog in `tenancy` lists modules and their requirements,
@@ -243,8 +244,12 @@ Rules that keep the modules independent:
 - A module exposes a **public service** or emits **domain events**; everything else is internal.
 - A module owns its tables (and its Prisma file, `prisma/schema/<module>.prisma`). No module
   queries another module's tables; it may join the read-only views another module publishes
-  (`registry_item_refs`, `registry_party_refs`), and a test checks hand-written SQL for crossings
+  (`registry_item_refs`, `registry_party_refs`, `warehouse_refs`, `warehouse_stock_refs`,
+  `warehouse_reservation_refs`), and a test checks hand-written SQL for crossings
   ([ADR 0022](adr/0022-module-boundaries-in-sql.md)).
+- A module makes another one write only through its public service, in its own transaction; the
+  other module keeps an opaque **origin** and never depends back
+  ([ADR 0024](adr/0024-orders-move-goods-through-the-warehouse.md)).
 - Other modules import only from a module's `index.ts`; `pnpm check:boundaries` enforces it in CI.
 - Inside a module: controller (HTTP) → service (use cases, transactions) → repository (data access).
 
@@ -306,10 +311,53 @@ sequenceDiagram
 ```
 
 `stock_balances` is the current stock, a projection of the movements kept in that transaction and
-protected by `CHECK (quantity >= 0)`; stock at a date and an item's history are sums over
+protected by `CHECK (quantity >= 0)`; it also keeps what orders have reserved, and a free issue takes
+only what is available (see Orders below); stock at a date and an item's history are sums over
 `stock_movements`. `pnpm cli verify-stock` reports any balance that differs from its movements. The
 client chooses the id of a new document, so sending it twice records it once
 ([ADR 0023](adr/0023-client-chosen-document-ids.md)).
+
+## Orders: fulfilment through the warehouse
+
+An order ([ADR 0024](adr/0024-orders-move-goods-through-the-warehouse.md)) is a draft until it is
+confirmed: then it gets its number (`OF` for purchases, `OC` for sales, per company and year) and
+does not change any more. A sales order reserves what is available when confirmed
+([ADR 0025](adr/0025-reservations-and-available-stock.md)): the warehouse keeps reservations next to
+stock, and every free way out takes only what is not reserved.
+
+```mermaid
+stateDiagram-v2
+    [*] --> DRAFT
+    DRAFT --> CONFIRMED : confirm (number, reservations)
+    DRAFT --> [*] : delete
+    CONFIRMED --> PARTIAL : receive / ship part
+    PARTIAL --> COMPLETED : all moved, or the rest closed
+    CONFIRMED --> COMPLETED : all moved, or the rest closed
+    CONFIRMED --> CANCELLED : cancel (nothing moved)
+    PARTIAL --> CONFIRMED : the only fulfilment undone
+    COMPLETED --> PARTIAL : a fulfilment undone
+```
+
+Receiving or shipping is one transaction across the two modules, in a fixed lock order (B34):
+
+```mermaid
+sequenceDiagram
+    participant O as FulfilmentsService (orders)
+    participant W as WarehouseService (public)
+    participant DB as PostgreSQL
+    O->>DB: lock the order (FOR UPDATE)
+    Note over O: each quantity ≤ what is left on its line (409/400 otherwise)
+    O->>W: postDocument(…, origin: OC-2026/0012, reservations of the lines)
+    W->>DB: lock warehouses, balances, the order's reservations
+    Note over W: refuse what would take reserved or missing goods (STOCK_INSUFFICIENT)
+    W->>DB: number, document, movements; quantity and reserved updated together
+    W-->>O: the stock document (or its errors, moved onto the request's lines)
+    O->>DB: fulfilment and its lines, done quantities, status, audit event
+```
+
+Line amounts and VAT are computed once, in one place
+([ADR 0026](adr/0026-amounts-and-vat-rounding.md)): `Money` rounds a line to the cent, the registry's
+VAT summary adds per VAT code and rounds the VAT of each sum.
 
 ## Request lifecycle
 
