@@ -1,0 +1,190 @@
+// Module `orders`: purchase orders received into a warehouse and sales orders shipped from one,
+// both with their lines, prices and VAT. Per company (S2), with composite foreign keys that keep
+// an order, its lines, its warehouse and its fulfilments inside one company. See docs/adr/0024.
+// Goods move only through the warehouse's public service (B35): a fulfilment points to the stock
+// document that recorded it, and reservations live in the warehouse, keyed by the order line.
+// Written by hand in the migration: checks and grants.
+
+/// Bought from a supplier or sold to a customer. The catalog in code says what differs.
+enum OrderKind {
+  PURCHASE
+  SALES
+
+  @@map("order_kind")
+}
+
+/// Kept with the lines in the transaction of every action, never set from outside.
+enum OrderStatus {
+  /// Being prepared: no number, everything editable, deletable.
+  DRAFT
+  /// Numbered; nothing received or shipped yet.
+  CONFIRMED
+  /// Some lines received or shipped, some still open.
+  PARTIAL
+  /// Every line received or shipped, or its rest closed.
+  COMPLETED
+  /// Cancelled before anything moved; the number stays used.
+  CANCELLED
+
+  @@map("order_status")
+}
+
+/// An order to a supplier or from a customer.
+model Order {
+  /// Chosen by the client that creates it (B33).
+  id                 String      @id @default(uuid(7)) @db.Uuid
+  tenantId           String      @map("tenant_id") @db.Uuid
+  companyId          String      @map("company_id") @db.Uuid
+  kind               OrderKind
+  status             OrderStatus @default(DRAFT)
+  /// Numbering series (OF purchase, OC sales), year and number: only once confirmed.
+  series             String?
+  year               Int?
+  number             Int?
+  /// The day the order was placed (B9: a date, apart from the timestamps).
+  orderDate          DateTime    @map("order_date") @db.Date
+  /// Supplier of a purchase order, customer of a sales order.
+  partyId            String      @map("party_id") @db.Uuid
+  /// Where goods arrive or leave from; may be empty in a draft only.
+  warehouseId        String?     @map("warehouse_id") @db.Uuid
+  /// The customer's order number, or the supplier's order confirmation, and its date.
+  partyReference     String?     @map("party_reference")
+  partyReferenceDate DateTime?   @map("party_reference_date") @db.Date
+  /// When the goods are wanted; open orders past it are late.
+  requestedDate      DateTime?   @map("requested_date") @db.Date
+  notes              String?
+  /// Totals of the lines (B36), kept with them: lists sort and sum on them.
+  taxableTotal       Decimal     @default(0) @map("taxable_total") @db.Decimal(14, 2)
+  vatTotal           Decimal     @default(0) @map("vat_total") @db.Decimal(14, 2)
+  total              Decimal     @default(0) @db.Decimal(14, 2)
+  /// Optimistic concurrency (B29).
+  version            Int         @default(1)
+  /// Empty for the platform operator working from the terminal (the demo seed).
+  createdById        String?     @map("created_by_id") @db.Uuid
+  confirmedAt        DateTime?   @map("confirmed_at") @db.Timestamptz(6)
+  cancelledAt        DateTime?   @map("cancelled_at") @db.Timestamptz(6)
+  createdAt          DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant      Tenant            @relation(fields: [tenantId], references: [id])
+  company     Company           @relation(fields: [tenantId, companyId], references: [tenantId, id])
+  party       Party             @relation(fields: [tenantId, partyId], references: [tenantId, id])
+  warehouse   Warehouse?        @relation(fields: [tenantId, companyId, warehouseId], references: [tenantId, companyId, id])
+  createdBy   User?             @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  lines       OrderLine[]
+  fulfilments OrderFulfilment[]
+
+  @@unique([tenantId, id])
+  /// Target of the foreign keys of lines and fulfilments: they stay in the same company.
+  @@unique([tenantId, companyId, id])
+  @@unique([tenantId, companyId, series, year, number])
+  @@index([tenantId, companyId, kind, status, orderDate(sort: Desc)])
+  @@index([tenantId, partyId])
+  @@map("orders")
+}
+
+/// A line of an order: what was ordered, at what price, and how much of it has moved.
+model OrderLine {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  companyId       String   @map("company_id") @db.Uuid
+  orderId         String   @map("order_id") @db.Uuid
+  lineNo          Int      @map("line_no")
+  itemId          String   @map("item_id") @db.Uuid
+  /// Copied from the item when the line is written: the order prints what was ordered, even if
+  /// the item changes later. Editable in a draft.
+  description     String
+  unit            String
+  /// Quantity precision (B8); the unit says how many decimals.
+  quantity        Decimal  @db.Decimal(14, 3)
+  /// Unit price precision (B8). Required on a confirmed sales order, optional on a purchase one.
+  unitPrice       Decimal? @map("unit_price") @db.Decimal(14, 4)
+  discountPercent Decimal  @default(0) @map("discount_percent") @db.Decimal(5, 2)
+  /// VAT code, with the rate and the nature it had when the line was written (as an invoice).
+  vatCode         String   @map("vat_code")
+  vatRate         Decimal  @map("vat_rate") @db.Decimal(5, 2)
+  vatNature       String?  @map("vat_nature")
+  /// Quantity × price less the discount, rounded to the cent (B36); empty without a price.
+  lineAmount      Decimal? @map("line_amount") @db.Decimal(14, 2)
+  /// Received or shipped so far, kept with the fulfilments (B11 applied to orders).
+  doneQuantity    Decimal  @default(0) @map("done_quantity") @db.Decimal(14, 3)
+  /// The rest that will not come or go any more ("closed by hand").
+  closedQuantity  Decimal  @default(0) @map("closed_quantity") @db.Decimal(14, 3)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant          Tenant                @relation(fields: [tenantId], references: [id])
+  order           Order                 @relation(fields: [tenantId, companyId, orderId], references: [tenantId, companyId, id], onDelete: Cascade)
+  item            Item                  @relation(fields: [tenantId, itemId], references: [tenantId, id])
+  fulfilmentLines OrderFulfilmentLine[]
+
+  @@unique([tenantId, id])
+  /// Target of the fulfilment lines: a fulfilment moves lines of its own order only.
+  @@unique([tenantId, orderId, id])
+  @@unique([orderId, lineNo])
+  @@index([tenantId, itemId])
+  @@map("order_lines")
+}
+
+/// A receipt (purchase) or a shipment (sales) of some lines, recorded as one stock document.
+model OrderFulfilment {
+  /// Chosen by the client that records it (B33); the stock document has the same id.
+  id                 String    @id @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  companyId          String    @map("company_id") @db.Uuid
+  orderId            String    @map("order_id") @db.Uuid
+  stockDocumentId    String    @map("stock_document_id") @db.Uuid
+  fulfilmentDate     DateTime  @map("fulfilment_date") @db.Date
+  /// The stock document that undid it, when it was undone from the order.
+  reversalDocumentId String?   @map("reversal_document_id") @db.Uuid
+  reversedAt         DateTime? @map("reversed_at") @db.Timestamptz(6)
+  createdById        String?   @map("created_by_id") @db.Uuid
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  tenant           Tenant                @relation(fields: [tenantId], references: [id])
+  order            Order                 @relation(fields: [tenantId, companyId, orderId], references: [tenantId, companyId, id])
+  stockDocument    StockDocument         @relation("FulfilmentDocument", fields: [tenantId, companyId, stockDocumentId], references: [tenantId, companyId, id])
+  reversalDocument StockDocument?        @relation("FulfilmentReversal", fields: [tenantId, companyId, reversalDocumentId], references: [tenantId, companyId, id])
+  createdBy        User?                 @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  lines            OrderFulfilmentLine[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, orderId, id])
+  @@unique([tenantId, companyId, stockDocumentId])
+  @@unique([tenantId, companyId, reversalDocumentId])
+  @@index([tenantId, orderId])
+  @@map("order_fulfilments")
+}
+
+/// How much of one order line a fulfilment moved.
+model OrderFulfilmentLine {
+  tenantId     String  @map("tenant_id") @db.Uuid
+  orderId      String  @map("order_id") @db.Uuid
+  fulfilmentId String  @map("fulfilment_id") @db.Uuid
+  orderLineId  String  @map("order_line_id") @db.Uuid
+  quantity     Decimal @db.Decimal(14, 3)
+
+  tenant     Tenant          @relation(fields: [tenantId], references: [id])
+  /// Both keys carry the order: the database refuses a line of another order.
+  fulfilment OrderFulfilment @relation(fields: [tenantId, orderId, fulfilmentId], references: [tenantId, orderId, id])
+  orderLine  OrderLine       @relation(fields: [tenantId, orderId, orderLineId], references: [tenantId, orderId, id])
+
+  @@id([fulfilmentId, orderLineId])
+  @@index([tenantId, orderLineId])
+  @@map("order_fulfilment_lines")
+}
+
+/// Last number used per company, series and year, as for stock documents (B32).
+model OrderCounter {
+  tenantId   String @map("tenant_id") @db.Uuid
+  companyId  String @map("company_id") @db.Uuid
+  series     String
+  year       Int
+  lastNumber Int    @map("last_number")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  company Company @relation(fields: [tenantId, companyId], references: [tenantId, id])
+
+  @@id([companyId, series, year])
+  @@map("order_counters")
+}
