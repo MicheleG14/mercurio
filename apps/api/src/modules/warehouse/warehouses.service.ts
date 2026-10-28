@@ -10,7 +10,7 @@ import { DomainException, FieldErrors } from '../../shared/errors/index.js';
 import { type Page, skipAndTake } from '../../shared/pagination.js';
 import { assertVersion, editConflict } from '../../shared/versioning.js';
 import { type AuditEventType, AuditService } from '../audit/index.js';
-import { type CompanyContext, companyOf } from './company-context.js';
+import { type CompanyContext, companyOf } from '../../prisma/index.js';
 import type {
   CreateWarehouseDto,
   UpdateWarehouseDto,

@@ -1,39 +1,13 @@
 import { Prisma } from '../../generated/prisma/client.js';
-import { isDecimalString, QUANTITY } from '../../shared/decimal.js';
+import { addDays, isCalendarDate } from '../../shared/dates.js';
 
 /**
- * Pure rules of the warehouse: dates, quantities, and how a document turns into movements and
+ * Pure rules of the warehouse: dates, and how a document turns into movements and
  * stock changes. No database here, so every rule is tested on its own (stock-rules.spec.ts).
  */
 
-/** Italian stock documents are dated in Italian time: 00:30 in Rome is still "yesterday" in UTC. */
-export const BUSINESS_TIME_ZONE = 'Europe/Rome';
-
 /** How far back a document may be dated: late delivery notes and month ends. */
 export const MAX_DAYS_BACK = 30;
-
-/** Today in the business time zone, as YYYY-MM-DD. */
-export function businessToday(now = new Date()): string {
-  // en-CA formats dates as YYYY-MM-DD.
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: BUSINESS_TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(now);
-}
-
-/** YYYY-MM-DD plus some days (negative: back), in the calendar, without time zones. */
-export function addDays(date: string, days: number): string {
-  const [year, month, day] = date.split('-').map(Number) as [number, number, number];
-  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
-}
-
-/** A valid calendar date as YYYY-MM-DD (2026-02-30 is not). */
-export function isCalendarDate(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  return addDays(value, 0) === value;
-}
 
 /** null when the document date is acceptable, otherwise the error code for the field. */
 export function documentDateError(date: string, today: string): string | null {
@@ -43,26 +17,15 @@ export function documentDateError(date: string, today: string): string | null {
   return null;
 }
 
-/** For the database: a YYYY-MM-DD date as the midnight UTC Prisma maps to a `date` column. */
-export function toDbDate(date: string): Date {
-  return new Date(`${date}T00:00:00.000Z`);
-}
-
-export function fromDbDate(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
-
-/**
- * null when the quantity is acceptable in this unit, otherwise the error code. `allowZero` is for
- * counted quantities (an empty shelf is a valid count).
- */
-export function quantityError(value: string, decimals: number, allowZero = false): string | null {
-  if (!isDecimalString(value, QUANTITY)) return 'IS_DECIMAL_STRING';
-  const quantity = new Prisma.Decimal(value);
-  if (quantity.isZero() && !allowZero) return 'QUANTITY_NOT_POSITIVE';
-  if (quantity.decimalPlaces() > decimals) return 'QUANTITY_DECIMALS';
-  return null;
-}
+export {
+  addDays,
+  BUSINESS_TIME_ZONE,
+  businessToday,
+  fromDbDate,
+  isCalendarDate,
+  toDbDate,
+} from '../../shared/dates.js';
+export { quantityError } from '../../shared/decimal.js';
 
 /** A warehouse and an item: the unit of stock, and of locking. */
 export interface StockKey {

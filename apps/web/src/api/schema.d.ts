@@ -663,6 +663,251 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Orders of one kind, newest first by default */
+        get: operations["OrdersController_list"];
+        put?: never;
+        /**
+         * Create a draft
+         * @description The same id with the same content answers 200 with the draft (B33).
+         */
+        post: operations["OrdersController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OrdersController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/items-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Items for an order line, with list price, VAT and free stock */
+        get: operations["OrdersController_searchItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/parties-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Suppliers or customers for an order of this kind */
+        get: operations["OrdersController_searchParties"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/incoming": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** What open purchase orders still bring of an item */
+        get: operations["OrdersController_incoming"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/reorder-proposal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lines for a purchase order: items below reorder, less incoming */
+        get: operations["OrdersController_reorderProposal"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OrdersController_get"];
+        /** Save a draft, header and lines; 409 ORDER_NOT_DRAFT once confirmed */
+        put: operations["OrdersController_update"];
+        post?: never;
+        /** Delete a draft */
+        delete: operations["OrdersController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Number the order; a sales order reserves what is available */
+        post: operations["OrdersController_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}/reserve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reserve what is now available for the uncovered lines */
+        post: operations["OrdersController_reserve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close what is left of some lines, or all; releases reservations */
+        post: operations["OrdersController_close"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel a confirmed order nothing has moved for */
+        post: operations["OrdersController_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** A new draft with the same lines and prices */
+        post: operations["OrdersController_duplicate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}/fulfilments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Receive or ship some lines; 409 QUANTITY_OVER_REMAINING, STOCK_INSUFFICIENT
+         * @description The same id with the same lines answers 200 (B33).
+         */
+        post: operations["OrdersController_fulfil"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}/fulfilments/{fulfilmentId}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undo a receipt or a shipment: its stock document is reversed */
+        post: operations["OrdersController_reverse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -991,7 +1236,6 @@ export interface components {
             version: number;
         };
         VersionDto: {
-            /** @example 1 */
             version: number;
         };
         ItemDto: {
@@ -1378,6 +1622,277 @@ export interface components {
             notes?: string | null;
             lines: components["schemas"]["StockLineInputDto"][];
         };
+        OrderSummaryDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "PURCHASE" | "SALES";
+            /** @enum {string} */
+            status: "DRAFT" | "CONFIRMED" | "PARTIAL" | "COMPLETED" | "CANCELLED";
+            /** @example OC-2026/0012 */
+            reference: string | null;
+            orderDate: string;
+            partyId: string;
+            partyName: string;
+            warehouseId: string | null;
+            warehouseCode: string | null;
+            partyReference: string | null;
+            requestedDate: string | null;
+            taxableTotal: string;
+            total: string;
+            lineCount: number;
+            /** @description Open and past its requested date */
+            late: boolean;
+            /** @description Open sales order with lines not covered by a reservation */
+            uncovered: boolean;
+            version: number;
+        };
+        OrderPageDto: {
+            items: components["schemas"]["OrderSummaryDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        OrdersSummaryDto: {
+            /** @description Open sales orders */
+            salesOpen: number;
+            /** @description Open sales orders with lines not reserved */
+            salesUncovered: number;
+            salesLate: number;
+            /** @description Open purchase orders */
+            purchaseOpen: number;
+            purchaseLate: number;
+        };
+        OrderItemOptionDto: {
+            id: string;
+            code: string;
+            description: string;
+            unit: string;
+            unitDecimals: number;
+            /** @description List price */
+            salePrice: string | null;
+            vatCode: string;
+            /** @description Free stock in the warehouse asked for */
+            availableQuantity: string | null;
+        };
+        OrderPartyOptionDto: {
+            id: string;
+            name: string;
+            vatNumber: string | null;
+        };
+        IncomingOrderDto: {
+            orderId: string;
+            reference: string;
+            warehouseId: string;
+            warehouseCode: string;
+            requestedDate: string | null;
+            remainingQuantity: string;
+        };
+        IncomingDto: {
+            itemId: string;
+            /** @description Ordered from suppliers and not received yet */
+            quantity: string;
+            orders: components["schemas"]["IncomingOrderDto"][];
+        };
+        ReorderProposalLineDto: {
+            itemId: string;
+            itemCode: string;
+            description: string;
+            unit: string;
+            unitDecimals: number;
+            vatCode: string;
+            availableQuantity: string;
+            reorderPoint: string;
+            /** @description Already ordered from suppliers for this warehouse */
+            incomingQuantity: string;
+            /** @description What to order: the reorder quantity, less what is incoming */
+            proposedQuantity: string;
+        };
+        VatRowDto: {
+            vatCode: string;
+            rate: string;
+            nature: string | null;
+            taxable: string;
+            vat: string;
+        };
+        OrderLineDto: {
+            id: string;
+            lineNo: number;
+            itemId: string;
+            itemCode: string;
+            description: string;
+            unit: string;
+            unitDecimals: number;
+            /** @example 10.000 */
+            quantity: string;
+            unitPrice: string | null;
+            discountPercent: string;
+            vatCode: string;
+            vatRate: string;
+            vatNature: string | null;
+            lineAmount: string | null;
+            /** @description Received or shipped */
+            doneQuantity: string;
+            /** @description Closed by hand: will not move */
+            closedQuantity: string;
+            /** @description Still to receive or ship */
+            remainingQuantity: string;
+            /** @description Held for this line in the warehouse (sales) */
+            reservedQuantity: string;
+            /** @description Free stock of the item in the order’s warehouse */
+            availableQuantity: string | null;
+        };
+        FulfilmentLineDto: {
+            orderLineId: string;
+            quantity: string;
+        };
+        FulfilmentDto: {
+            id: string;
+            documentDate: string;
+            stockDocumentId: string;
+            /** @example CA-2026/0042 */
+            stockDocumentReference: string;
+            reversalDocumentId: string | null;
+            reversalDocumentReference: string | null;
+            reversedAt: string | null;
+            createdByName: string | null;
+            createdAt: string;
+            lines: components["schemas"]["FulfilmentLineDto"][];
+        };
+        OrderDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "PURCHASE" | "SALES";
+            /** @enum {string} */
+            status: "DRAFT" | "CONFIRMED" | "PARTIAL" | "COMPLETED" | "CANCELLED";
+            /** @example OC-2026/0012 */
+            reference: string | null;
+            orderDate: string;
+            partyId: string;
+            partyName: string;
+            warehouseId: string | null;
+            warehouseCode: string | null;
+            partyReference: string | null;
+            requestedDate: string | null;
+            taxableTotal: string;
+            total: string;
+            lineCount: number;
+            /** @description Open and past its requested date */
+            late: boolean;
+            /** @description Open sales order with lines not covered by a reservation */
+            uncovered: boolean;
+            version: number;
+            warehouseName: string | null;
+            partyReferenceDate: string | null;
+            notes: string | null;
+            vatTotal: string;
+            vatSummary: components["schemas"]["VatRowDto"][];
+            lines: components["schemas"]["OrderLineDto"][];
+            fulfilments: components["schemas"]["FulfilmentDto"][];
+            createdByName: string | null;
+            confirmedAt: string | null;
+            cancelledAt: string | null;
+            createdAt: string;
+        };
+        OrderLineInputDto: {
+            itemId: string;
+            /** @description What the order prints; the item's description when absent */
+            description?: string;
+            /**
+             * @description Positive decimal string (B30)
+             * @example 5
+             */
+            quantity: string;
+            /**
+             * @description Unit price (4 decimals); required to confirm a sales order
+             * @example 12.5
+             */
+            unitPrice?: string | null;
+            /**
+             * @description Discount in percent, 0 to 100
+             * @example 10
+             */
+            discountPercent?: string;
+            /**
+             * @description VAT code; the item's when absent
+             * @example 22
+             */
+            vatCode?: string;
+        };
+        CreateOrderDto: {
+            /**
+             * @description Default today (Italian time)
+             * @example 2026-10-28
+             */
+            orderDate?: string;
+            /** @description Supplier of a purchase order, customer of a sales order */
+            partyId: string;
+            /** @description Required to confirm */
+            warehouseId?: string | null;
+            /** @description The customer's order number, or the supplier's confirmation */
+            partyReference?: string | null;
+            /** @example 2026-10-27 */
+            partyReferenceDate?: string | null;
+            /** @example 2026-11-15 */
+            requestedDate?: string | null;
+            notes?: string | null;
+            lines: components["schemas"]["OrderLineInputDto"][];
+            /** @description Chosen by the client (UUID v7): sending it again is not a new order */
+            id: string;
+            /** @enum {string} */
+            kind: "PURCHASE" | "SALES";
+        };
+        UpdateOrderDto: {
+            /**
+             * @description Default today (Italian time)
+             * @example 2026-10-28
+             */
+            orderDate?: string;
+            /** @description Supplier of a purchase order, customer of a sales order */
+            partyId: string;
+            /** @description Required to confirm */
+            warehouseId?: string | null;
+            /** @description The customer's order number, or the supplier's confirmation */
+            partyReference?: string | null;
+            /** @example 2026-10-27 */
+            partyReferenceDate?: string | null;
+            /** @example 2026-11-15 */
+            requestedDate?: string | null;
+            notes?: string | null;
+            lines: components["schemas"]["OrderLineInputDto"][];
+            /** @description The version read (B29) */
+            version: number;
+        };
+        CloseOrderDto: {
+            version: number;
+            /** @description The lines to close; all when absent */
+            lineIds?: string[];
+        };
+        DuplicateOrderDto: {
+            /** @description Id of the new draft (UUID v7, B33) */
+            id: string;
+        };
+        FulfilmentLineInputDto: {
+            orderLineId: string;
+            /**
+             * @description Zero or more (B30): zero leaves the line out
+             * @example 3
+             */
+            quantity: string;
+        };
+        CreateFulfilmentDto: {
+            /** @description Chosen by the client (UUID v7); also the id of the stock document it records */
+            id: string;
+            /**
+             * @description Default today (Italian time)
+             * @example 2026-10-28
+             */
+            documentDate?: string;
+            partyDocumentRef?: string | null;
+            /** @example 2026-10-27 */
+            partyDocumentDate?: string | null;
+            notes?: string | null;
+            lines: components["schemas"]["FulfilmentLineInputDto"][];
+        };
     };
     responses: never;
     parameters: never;
@@ -1424,7 +1939,7 @@ export interface operations {
                 sort?: string;
                 /** @description Text to search for */
                 q?: string;
-                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED" | "WAREHOUSE_CREATED" | "WAREHOUSE_UPDATED" | "WAREHOUSE_ARCHIVED" | "WAREHOUSE_RESTORED" | "STOCK_DOCUMENT_POSTED" | "STOCK_DOCUMENT_REVERSED" | "REORDER_LEVEL_SET" | "REORDER_LEVEL_REMOVED";
+                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED" | "WAREHOUSE_CREATED" | "WAREHOUSE_UPDATED" | "WAREHOUSE_ARCHIVED" | "WAREHOUSE_RESTORED" | "STOCK_DOCUMENT_POSTED" | "STOCK_DOCUMENT_REVERSED" | "REORDER_LEVEL_SET" | "REORDER_LEVEL_REMOVED" | "ORDER_CREATED" | "ORDER_UPDATED" | "ORDER_DELETED" | "ORDER_CONFIRMED" | "ORDER_RESERVED" | "ORDER_CLOSED" | "ORDER_CANCELLED" | "ORDER_FULFILLED" | "ORDER_FULFILMENT_REVERSED";
                 /** @description From this instant (ISO 8601), inclusive */
                 from?: string;
                 /** @description Until this instant (ISO 8601), exclusive */
@@ -2561,6 +3076,484 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StockDocumentDto"];
+                };
+            };
+        };
+    };
+    OrdersController_list: {
+        parameters: {
+            query: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                kind: "PURCHASE" | "SALES";
+                /** @description OPEN: confirmed or partial */
+                status?: "DRAFT" | "CONFIRMED" | "PARTIAL" | "COMPLETED" | "CANCELLED" | "OPEN";
+                partyId?: string;
+                warehouseId?: string;
+                from?: string;
+                to?: string;
+                /** @description Open sales orders with lines not covered by a reservation */
+                uncovered?: boolean;
+                /** @description Open orders past their requested date */
+                late?: boolean;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderPageDto"];
+                };
+            };
+        };
+    };
+    OrdersController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Already created with this id */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    OrdersController_summary: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrdersSummaryDto"];
+                };
+            };
+        };
+    };
+    OrdersController_searchItems: {
+        parameters: {
+            query?: {
+                q?: string;
+                /** @description Show the available stock in this warehouse */
+                warehouseId?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderItemOptionDto"][];
+                };
+            };
+        };
+    };
+    OrdersController_searchParties: {
+        parameters: {
+            query: {
+                q?: string;
+                kind: "PURCHASE" | "SALES";
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderPartyOptionDto"][];
+                };
+            };
+        };
+    };
+    OrdersController_incoming: {
+        parameters: {
+            query: {
+                itemId: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncomingDto"];
+                };
+            };
+        };
+    };
+    OrdersController_reorderProposal: {
+        parameters: {
+            query: {
+                warehouseId: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReorderProposalLineDto"][];
+                };
+            };
+        };
+    };
+    OrdersController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    OrdersController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    OrdersController_remove: {
+        parameters: {
+            query: {
+                version: number;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    OrdersController_reserve: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    OrdersController_close: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    OrdersController_cancel: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    OrdersController_duplicate: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DuplicateOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Already duplicated with this id */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    OrdersController_fulfil: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFulfilmentDto"];
+            };
+        };
+        responses: {
+            /** @description Already recorded with this id */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    OrdersController_reverse: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+                fulfilmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
                 };
             };
         };

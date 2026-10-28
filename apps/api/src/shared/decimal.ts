@@ -52,3 +52,15 @@ export function fromDecimal(value: Prisma.Decimal | null, format: DecimalFormat)
 export function fromDecimal(value: Prisma.Decimal | null, format: DecimalFormat): string | null {
   return value === null ? null : value.toFixed(format.scale);
 }
+
+/**
+ * null when the quantity is acceptable in this unit, otherwise the error code. `allowZero` is for
+ * counted quantities (an empty shelf is a valid count).
+ */
+export function quantityError(value: string, decimals: number, allowZero = false): string | null {
+  if (!isDecimalString(value, QUANTITY)) return 'IS_DECIMAL_STRING';
+  const quantity = new Prisma.Decimal(value);
+  if (quantity.isZero() && !allowZero) return 'QUANTITY_NOT_POSITIVE';
+  if (quantity.decimalPlaces() > decimals) return 'QUANTITY_DECIMALS';
+  return null;
+}

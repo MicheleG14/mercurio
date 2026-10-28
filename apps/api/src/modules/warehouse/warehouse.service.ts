@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { DbClient, TenantTransaction } from '../../prisma/index.js';
-import type { CompanyContext } from './company-context.js';
+import type { CompanyContext } from '../../prisma/index.js';
 import type { Origin, PostOptions, ReverseOptions } from './origins.js';
+import { documentReference } from './reasons.js';
 import { ReservationsService, type ReservationWish } from './reservations.service.js';
+import { StockDocumentsRepository } from './stock-documents.repository.js';
 import type { CreateStockDocumentDto, StockDocumentDto } from './stock-documents.dto.js';
 import { StockDocumentsService } from './stock-documents.service.js';
 import { StockRepository } from './stock.repository.js';
@@ -25,6 +27,7 @@ export class WarehouseService {
     private readonly warehouseRows: WarehousesRepository,
     private readonly stock: StockRepository,
     private readonly reservations: ReservationsService,
+    private readonly documentRows: StockDocumentsRepository,
   ) {}
 
   /** The warehouse with this code in the company, created when missing. */
@@ -114,6 +117,32 @@ export class WarehouseService {
       tenantId: company.tenantId,
       companyId: company.companyId,
     });
+  }
+
+  /** "SC-2026/0042" for each of these documents, by id; missing ones are absent. */
+  async documentReferences(db: DbClient, ids: readonly string[]): Promise<Map<string, string>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.documentRows.numbersOf(db, ids);
+    return new Map(rows.map((row) => [row.id, documentReference(row)]));
+  }
+
+  /**
+   * Items whose available stock in the warehouse is at or below their reorder point, with the
+   * point and the quantity to order then: what a purchase proposal starts from.
+   */
+  async belowReorder(db: DbClient, company: CompanyContext, warehouseId: string) {
+    const { rows } = await this.stock.list(
+      db,
+      { companyId: company.companyId, warehouseId, belowReorder: true, includeZero: true },
+      { field: 'code', direction: 'asc' },
+      { skip: 0, take: 1000 },
+    );
+    return rows.map((row) => ({
+      itemId: row.itemId,
+      available: row.quantity.minus(row.reserved ?? new Prisma.Decimal(0)),
+      reorderPoint: row.reorderPoint!,
+      reorderQuantity: row.reorderQuantity,
+    }));
   }
 
   /**
