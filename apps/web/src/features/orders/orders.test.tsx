@@ -263,7 +263,7 @@ describe('orders', () => {
     );
     expect(screen.getByRole('button', { name: 'Prenota disponibile' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Chiudi residuo' })).toBeInTheDocument();
-    expect(screen.getByLabelText('evasi 0 su 5')).toBeInTheDocument();
+    expect(screen.getByText('evasi 0 su 5')).toBeInTheDocument();
     first.unmount();
 
     // An accountant takes orders but moves no goods.
