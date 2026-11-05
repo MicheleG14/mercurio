@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import type { CompanyContext, TenantTransaction } from '../../prisma/index.js';
-import { FulfilmentsService } from './fulfilments.service.js';
+import { fromDbDate } from '../../shared/dates.js';
+import { EventBus } from '../../shared/events/index.js';
+import { WarehouseService } from '../warehouse/index.js';
+import { fulfilledEvent, FulfilmentsService } from './fulfilments.service.js';
+import { OrdersRepository } from './orders.repository.js';
 import { OrderActionsService } from './order-actions.service.js';
 import { OrderDraftsService } from './order-drafts.service.js';
 import type { CreateFulfilmentDto, CreateOrderDto, OrderDto } from './orders.dto.js';
@@ -16,6 +20,9 @@ export class OrdersService {
     private readonly drafts: OrderDraftsService,
     private readonly actions: OrderActionsService,
     private readonly fulfilments: FulfilmentsService,
+    private readonly repository: OrdersRepository,
+    private readonly warehouse: WarehouseService,
+    private readonly bus: EventBus,
   ) {}
 
   createDraft(
@@ -83,5 +90,31 @@ export class OrdersService {
   /** Whether the company has any order: the seed adds orders only to a company without. */
   async hasOrders(tx: TenantTransaction, companyId: string): Promise<boolean> {
     return (await tx.order.count({ where: { companyId } })) > 0;
+  }
+
+  /**
+   * Publishes again an `OrderFulfilledEvent` for every shipment of a sales order of the tenant
+   * that is not undone, oldest first (docs/adr/0027): for shipments recorded before a module
+   * listened, or while it was off. Listeners are idempotent, so running it twice adds nothing.
+   * Returns how many events were published.
+   */
+  async republishFulfilments(tx: TenantTransaction, tenantId: string): Promise<number> {
+    const shipments = await this.repository.liveSalesFulfilments(tx, tenantId);
+    const documents = await this.warehouse.documentReferences(
+      tx,
+      shipments.map((s) => s.fulfilment.stockDocumentId),
+    );
+    for (const { order, fulfilment } of shipments) {
+      const company = { tenantId, companyId: order.companyId, userId: null };
+      await this.bus.publish(
+        fulfilledEvent(order, fulfilment, {
+          id: fulfilment.stockDocumentId,
+          reference: documents.get(fulfilment.stockDocumentId)!,
+          date: fromDbDate(fulfilment.fulfilmentDate),
+        }),
+        { tx, company },
+      );
+    }
+    return shipments.length;
   }
 }

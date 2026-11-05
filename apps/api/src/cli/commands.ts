@@ -365,6 +365,21 @@ export const COMMANDS: Record<string, Command> = {
     },
   },
 
+  'republish-fulfilments': {
+    summary:
+      'Publish again the shipments of sales orders of a tenant, for the modules that listen to them (invoicing); running it twice adds nothing',
+    options: { tenant: text },
+    required: ['tenant'],
+    async run({ prisma, tenancy, orders }, v, io) {
+      const published = await prisma.$transaction(async (tx) => {
+        const tenant = await tenancy.requireTenant(tx, v.tenant!);
+        return orders.republishFulfilments(tx, tenant.id);
+      });
+      io.out(`Shipments of ${v.tenant} published again: ${published}`);
+      io.audit({ command: 'republish-fulfilments', tenant: v.tenant, published });
+    },
+  },
+
   'list-tenants': {
     summary: 'List tenants with their companies, modules and members',
     options: {},

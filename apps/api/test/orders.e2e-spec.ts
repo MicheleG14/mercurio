@@ -1,7 +1,11 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
 import type { MembershipRole, PrismaClient } from '../src/generated/prisma/client.js';
+import { OrderFulfilledEvent, OrderFulfilmentReversedEvent } from '../src/modules/orders/events.js';
+import { OrdersService } from '../src/modules/orders/index.js';
 import { businessToday, WarehouseService } from '../src/modules/warehouse/index.js';
+import { DomainException } from '../src/shared/errors/index.js';
+import { EventBus } from '../src/shared/events/index.js';
 import { italianCheckDigit } from '../src/shared/italian-identifiers.js';
 import { activate, bearer, createTestApp } from './support/auth.js';
 import {
@@ -533,6 +537,117 @@ describe('orders (e2e)', () => {
       const copy = await as('admin').post(`/orders/${order.id}/duplicate`, { id }).expect(201);
       expect(copy.body).toMatchObject({ id, status: 'DRAFT', reference: null, total: order.total });
       await as('admin').post(`/orders/${order.id}/duplicate`, { id }).expect(200);
+    });
+  });
+
+  // B4, docs/adr/0027: shipments of sales orders are published inside their transaction, and a
+  // listener that refuses the undo of a shipment stops it.
+  describe('events', () => {
+    const fulfilled: OrderFulfilledEvent[] = [];
+    const reversed: OrderFulfilmentReversedEvent[] = [];
+    let refuse = false;
+    beforeAll(() => {
+      const bus = app.get(EventBus);
+      bus.subscribe(OrderFulfilledEvent, async (event, { company }) => {
+        expect(company.tenantId).toBe(world.tenants.a);
+        fulfilled.push(event);
+      });
+      bus.subscribe(OrderFulfilmentReversedEvent, async (event) => {
+        if (refuse) throw new DomainException('FULFILMENT_INVOICED', 409);
+        reversed.push(event);
+      });
+    });
+    const eventsOf = (id: string) => fulfilled.filter((e) => e.fulfilmentId === id);
+
+    it('publishes the shipments of sales orders with what the order agreed, not the receipts', async () => {
+      const item = await itemWith('10');
+      const order = await confirmed('SALES', [
+        { itemId: item, quantity: '4', unitPrice: '12.5', discountPercent: '10', vatCode: '10' },
+      ]);
+      const id = uuidv7();
+      await fulfil(order.id, [{ orderLineId: order.lines[0].id, quantity: '3' }], { id }).expect(
+        201,
+      );
+      const [event] = eventsOf(id);
+      expect(eventsOf(id)).toHaveLength(1);
+      expect(event).toMatchObject({
+        order: { id: order.id, reference: order.reference },
+        partyId: ids.customer,
+        document: { date: today },
+        lines: [
+          {
+            orderLineId: order.lines[0].id,
+            itemId: item,
+            quantity: '3.000',
+            unitPrice: '12.5000',
+            discountPercent: '10.00',
+            vatCode: '10',
+            vatRate: '10.00',
+            vatNature: null,
+          },
+        ],
+      });
+      expect(event!.document.reference).toMatch(/^SC-/);
+
+      const purchase = await confirmed('PURCHASE', [{ itemId: item, quantity: '1' }]);
+      const receipt = uuidv7();
+      await fulfil(purchase.id, [{ orderLineId: purchase.lines[0].id, quantity: '1' }], {
+        id: receipt,
+      }).expect(201);
+      expect(eventsOf(receipt)).toHaveLength(0);
+    });
+
+    it('undoes nothing when a listener refuses, and publishes the undo otherwise', async () => {
+      const item = await itemWith('5');
+      const order = await confirmed('SALES', [{ itemId: item, quantity: '2', unitPrice: '1' }]);
+      const id = uuidv7();
+      await fulfil(order.id, [{ orderLineId: order.lines[0].id, quantity: '2' }], { id }).expect(
+        201,
+      );
+      const before = await stockOf(item);
+
+      refuse = true;
+      try {
+        const refused = await as('admin')
+          .post(`/orders/${order.id}/fulfilments/${id}/reverse`)
+          .expect(409);
+        expect(refused.body.code).toBe('FULFILMENT_INVOICED');
+      } finally {
+        refuse = false;
+      }
+      expect(await stockOf(item)).toEqual(before);
+      const detail = await as('admin').get(`/orders/${order.id}`).expect(200);
+      expect(detail.body.lines[0].doneQuantity).toBe('2.000');
+
+      await as('admin').post(`/orders/${order.id}/fulfilments/${id}/reverse`).expect(200);
+      expect(reversed.filter((e) => e.fulfilmentId === id)).toEqual([
+        expect.objectContaining({ orderReference: order.reference }),
+      ]);
+    });
+
+    it('publishes again every shipment that is not undone, oldest first', async () => {
+      const item = await itemWith('5');
+      const order = await confirmed('SALES', [{ itemId: item, quantity: '3', unitPrice: '2' }]);
+      const kept = uuidv7();
+      const undone = uuidv7();
+      await fulfil(order.id, [{ orderLineId: order.lines[0].id, quantity: '1' }], {
+        id: kept,
+      }).expect(201);
+      await fulfil(order.id, [{ orderLineId: order.lines[0].id, quantity: '1' }], {
+        id: undone,
+      }).expect(201);
+      await as('admin').post(`/orders/${order.id}/fulfilments/${undone}/reverse`).expect(200);
+      const original = eventsOf(kept)[0];
+
+      const orders = app.get(OrdersService);
+      const published = await admin.$transaction((tx) =>
+        orders.republishFulfilments(tx as never, world.tenants.a),
+      );
+
+      expect(published).toBeGreaterThanOrEqual(1);
+      expect(eventsOf(kept)).toHaveLength(2);
+      expect(eventsOf(kept)[1]).toEqual(original);
+      expect(eventsOf(undone)).toHaveLength(1);
     });
   });
 

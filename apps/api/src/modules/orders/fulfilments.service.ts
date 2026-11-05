@@ -8,13 +8,15 @@ import {
   TenantDatabase,
   type TenantTransaction,
 } from '../../prisma/index.js';
-import { businessToday, toDbDate } from '../../shared/dates.js';
+import { businessToday, fromDbDate, toDbDate } from '../../shared/dates.js';
 import { quantityError } from '../../shared/decimal.js';
 import { DomainException, type FieldError, FieldErrors } from '../../shared/errors/index.js';
+import { EventBus } from '../../shared/events/index.js';
 import { unitDecimals } from '../registry/index.js';
 import { WarehouseService } from '../warehouse/index.js';
 import { originOf } from './order-actions.service.js';
 import { OrderEvents } from './order-events.js';
+import { OrderFulfilledEvent, OrderFulfilmentReversedEvent } from './events.js';
 import { ORDER_KINDS } from './order-kinds.js';
 import { OrderQueriesService } from './order-queries.service.js';
 import { isOpen, remainingOf, statusFromLines } from './order-rules.js';
@@ -26,7 +28,9 @@ import { type OrderRow, OrdersRepository } from './orders.repository.js';
  * those (docs/adr/0024). One transaction: lock the order, check the quantities against what is
  * left, let the warehouse record its document (which locks warehouses, balances, reservations
  * and its counter, B34), then record the fulfilment and the lines' progress. If the warehouse
- * refuses, nothing is left behind, and its errors come back on the lines of this request.
+ * refuses, nothing is left behind, and its errors come back on the lines of this request. A
+ * shipment of a sales order is published as an event in the same transaction (B4): what listens
+ * to it records it or fails with it.
  */
 @Injectable()
 export class FulfilmentsService {
@@ -35,6 +39,7 @@ export class FulfilmentsService {
     private readonly warehouse: WarehouseService,
     private readonly queries: OrderQueriesService,
     private readonly events: OrderEvents,
+    private readonly bus: EventBus,
     private readonly db: TenantDatabase,
     private readonly contexts: TenantContextService,
   ) {}
@@ -132,6 +137,16 @@ export class FulfilmentsService {
       reference: origin.reference,
       document: posted.reference,
     });
+    if (order.kind === 'SALES') {
+      await this.bus.publish(
+        fulfilledEvent(
+          order,
+          { id: dto.id, lines: moving },
+          { id: posted.id, reference: posted.reference, date: posted.documentDate },
+        ),
+        { tx, company },
+      );
+    }
     return { order: await this.queries.detail(tx, company.companyId, orderId), created: true };
   }
 
@@ -161,6 +176,13 @@ export class FulfilmentsService {
     }
 
     const origin = originOf(order);
+    // First: a listener that refuses (an invoiced shipment) stops the undo before anything moves.
+    if (order.kind === 'SALES') {
+      await this.bus.publish(new OrderFulfilmentReversedEvent(fulfilment.id, origin.reference), {
+        tx,
+        company,
+      });
+    }
     const reversal = await this.warehouse.reverseDocument(tx, company, fulfilment.stockDocumentId, {
       today,
       origin,
@@ -255,6 +277,46 @@ export class FulfilmentsService {
     }
     return moving;
   }
+}
+
+/**
+ * The event of a shipment, from the order (already numbered and locked) and what moved: the
+ * lines carry the price, discount and VAT the order agreed. Also used to publish it again.
+ */
+export function fulfilledEvent(
+  order: OrderRow,
+  fulfilment: { id: string; lines: { orderLineId: string; quantity: Prisma.Decimal }[] },
+  document: { id: string; reference: string; date: string },
+): OrderFulfilledEvent {
+  const linesById = new Map(order.lines.map((line) => [line.id, line]));
+  return new OrderFulfilledEvent(
+    fulfilment.id,
+    {
+      id: order.id,
+      reference: originOf(order).reference,
+      partyReference: order.partyReference,
+      partyReferenceDate: order.partyReferenceDate ? fromDbDate(order.partyReferenceDate) : null,
+    },
+    order.partyId,
+    document,
+    fulfilment.lines
+      .map((moved) => ({ moved, line: linesById.get(moved.orderLineId)! }))
+      .sort((a, b) => a.line.lineNo - b.line.lineNo)
+      .map(({ moved, line }) => ({
+        orderLineId: line.id,
+        lineNo: line.lineNo,
+        itemId: line.itemId,
+        description: line.description,
+        unit: line.unit,
+        quantity: moved.quantity.toFixed(3),
+        // A confirmed sales order has a price on every line (phase 4).
+        unitPrice: line.unitPrice!.toFixed(4),
+        discountPercent: line.discountPercent.toFixed(2),
+        vatCode: line.vatCode,
+        vatRate: line.vatRate.toFixed(2),
+        vatNature: line.vatNature,
+      })),
+  );
 }
 
 /** A quantity as sent, for comparing: text that is not a number compares as zero. */
