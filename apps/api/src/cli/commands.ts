@@ -46,6 +46,9 @@ export interface Command {
 
 const text = { type: 'string' } as const;
 
+/** The demo seed is one transaction: everything or nothing, however long it takes. */
+export const SEED_TRANSACTION = { timeout: 120_000 } as const;
+
 /** "a, b,c" → ["a", "b", "c"] */
 function list(value: string | undefined): string[] {
   return (value ?? '')
@@ -291,14 +294,25 @@ export const COMMANDS: Record<string, Command> = {
       'Create the fictitious demo tenants, or add what they miss (refused in production without --allow-production)',
     options: { 'allow-production': { type: 'boolean' } },
     required: [],
-    async run({ config, prisma, tenancy, identity, auth, registry, warehouse, orders }, v, io) {
+    async run(
+      { config, prisma, tenancy, identity, auth, registry, warehouse, orders, invoicing },
+      v,
+      io,
+    ) {
       if (config.isProduction && v['allow-production'] !== 'true') {
         throw new DomainException('DEMO_IN_PRODUCTION', HttpStatus.CONFLICT, {
           detail: 'add --allow-production to seed a production database on purpose',
         });
       }
       const { tenants: seeded, userIds } = await prisma.$transaction(async (tx) => {
-        const result = await seedDemo(tx, { tenancy, identity, registry, warehouse, orders });
+        const result = await seedDemo(tx, {
+          tenancy,
+          identity,
+          registry,
+          warehouse,
+          orders,
+          invoicing,
+        });
         // Outside production the demo people can sign in; in production they activate with a code.
         if (!config.isProduction) {
           for (const userId of result.userIds) {
@@ -309,7 +323,8 @@ export const COMMANDS: Record<string, Command> = {
           }
         }
         return result;
-      });
+        // The whole demo in one transaction takes longer than Prisma's default 5 seconds.
+      }, SEED_TRANSACTION);
       for (const tenant of seeded) {
         const people = tenant.created
           ? `created with ${tenant.companies} companies and ${tenant.members} members`
@@ -320,6 +335,7 @@ export const COMMANDS: Record<string, Command> = {
           `  warehouse: ${tenant.warehouses} warehouses and ${tenant.documents} stock documents added`,
         );
         io.out(`  orders: ${tenant.orders} orders added`);
+        io.out(`  invoicing: ${tenant.invoices} invoices and credit notes issued`);
       }
       if (userIds.length === 0) {
         io.out('No new demo people.');
@@ -339,6 +355,7 @@ export const COMMANDS: Record<string, Command> = {
         items: seeded.reduce((sum, t) => sum + t.items, 0),
         stockDocuments: seeded.reduce((sum, t) => sum + t.documents, 0),
         orders: seeded.reduce((sum, t) => sum + t.orders, 0),
+        invoices: seeded.reduce((sum, t) => sum + t.invoices, 0),
       });
     },
   },

@@ -1,6 +1,7 @@
 import type { IdentityService } from '../modules/identity/index.js';
 import type { PartyInput, RegistryService } from '../modules/registry/index.js';
 import type { TenancyService } from '../modules/tenancy/index.js';
+import type { InvoicingService } from '../modules/invoicing/index.js';
 import type { OrdersService } from '../modules/orders/index.js';
 import type { CreateStockDocumentDto, WarehouseService } from '../modules/warehouse/index.js';
 import { uuidv7 } from '../shared/uuid.js';
@@ -378,6 +379,67 @@ export const DEMO = {
           ],
         },
       ],
+      // Per company: header data for the invoices, then documents in date order (numbers and
+      // dates grow together). Parties by VAT number; shipments by the day they left.
+      invoicing: [
+        {
+          profile: {
+            address: "Via dell'Industria 21",
+            postalCode: '20141',
+            city: 'Milano',
+            province: 'MI',
+            reaOffice: 'MI',
+            reaNumber: '1987654',
+            shareCapital: '50000',
+            soleShareholder: false,
+            iban: 'IT60X0542811101000000123456',
+            pecEmail: 'rossisrl@pec.example.com',
+          },
+          documents: [
+            invoice('2026-10-02', '0612345678', 'RD', 'MP05', {
+              lines: [['MDO-ORA', '2']],
+            }),
+            invoice('2026-10-15', '0612345678', '30FM', 'MP05', {
+              shipments: ['2026-10-15'],
+              pay: [{ date: '2026-11-03', amount: '60.00' }],
+            }),
+            invoice('2026-10-20', 'DE811234567', 'RD', 'MP05', {
+              lines: [['MDO-ORA', '3', 'N2.1']],
+              stampDuty: true,
+              pay: [{ date: '2026-10-28', amount: '107.00' }],
+              notes: 'Operazione non soggetta, art. 7-ter DPR 633/72.',
+            }),
+            invoice('2026-10-22', '0723456789', '30DF', 'MP05', {
+              lines: [['CORSO-SIC', '4']],
+              stampDuty: true,
+            }),
+            credit('2026-10-25', 2, ['TS-8'], '2'),
+            invoice('2026-10-26', '0612345678', 'RD', 'MP05', { lines: [['MDO-ORA', '1']] }),
+            credit('2026-10-27', 6),
+            invoice('2026-10-31', '0723456789', '30-60FM', 'MP12', { shipments: ['2026-10-21'] }),
+            invoice('2026-11-04', 'DE811234567', '30DF', 'MP05', {
+              lines: [['MDO-ORA', '8', 'N2.1']],
+              draft: true,
+            }),
+          ],
+        },
+        {
+          profile: {
+            address: 'Via del Porto 5',
+            postalCode: '24121',
+            city: 'Bergamo',
+            province: 'BG',
+            reaOffice: 'BG',
+            reaNumber: '765432',
+            shareCapital: '20000',
+            soleShareholder: true,
+            iban: 'IT07X0542811101000000654321',
+          },
+          documents: [
+            invoice('2026-10-30', '0723456789', '30DF', 'MP05', { lines: [['MDO-ORA', '4']] }),
+          ],
+        },
+      ],
     },
     {
       slug: 'bianchi',
@@ -397,11 +459,46 @@ export const DEMO = {
           city: 'Modena',
           province: 'MO',
         }),
+        company('Studio Legale Ferraro', '1389012345', null, 'customer', {
+          address: 'Via Farini 14',
+          postalCode: '40124',
+          city: 'Bologna',
+          province: 'BO',
+          pecEmail: 'ferraro@pec.example.com',
+          paymentTerms: '30DF',
+          paymentMethod: 'MP05',
+        }),
       ],
       items: [
         service('CONS-ORA', 'Consulenza amministrativa', 'H', '60.00', '22'),
         good('CARTA-A4', 'Carta A4 80 g (5 risme)', 'CF', '24.90'),
         good('TONER-K', 'Toner nero per stampante laser', 'PZ', '49.00'),
+      ],
+      // Invoicing without orders (S7): invoices by hand only.
+      invoicing: [
+        {
+          profile: {
+            address: 'Via Emilia Ponente 100',
+            postalCode: '40133',
+            city: 'Bologna',
+            province: 'BO',
+            reaOffice: 'BO',
+            reaNumber: '345678',
+            iban: 'IT20Y0306909606100000063789',
+          },
+          documents: [
+            invoice('2026-10-10', '1389012345', '30DF', 'MP05', {
+              lines: [['CONS-ORA', '5']],
+              pay: [{ date: '2026-11-02', amount: '366.00' }],
+            }),
+            invoice('2026-10-28', '1389012345', 'RD', 'MP05', {
+              lines: [
+                ['CARTA-A4', '2'],
+                ['TONER-K', '1'],
+              ],
+            }),
+          ],
+        },
       ],
     },
   ],
@@ -421,6 +518,8 @@ export interface SeedSummary {
   documents: number;
   /** Orders added by this run. */
   orders: number;
+  /** Invoices and credit notes issued by this run. */
+  invoices: number;
 }
 
 /**
@@ -438,6 +537,7 @@ export async function seedDemo(
     registry: RegistryService;
     warehouse: WarehouseService;
     orders: OrdersService;
+    invoicing: InvoicingService;
   },
   suffix = '',
 ) {
@@ -490,6 +590,7 @@ export async function seedDemo(
         ? await seedWarehouse(db, services, tenantId, tenant)
         : { warehouses: 0, documents: 0 };
     const orders = 'orders' in tenant ? await seedOrders(db, services, tenantId, tenant) : 0;
+    const invoices = await seedInvoicing(db, services, tenantId, tenant);
     summary.push({
       slug: slug(tenant.slug),
       created,
@@ -499,6 +600,7 @@ export async function seedDemo(
       items,
       ...stock,
       orders,
+      invoices,
     });
   }
   return { tenants: summary, userIds: [...userIds] };
@@ -672,6 +774,181 @@ async function seedOrders(
     }
   }
   return added;
+}
+
+/**
+ * Invoices, credit notes and payments of a demo tenant, added only to a company that has no
+ * invoice. The header data of each company is filled in only where it is missing. Shipments
+ * recorded before invoicing existed are published again first (idempotent), so they are there to
+ * invoice. Every action goes through the same use case as the API, "on its own day".
+ */
+async function seedInvoicing(
+  db: DbClient,
+  services: {
+    tenancy: TenancyService;
+    registry: RegistryService;
+    orders: OrdersService;
+    invoicing: InvoicingService;
+  },
+  tenantId: string,
+  tenant: (typeof DEMO.tenants)[number],
+): Promise<number> {
+  let issued = 0;
+  const companyIds = await services.tenancy.companyIdsByVat(
+    db,
+    tenantId,
+    tenant.companies.map((c) => c.vatNumber),
+  );
+  const itemIds = await services.registry.itemIdsByCode(
+    db,
+    tenantId,
+    tenant.items.map((i) => i.code),
+  );
+  if ('orders' in tenant) await services.orders.republishFulfilments(db, tenantId);
+  for (const [index, spec] of tenant.invoicing.entries()) {
+    const company = { tenantId, companyId: companyIds[index]!, userId: null };
+    const current = await services.tenancy.getCompany(db, company.companyId);
+    if (!current.address) {
+      await services.tenancy.updateCompanyProfile(
+        db,
+        company.companyId,
+        current.version,
+        spec.profile,
+      );
+    }
+    if (await services.invoicing.hasInvoices(db, company.companyId)) continue;
+    const documents: { id: string; lines: { id: string; itemId: string | null }[] }[] = [];
+    for (const d of spec.documents) {
+      const id = uuidv7(Date.parse(`${d.date}T11:00:00Z`));
+      if (d.type === 'credit') {
+        const credited = documents[d.of - 1]!;
+        const lineIds = d.items?.map(
+          (code) => credited.lines.find((l) => l.itemId === itemIds.get(code))!.id,
+        );
+        let draft = await services.invoicing.creditNote(
+          db,
+          company,
+          credited.id,
+          { id, ...(lineIds ? { lineIds } : {}) },
+          d.date,
+        );
+        if (d.quantity) {
+          draft = await services.invoicing.updateDraft(
+            db,
+            company,
+            id,
+            {
+              version: draft.version,
+              partyId: draft.partyId,
+              paymentTerms: draft.paymentTerms,
+              paymentMethod: draft.paymentMethod,
+              language: draft.language,
+              lines: draft.lines.map((l) => ({
+                description: l.description,
+                ...(l.creditedLineId
+                  ? { creditedLineId: l.creditedLineId, quantity: d.quantity }
+                  : {}),
+              })),
+            },
+            d.date,
+          );
+        }
+        const note = await services.invoicing.issue(db, company, id, draft.version, d.date);
+        documents.push({ id, lines: note.lines });
+        issued++;
+        continue;
+      }
+      const vat = /^\d/.test(d.party) ? withCheckDigit(d.party) : d.party;
+      const partyId = (await services.registry.partyIdByVat(db, tenantId, vat))!;
+      const shipments = (await services.invoicing.toInvoice(db, company.companyId)).filter(
+        (s) =>
+          s.partyId === partyId &&
+          !s.draftId &&
+          (d.shipments as readonly string[] | undefined)?.includes(
+            s.documentDate.toISOString().slice(0, 10),
+          ),
+      );
+      const draft = await services.invoicing.createDraft(
+        db,
+        company,
+        {
+          id,
+          partyId,
+          fulfilmentIds: shipments.map((s) => s.fulfilmentId),
+          paymentTerms: d.terms,
+          paymentMethod: d.method,
+          notes: d.notes ?? null,
+          lines: [
+            ...(d.lines ?? []).map(([code, quantity, vatCode]) => ({
+              itemId: itemIds.get(code)!,
+              quantity,
+              unitPrice: tenant.items.find((i) => i.code === code)!.salePrice,
+              ...(vatCode ? { vatCode } : {}),
+            })),
+            ...(d.stampDuty ? [{ stampDutyCharge: true }] : []),
+          ],
+        },
+        d.date,
+      );
+      if (d.draft) continue;
+      const invoice = await services.invoicing.issue(db, company, id, draft.version, d.date);
+      documents.push({ id, lines: invoice.lines });
+      issued++;
+      for (const payment of d.pay ?? []) {
+        // From the first open instalment on, as a person would.
+        let left = Number(payment.amount) * 100;
+        const allocations = [];
+        for (const due of invoice.dueDates) {
+          if (left <= 0) break;
+          const take = Math.min(left, Math.round(Number(due.openAmount) * 100));
+          if (take > 0) allocations.push({ dueDateId: due.id, amount: (take / 100).toFixed(2) });
+          left -= take;
+        }
+        await services.invoicing.recordPayment(
+          db,
+          company,
+          {
+            id: uuidv7(Date.parse(`${payment.date}T12:00:00Z`)),
+            partyId,
+            paymentDate: payment.date,
+            amount: payment.amount,
+            method: d.method,
+            allocations,
+          },
+          payment.date,
+        );
+      }
+    }
+  }
+  return issued;
+}
+
+/** A demo invoice: date, customer (VAT number), payment terms and method, what it invoices. */
+function invoice(
+  date: string,
+  party: string,
+  terms: string,
+  method: string,
+  extra: {
+    /** Items or services typed by hand: [code, quantity, VAT code if not the item's]. */
+    lines?: [code: string, quantity: string, vatCode?: string][];
+    /** Shipments of the customer, by the day they left. */
+    shipments?: string[];
+    stampDuty?: boolean;
+    notes?: string;
+    pay?: { date: string; amount: string }[];
+    draft?: boolean;
+  } = {},
+) {
+  return { type: 'invoice' as const, date, party, terms, method, ...extra };
+}
+
+/**
+ * A demo credit note of the `of`-th document above (from 1): of the lines of these items, or of
+ * everything; with `quantity`, of that much of each line.
+ */
+function credit(date: string, of: number, items?: string[], quantity?: string) {
+  return { type: 'credit' as const, date, of, items, quantity };
 }
 
 /** A demo order: kind, date, party (VAT number, first 10 digits if Italian), lines. */
