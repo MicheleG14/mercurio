@@ -41,5 +41,65 @@
     "warehouse": "Giacenze calcolate dai movimenti, carichi, scarichi, trasferimenti e sotto scorta.",
     "orders": "Ordini clienti e fornitori, prenotazione della merce, ricezione ed evasione anche parziali.",
     "invoicing": "Fatture e note di credito numerate, PDF, scadenziario e incassi."
+  },
+  "charts": {
+    "title": "Andamento",
+    "year": "Anno",
+    "month": "Mese",
+    "count": "Scadenze",
+    "empty": "Nessun documento nel {{year}}.",
+    "invoiced": {
+      "title": "Fatturato e incassato nel {{year}}",
+      "description": "Fatture meno note di credito, IVA inclusa, e incassi meno rimborsi e storni. Fai clic su un mese per vederne le fatture.",
+      "total": "Fatturato",
+      "taxable": "Imponibile",
+      "collected": "Incassato"
+    },
+    "aging": {
+      "title": "Da incassare per ritardo",
+      "description": "Ad oggi, {{total}} sulle fatture non saldate. Fai clic su una fascia per aprire lo scadenziario.",
+      "empty": "Nessuna fattura da incassare.",
+      "bucket": "Ritardo",
+      "amount": "Da incassare",
+      "dueDates_one": "{{count}} scadenza",
+      "dueDates_other": "{{count}} scadenze",
+      "buckets": {
+        "NOT_DUE": "Non scaduto",
+        "DAYS_1_30": "1-30 giorni",
+        "DAYS_31_60": "31-60 giorni",
+        "DAYS_61_90": "61-90 giorni",
+        "OVER_90": "Oltre 90 giorni"
+      }
+    },
+    "customers": {
+      "title": "Primi clienti nel {{year}}",
+      "description": "Per imponibile fatturato, al netto delle note di credito.",
+      "customer": "Cliente",
+      "taxable": "Imponibile",
+      "open": "Da incassare",
+      "openNote": "{{amount}} da incassare"
+    },
+    "orders": {
+      "title": "Ordinato ed evaso nel {{year}}",
+      "description": "Imponibile degli ordini clienti confermati e della merce spedita.",
+      "ordered": "Ordinato",
+      "shipped": "Evaso"
+    },
+    "backlog": {
+      "title": "Da evadere",
+      "description": "Ad oggi, il residuo degli ordini clienti aperti.",
+      "total": "Totale da evadere",
+      "amount": "Da evadere",
+      "empty": "Nessun ordine cliente da evadere."
+    },
+    "stock": {
+      "title": "Documenti di magazzino nel {{year}}",
+      "description": "Per tipo, senza i documenti stornati. Fai clic su un mese per vederne i documenti.",
+      "receipt": "Carichi",
+      "issue": "Scarichi",
+      "other": "Rettifiche e trasferimenti",
+      "adjustment": "Rettifiche",
+      "transfer": "Trasferimenti"
+    }
   }
 }

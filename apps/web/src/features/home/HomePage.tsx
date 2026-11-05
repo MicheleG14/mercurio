@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -10,6 +11,9 @@ import { useInvoicingSummary, useOrdersSummary, useStockSummary } from './querie
 
 /** The modules a tenant can have, besides the registry that is always there. */
 const OPTIONAL_MODULES = ['warehouse', 'orders', 'invoicing'] as const;
+
+/** The charts and their library load after the counters (docs/adr/0032). */
+const OverviewCharts = lazy(() => import('./OverviewCharts'));
 
 /**
  * The landing page after signing in: a card per module the person can see, and the modules the
@@ -168,6 +172,13 @@ export function HomePage() {
               </Link>
             </CardContent>
           </Card>
+        )}
+        {(warehouse || orders || invoicing) && (
+          <div className="md:col-span-2">
+            <Suspense fallback={null}>
+              <OverviewCharts invoicing={invoicing} orders={orders} warehouse={warehouse} />
+            </Suspense>
+          </div>
         )}
         {inactive.length > 0 && (
           <Card className="md:col-span-2">

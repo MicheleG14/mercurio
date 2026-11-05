@@ -94,5 +94,9 @@
     "error": "Ricerca non riuscita.",
     "noMatch": "Nessun risultato per «{{text}}».",
     "empty": "Nessun elemento."
+  },
+  "charts": {
+    "showTable": "Mostra come tabella",
+    "showChart": "Mostra il grafico"
   }
 }

@@ -25,6 +25,24 @@ export function formatMoney(value: string, language: string, maximumFractionDigi
   }).format(value as Intl.StringNumericLiteral);
 }
 
+/**
+ * A decimal string as the length of a bar, and for nothing else (F23): charts need a number to
+ * draw, but what a chart shows as text is always formatted from the string.
+ */
+export function chartValue(value: string): number {
+  return Number(value);
+}
+
+/** An axis tick in euro, short: "12.000 €" → "12.000 €", "1.250.000" → "1,3 Mln €". */
+export function formatMoneyTick(value: number, language: string): string {
+  return new Intl.NumberFormat(intlLocale(language), {
+    style: 'currency',
+    currency: 'EUR',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
 /** A decimal string for an input field: no grouping, the language's separator, "12.5000" → "12,50". */
 export function decimalToInput(
   value: string | null | undefined,
