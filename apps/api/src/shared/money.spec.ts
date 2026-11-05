@@ -58,4 +58,18 @@ describe('Money', () => {
     expect(Money.of('1.5').equals(Money.of('1.50'))).toBe(true);
     expect(Money.of('1.5').toDecimal().toFixed(2)).toBe('1.50');
   });
+
+  it('splits an amount in instalments that add up, the rest on the last one', () => {
+    expect(Money.of('100.00').split(3).map(String)).toEqual(['33.33', '33.33', '33.34']);
+    expect(Money.of('0.02').split(3).map(String)).toEqual(['0.00', '0.00', '0.02']);
+    expect(Money.of('122.00').split(1).map(String)).toEqual(['122.00']);
+    expect(() => Money.of('1').split(0)).toThrow(RangeError);
+  });
+
+  it('compares amounts', () => {
+    expect(Money.of('2').greaterThan(Money.of('1.99'))).toBe(true);
+    expect(Money.min(Money.of('2'), Money.of('1.99')).toString()).toBe('1.99');
+    expect(Money.of('-0.01').isNegative()).toBe(true);
+    expect(Money.ZERO.isNegative()).toBe(false);
+  });
 });

@@ -113,7 +113,14 @@
                 "ORDER_CLOSED",
                 "ORDER_CANCELLED",
                 "ORDER_FULFILLED",
-                "ORDER_FULFILMENT_REVERSED"
+                "ORDER_FULFILMENT_REVERSED",
+                "INVOICE_DRAFT_CREATED",
+                "INVOICE_DRAFT_UPDATED",
+                "INVOICE_DRAFT_DELETED",
+                "INVOICE_ISSUED",
+                "CREDIT_NOTE_ISSUED",
+                "PAYMENT_RECORDED",
+                "PAYMENT_REVERSED"
               ]
             }
           },
@@ -3476,6 +3483,756 @@
         "summary": "Undo a receipt or a shipment: its stock document is reversed",
         "tags": [
           "orders"
+        ]
+      }
+    },
+    "/invoices": {
+      "get": {
+        "operationId": "InvoicesController_list",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "INVOICE",
+                "CREDIT_NOTE"
+              ]
+            }
+          },
+          {
+            "name": "partyId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-12-31",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoicePageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Issued invoices and credit notes, newest first",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoices/{id}": {
+      "get": {
+        "operationId": "InvoicesController_get",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoices/{id}/credit-note": {
+      "post": {
+        "operationId": "InvoicesController_creditNote",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCreditNoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Already created with this id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDraftDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDraftDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "A draft credit note: what is left of the chosen lines of the invoice, or of all",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoice-drafts": {
+      "get": {
+        "operationId": "InvoiceDraftsController_list",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDraftPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "invoicing"
+        ]
+      },
+      "post": {
+        "description": "The same id again answers 200 with the draft (B33).",
+        "operationId": "InvoiceDraftsController_create",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDraftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Already created with this id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDraftDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDraftDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a draft invoice, by hand or from shipments of one customer",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoice-drafts/{id}": {
+      "get": {
+        "operationId": "InvoiceDraftsController_get",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDraftDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "invoicing"
+        ]
+      },
+      "put": {
+        "operationId": "InvoiceDraftsController_update",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDraftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDraftDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Save a draft, header and lines",
+        "tags": [
+          "invoicing"
+        ]
+      },
+      "delete": {
+        "operationId": "InvoiceDraftsController_remove",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a draft; its shipments are to invoice again",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoice-drafts/{id}/issue": {
+      "post": {
+        "description": "Issuing it again answers 200 with the document already issued (B33).",
+        "operationId": "InvoiceDraftsController_issue",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Already issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Issue a draft: number, due dates; from now on it never changes",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoicing/to-invoice": {
+      "get": {
+        "operationId": "InvoicingController_toInvoice",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "partyId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Shipped on or before this day",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToInvoicePageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Shipments of sales orders not yet invoiced, oldest first",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoicing/parties-search": {
+      "get": {
+        "operationId": "InvoicingController_searchParties",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerOptionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Active customers for an invoice",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoicing/items-search": {
+      "get": {
+        "operationId": "InvoicingController_searchItems",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InvoiceItemOptionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Active items and services for a line of an invoice",
+        "tags": [
+          "invoicing"
         ]
       }
     }
@@ -7134,6 +7891,1030 @@
         "required": [
           "id",
           "lines"
+        ]
+      },
+      "InvoiceKind": {
+        "type": "string",
+        "enum": [
+          "INVOICE",
+          "CREDIT_NOTE"
+        ]
+      },
+      "InvoiceSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceKind"
+              }
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "example": "FT 12/2026"
+          },
+          "issueDate": {
+            "type": "string"
+          },
+          "partyId": {
+            "type": "string"
+          },
+          "partyName": {
+            "type": "string"
+          },
+          "total": {
+            "type": "string"
+          },
+          "openAmount": {
+            "type": "string"
+          },
+          "paymentStatus": {
+            "type": "string",
+            "enum": [
+              "UNPAID",
+              "PARTIAL",
+              "PAID",
+              "CREDITED",
+              "SETTLED",
+              "REFUND_DUE",
+              "REFUNDED"
+            ]
+          },
+          "overdue": {
+            "type": "boolean"
+          },
+          "nextDueDate": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "reference",
+          "issueDate",
+          "partyId",
+          "partyName",
+          "total",
+          "openAmount",
+          "paymentStatus",
+          "overdue",
+          "nextDueDate"
+        ]
+      },
+      "InvoicePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvoiceSummaryDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "DocumentLineDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "lineNo": {
+            "type": "number"
+          },
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "string",
+            "nullable": true,
+            "example": "5.000"
+          },
+          "unitPrice": {
+            "type": "string",
+            "nullable": true,
+            "example": "12.5000"
+          },
+          "discountPercent": {
+            "type": "string",
+            "example": "0.00"
+          },
+          "vatCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "vatRate": {
+            "type": "string",
+            "nullable": true,
+            "example": "22.00"
+          },
+          "vatNature": {
+            "type": "string",
+            "nullable": true
+          },
+          "lineAmount": {
+            "type": "string",
+            "nullable": true,
+            "example": "62.50"
+          },
+          "fulfilmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderLineId": {
+            "type": "string",
+            "nullable": true
+          },
+          "creditedLineId": {
+            "type": "string",
+            "nullable": true
+          },
+          "stampDutyCharge": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "lineNo",
+          "itemId",
+          "itemCode",
+          "description",
+          "unit",
+          "quantity",
+          "unitPrice",
+          "discountPercent",
+          "vatCode",
+          "vatRate",
+          "vatNature",
+          "lineAmount",
+          "fulfilmentId",
+          "orderLineId",
+          "creditedLineId",
+          "stampDutyCharge"
+        ]
+      },
+      "DueDateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "seq": {
+            "type": "number"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-12-31"
+          },
+          "amount": {
+            "type": "string",
+            "example": "61.00"
+          },
+          "settledAmount": {
+            "type": "string",
+            "example": "0.00"
+          },
+          "openAmount": {
+            "type": "string",
+            "example": "61.00"
+          }
+        },
+        "required": [
+          "id",
+          "seq",
+          "dueDate",
+          "amount",
+          "settledAmount",
+          "openAmount"
+        ]
+      },
+      "DocumentRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceKind"
+              }
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "example": "FT 12/2026"
+          },
+          "issueDate": {
+            "type": "string",
+            "example": "2026-11-05"
+          },
+          "total": {
+            "type": "string",
+            "example": "122.00"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "reference",
+          "issueDate",
+          "total"
+        ]
+      },
+      "CreditableLineDto": {
+        "type": "object",
+        "properties": {
+          "lineId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "lineId",
+          "quantity",
+          "amount"
+        ]
+      },
+      "ShipmentRefDto": {
+        "type": "object",
+        "properties": {
+          "fulfilmentId": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "orderReference": {
+            "type": "string",
+            "example": "OC-2026/0012"
+          },
+          "partyReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "documentReference": {
+            "type": "string",
+            "example": "SC-2026/0031"
+          },
+          "documentDate": {
+            "type": "string",
+            "example": "2026-10-12"
+          }
+        },
+        "required": [
+          "fulfilmentId",
+          "orderId",
+          "orderReference",
+          "partyReference",
+          "documentReference",
+          "documentDate"
+        ]
+      },
+      "InvoiceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceKind"
+              }
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "example": "FT 12/2026"
+          },
+          "series": {
+            "type": "string"
+          },
+          "year": {
+            "type": "number"
+          },
+          "number": {
+            "type": "number"
+          },
+          "issueDate": {
+            "type": "string",
+            "example": "2026-11-05"
+          },
+          "partyId": {
+            "type": "string"
+          },
+          "seller": {
+            "type": "object",
+            "description": "The seller as printed, copied when issued"
+          },
+          "customer": {
+            "type": "object",
+            "description": "The customer as printed, copied when issued"
+          },
+          "language": {
+            "type": "string",
+            "example": "it"
+          },
+          "paymentTerms": {
+            "type": "string"
+          },
+          "paymentMethod": {
+            "type": "string"
+          },
+          "iban": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentLineDto"
+            }
+          },
+          "vatSummary": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VatRowDto"
+            }
+          },
+          "taxableTotal": {
+            "type": "string"
+          },
+          "vatTotal": {
+            "type": "string"
+          },
+          "stampDuty": {
+            "type": "string",
+            "example": "0.00"
+          },
+          "total": {
+            "type": "string"
+          },
+          "dueDates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DueDateDto"
+            }
+          },
+          "settledAmount": {
+            "type": "string",
+            "example": "0.00"
+          },
+          "openAmount": {
+            "type": "string",
+            "example": "122.00"
+          },
+          "paymentStatus": {
+            "type": "string",
+            "enum": [
+              "UNPAID",
+              "PARTIAL",
+              "PAID",
+              "CREDITED",
+              "SETTLED",
+              "REFUND_DUE",
+              "REFUNDED"
+            ]
+          },
+          "overdue": {
+            "type": "boolean"
+          },
+          "creditedInvoice": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DocumentRefDto"
+              }
+            ]
+          },
+          "creditNotes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentRefDto"
+            }
+          },
+          "creditable": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreditableLineDto"
+            }
+          },
+          "creditableTotal": {
+            "type": "string",
+            "example": "122.00",
+            "description": "What credit notes may still give back"
+          },
+          "shipments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentRefDto"
+            }
+          },
+          "issuedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "reference",
+          "series",
+          "year",
+          "number",
+          "issueDate",
+          "partyId",
+          "seller",
+          "customer",
+          "language",
+          "paymentTerms",
+          "paymentMethod",
+          "iban",
+          "notes",
+          "lines",
+          "vatSummary",
+          "taxableTotal",
+          "vatTotal",
+          "stampDuty",
+          "total",
+          "dueDates",
+          "settledAmount",
+          "openAmount",
+          "paymentStatus",
+          "overdue",
+          "creditedInvoice",
+          "creditNotes",
+          "creditable",
+          "creditableTotal",
+          "shipments",
+          "issuedAt"
+        ]
+      },
+      "CreateCreditNoteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Chosen by the client (UUID v7)"
+          },
+          "lineIds": {
+            "description": "Lines of the invoice to credit, what is left of each; all when absent",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "DueDatePreviewDto": {
+        "type": "object",
+        "properties": {
+          "seq": {
+            "type": "number"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-12-31"
+          },
+          "amount": {
+            "type": "string",
+            "example": "61.00"
+          }
+        },
+        "required": [
+          "seq",
+          "dueDate",
+          "amount"
+        ]
+      },
+      "InvoiceDraftDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceKind"
+              }
+            ]
+          },
+          "partyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "partyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "creditedInvoice": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DocumentRefDto"
+              }
+            ]
+          },
+          "language": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentTerms": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentMethod": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentLineDto"
+            }
+          },
+          "vatSummary": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VatRowDto"
+            }
+          },
+          "taxableTotal": {
+            "type": "string"
+          },
+          "vatTotal": {
+            "type": "string"
+          },
+          "total": {
+            "type": "string"
+          },
+          "stampDutyRequired": {
+            "type": "boolean",
+            "description": "Its exempt operations need the 2 € stamp duty"
+          },
+          "dueDatesPreview": {
+            "description": "The due dates if it were issued today with these terms",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DueDatePreviewDto"
+            }
+          },
+          "shipments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentRefDto"
+            }
+          },
+          "deferredDeadline": {
+            "type": "string",
+            "nullable": true,
+            "description": "Last day to issue it as a deferred invoice (15th of the month after)"
+          },
+          "version": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "partyId",
+          "partyName",
+          "creditedInvoice",
+          "language",
+          "paymentTerms",
+          "paymentMethod",
+          "notes",
+          "lines",
+          "vatSummary",
+          "taxableTotal",
+          "vatTotal",
+          "total",
+          "stampDutyRequired",
+          "dueDatesPreview",
+          "shipments",
+          "deferredDeadline",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "InvoiceDraftSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceKind"
+              }
+            ]
+          },
+          "partyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "total": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "partyName",
+          "total",
+          "version",
+          "updatedAt"
+        ]
+      },
+      "InvoiceDraftPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvoiceDraftSummaryDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "DraftLineInputDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "The item's when absent"
+          },
+          "quantity": {
+            "type": "string",
+            "nullable": true,
+            "example": "5"
+          },
+          "unitPrice": {
+            "type": "string",
+            "nullable": true,
+            "example": "12.5"
+          },
+          "discountPercent": {
+            "type": "string",
+            "example": "10"
+          },
+          "vatCode": {
+            "type": "string",
+            "nullable": true,
+            "example": "22"
+          },
+          "fulfilmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderLineId": {
+            "type": "string",
+            "nullable": true
+          },
+          "creditedLineId": {
+            "type": "string",
+            "nullable": true,
+            "description": "On a credit note: the line of the credited invoice it corrects"
+          },
+          "stampDutyCharge": {
+            "type": "boolean",
+            "description": "The stamp duty charged to the customer"
+          }
+        }
+      },
+      "CreateDraftDto": {
+        "type": "object",
+        "properties": {
+          "partyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "language": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "it",
+              "en"
+            ]
+          },
+          "paymentTerms": {
+            "type": "string",
+            "nullable": true,
+            "example": "30FM"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "nullable": true,
+            "example": "MP05"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000
+          },
+          "id": {
+            "type": "string",
+            "description": "Chosen by the client (UUID v7): the issued invoice keeps it"
+          },
+          "fulfilmentIds": {
+            "description": "Shipments of one customer to invoice: their lines become the lines of the draft",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lines": {
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DraftLineInputDto"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "UpdateDraftDto": {
+        "type": "object",
+        "properties": {
+          "partyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "language": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "it",
+              "en"
+            ]
+          },
+          "paymentTerms": {
+            "type": "string",
+            "nullable": true,
+            "example": "30FM"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "nullable": true,
+            "example": "MP05"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 1000
+          },
+          "version": {
+            "type": "number",
+            "description": "The version read (B29)"
+          },
+          "lines": {
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DraftLineInputDto"
+            }
+          }
+        },
+        "required": [
+          "version",
+          "lines"
+        ]
+      },
+      "IssueDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "description": "The version of the draft read (B29)"
+          },
+          "issueDate": {
+            "type": "string",
+            "example": "2026-11-05",
+            "description": "Default today (Italian time)"
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "ToInvoiceDto": {
+        "type": "object",
+        "properties": {
+          "fulfilmentId": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "orderReference": {
+            "type": "string",
+            "example": "OC-2026/0012"
+          },
+          "partyReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "documentReference": {
+            "type": "string",
+            "example": "SC-2026/0031"
+          },
+          "documentDate": {
+            "type": "string",
+            "example": "2026-10-12"
+          },
+          "partyId": {
+            "type": "string"
+          },
+          "partyName": {
+            "type": "string"
+          },
+          "taxableAmount": {
+            "type": "string",
+            "example": "62.50",
+            "description": "Taxable amount of its lines"
+          },
+          "draftId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The draft that has it"
+          }
+        },
+        "required": [
+          "fulfilmentId",
+          "orderId",
+          "orderReference",
+          "partyReference",
+          "documentReference",
+          "documentDate",
+          "partyId",
+          "partyName",
+          "taxableAmount",
+          "draftId"
+        ]
+      },
+      "ToInvoicePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToInvoiceDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "CustomerOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "vatNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "vatNumber"
+        ]
+      },
+      "InvoiceItemOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "salePrice": {
+            "type": "string",
+            "nullable": true
+          },
+          "vatCode": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "description",
+          "unit",
+          "salePrice",
+          "vatCode"
         ]
       }
     }
