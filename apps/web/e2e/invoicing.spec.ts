@@ -43,7 +43,7 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await activateAndEnter(page, state.invoicingDesktop.code);
 
   // Without its registered office the company cannot issue: fill it in.
-  await page.getByRole('link', { name: 'Dati azienda' }).click();
+  await page.getByRole('link', { name: 'Dati azienda', exact: true }).click();
   await expect(page.getByText(/Per emettere fatture mancano/)).toBeVisible();
   await page.getByLabel('Indirizzo della sede', { exact: true }).fill('Via Roma 1');
   await page.getByLabel('CAP', { exact: true }).fill('20121');
@@ -108,7 +108,7 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await expect(page.getByText('Evaso', { exact: true }).first()).toBeVisible();
 
   // Both shipments in one invoice.
-  await page.getByRole('link', { name: 'Da fatturare' }).click();
+  await page.getByRole('link', { name: 'Da fatturare', exact: true }).click();
   await page.getByRole('checkbox', { name: /Scegli SC-\d{4}\/0001/ }).check();
   await page.getByRole('checkbox', { name: /Scegli SC-\d{4}\/0002/ }).check();
   await snap(page, '1-to-invoice');
@@ -130,7 +130,10 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   expect((await download).suggestedFilename()).toMatch(/^FT-\d{4}-0001\.pdf$/);
 
   // An order with an invoiced shipment cannot undo it.
-  await page.getByRole('link', { name: /^OC-\d{4}\/0001$/ }).click();
+  await page
+    .getByRole('link', { name: /^OC-\d{4}\/0001$/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: 'Annulla la registrazione' }).first().click();
   await page
     .getByRole('alertdialog')
@@ -139,7 +142,7 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await expect(page.getByText(/La spedizione è in una bozza o in una fattura/)).toBeVisible();
 
   // A payment in part, then a credit note for the rest.
-  await page.getByRole('link', { name: 'Fatture' }).click();
+  await page.getByRole('link', { name: 'Fatture', exact: true }).click();
   await page.getByRole('link', { name: /^FT 1\/\d{4}$/ }).click();
   await page.getByRole('link', { name: 'Registra incasso' }).click();
   await page.getByLabel('Importo', { exact: true }).fill('20');
@@ -156,9 +159,9 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   // It gave back 20 € more than was open: owed to the customer.
   await expect(page.getByText('Da rimborsare', { exact: true }).first()).toBeVisible();
 
-  await page.getByRole('link', { name: 'Scadenziario' }).click();
+  await page.getByRole('link', { name: 'Scadenziario', exact: true }).click();
   await snap(page, '4-schedule');
-  await page.getByRole('link', { name: 'Attività' }).click();
+  await page.getByRole('link', { name: 'Attività', exact: true }).click();
   await expect(page.getByRole('cell', { name: 'Nota di credito emessa' }).first()).toBeVisible();
 
   // The schedule on a phone, as it is consulted on the go.
