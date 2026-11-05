@@ -12,6 +12,7 @@ import {
   uuidv7,
   type World,
 } from './support/database.js';
+import { fatturaPaErrors } from './support/fatturapa-schema.js';
 
 // Invoicing end to end (docs/adr/0027-0030): real application, real database, the API role subject
 // to Row-Level Security. Tenant A has warehouse, orders and invoicing; B has none of them.
@@ -529,6 +530,23 @@ describe('invoicing (e2e)', () => {
       const again = await pdf(`/invoices/${invoice.id}/pdf`).expect(200);
       expect((again.body as Buffer).equals(printed.body as Buffer)).toBe(true);
       await as('WAREHOUSE_KEEPER').get(`/invoices/${invoice.id}/pdf`).expect(403);
+    });
+
+    it('gives an issued invoice as a FatturaPA file the schema accepts', async () => {
+      const draft = (await manual([{ itemId: ids.service, quantity: '2', unitPrice: '50' }])).body;
+      const invoice = (await issue(draft).expect(201)).body;
+      const res = await as('READ_ONLY').get(`/invoices/${invoice.id}/xml`).expect(200);
+      expect(res.headers['content-type']).toBe('application/xml; charset=utf-8');
+      expect(res.headers['content-disposition']).toMatch(
+        /^attachment; filename="IT00000000001_F[0-9A-Z]{4}\.xml"$/,
+      );
+      expect(res.text).toContain('<TipoDocumento>TD01</TipoDocumento>');
+      expect(res.text).toContain(`<Numero>${invoice.number}/${year}</Numero>`);
+      expect(await fatturaPaErrors(res.text)).toEqual([]);
+      // The same document, the same file.
+      expect((await as('READ_ONLY').get(`/invoices/${invoice.id}/xml`)).text).toBe(res.text);
+      await as('WAREHOUSE_KEEPER').get(`/invoices/${invoice.id}/xml`).expect(403);
+      await as('admin', world.companies.b).get(`/invoices/${invoice.id}/xml`).expect(403);
     });
   });
 

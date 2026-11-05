@@ -977,6 +977,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/invoices/{id}/xml": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The issued document as a FatturaPA file (FPR12), to download: nothing is sent */
+        get: operations["InvoicesController_fatturaPa"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/invoices/{id}/pdf": {
         parameters: {
             query?: never;
@@ -4703,6 +4720,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    InvoicesController_fatturaPa: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The FatturaPA XML */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/xml": string;
                 };
             };
         };

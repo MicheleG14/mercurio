@@ -21,6 +21,7 @@ import { InvoicingStatsService } from './invoicing-stats.service.js';
 import { InvoicingRepository } from './invoicing.repository.js';
 import { InvoicingService } from './invoicing.service.js';
 import { InvoicePdfService } from './pdf/invoice-pdf.service.js';
+import { InvoiceXmlService } from './xml/invoice-xml.service.js';
 import { PaymentsRepository } from './payments.repository.js';
 import { PaymentsService } from './payments.service.js';
 
@@ -49,6 +50,7 @@ import { PaymentsService } from './payments.service.js';
     PaymentsRepository,
     PaymentsService,
     InvoicePdfService,
+    InvoiceXmlService,
     InvoicingStatsRepository,
     InvoicingStatsService,
     InvoicingService,

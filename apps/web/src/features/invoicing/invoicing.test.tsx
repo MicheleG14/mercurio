@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { json, me, mockApi, session } from '@/test/api-mock';
+import { json, me, mockApi, problem, session } from '@/test/api-mock';
 import { renderApp } from '@/test/render-app';
 import type { DocumentLine, Invoice, InvoiceDraft, InvoiceSummary, ScheduleRow } from './queries';
 
@@ -498,6 +498,44 @@ describe('invoicing', () => {
     expect(await bodies(api, 'POST /invoices/d1/credit-note')).toEqual([
       { id: 'd1', lineIds: ['l2'] },
     ]);
+  });
+
+  it('downloads the FatturaPA file, and says what is missing when the API refuses it', async () => {
+    const user = userEvent.setup();
+    const saved: string[] = [];
+    vi.spyOn(URL, 'createObjectURL').mockImplementation(() => 'blob:x');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      saved.push(this.download);
+    });
+    let refuse = false;
+    const api = mockApi({
+      ...signedIn(),
+      'GET /invoices/d1': () => json(200, invoice()),
+      'GET /invoices/d1/xml': () =>
+        refuse
+          ? problem(409, 'XML_DATA_INCOMPLETE', [{ field: 'customer.address', code: 'REQUIRED' }])
+          : new Response('<?xml version="1.0"?><p:FatturaElettronica/>', {
+              status: 200,
+              headers: {
+                'content-type': 'application/xml; charset=utf-8',
+                'content-disposition': 'attachment; filename="IT02746510964_FA007.xml"',
+              },
+            }),
+    });
+    renderApp('/invoicing/invoices/d1');
+
+    await user.click(await screen.findByRole('button', { name: 'Scarica XML' }));
+    await waitFor(() => expect(saved).toEqual(['IT02746510964_FA007.xml']));
+    expect(api.count('GET /invoices/d1/xml')).toBe(1);
+
+    refuse = true;
+    await user.click(screen.getByRole('button', { name: 'Scarica XML' }));
+    expect(
+      await screen.findByText(/Mancano dati che il file FatturaPA richiede/),
+    ).toBeInTheDocument();
   });
 
   it('spreads a payment on the open due dates from the oldest', async () => {

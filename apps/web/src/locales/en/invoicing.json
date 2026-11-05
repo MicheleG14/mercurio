@@ -167,7 +167,8 @@
     "recordPayment": "Record payment",
     "recordRefund": "Record refund",
     "payment": "Payment: {{terms}}, {{method}}",
-    "nothingToCredit": "Nothing to credit."
+    "nothingToCredit": "Nothing to credit.",
+    "xml": "Download XML"
   },
   "dueDates": {
     "title": "Payment schedule",

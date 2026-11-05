@@ -167,7 +167,8 @@
     "recordPayment": "Registra incasso",
     "recordRefund": "Registra rimborso",
     "payment": "Pagamento: {{terms}}, {{method}}",
-    "nothingToCredit": "Niente da stornare."
+    "nothingToCredit": "Niente da stornare.",
+    "xml": "Scarica XML"
   },
   "dueDates": {
     "title": "Scadenziario",

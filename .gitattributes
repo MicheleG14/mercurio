@@ -1,1 +1,3 @@
 * text=auto eol=lf
+# Official schemas, kept byte for byte as published (SHA-256 in CONTRIBUTING.md).
+apps/api/test/fixtures/fatturapa/*.xsd -text

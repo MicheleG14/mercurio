@@ -329,6 +329,28 @@ function save(blob: Blob, response: Response, fallback: string) {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Downloads the FatturaPA file of an issued document (FPR12): only the file, nothing is sent.
+ * A refusal keeps its problem (XML_DATA_INCOMPLETE names the fields).
+ */
+export function useFatturaPa() {
+  const company = useCompanyId();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error, response } = await api.GET('/invoices/{id}/xml', {
+        params: { header: header(company), path: { id } },
+        parseAs: 'text',
+      });
+      if (!response.ok || data === undefined) {
+        const problem =
+          typeof error === 'object' && error !== null && 'code' in error ? error : undefined;
+        throw new ApiError(response.status, problem as ConstructorParameters<typeof ApiError>[1]);
+      }
+      save(new Blob([data as string], { type: 'application/xml' }), response, `${id}.xml`);
+    },
+  });
+}
+
 /** Downloads the PDF of an issued document, or the preview of a draft. */
 export function usePdf() {
   const company = useCompanyId();

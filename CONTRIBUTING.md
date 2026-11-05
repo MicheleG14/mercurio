@@ -117,6 +117,19 @@ yours. For facts recorded before a listener existed, give the operator a command
 again (`republish-fulfilments`), and a check command for any projection the listener keeps
 (`verify-invoicing`).
 
+## The FatturaPA schema
+
+Tests validate every FatturaPA file against the official schema, kept unchanged in
+`apps/api/test/fixtures/fatturapa`:
+
+| File                       | Source                                                                                            | SHA-256                                                            |
+| -------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `Schema_VFPR12_v1.2.3.xsd` | fatturapa.gov.it, "Documentazione valida dal 1 aprile 2025" (`/export/documenti/fatturapa/v1.4/`) | `152944f6eef9f5d69ef6e955ee173b32142b00a8c1c5222fc97dfab5910e8a8c` |
+| `xmldsig-core-schema.xsd`  | w3.org, `/TR/2002/REC-xmldsig-core-20020212/`, imported by the schema                             | `35cf8197da812c85e40d57891b35c94187569ed474a2dac813ce5090dafcd35c` |
+
+When the Agenzia delle Entrate publishes a new version, replace the file, update the table and
+`test/support/fatturapa-schema.ts`, and let the tests say what changed.
+
 ## Commits
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/), checked by a

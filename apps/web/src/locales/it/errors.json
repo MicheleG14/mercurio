@@ -149,5 +149,6 @@
   "PAYMENT_IS_REVERSAL": "Questo è l'annullamento di un incasso: non si annulla.",
   "PAYMENT_NOT_FOUND": "Incasso non trovato.",
   "NOT_A_SALE": "Il DDT si stampa solo per le vendite.",
-  "COMPANY_NOT_FOUND": "Azienda non trovata."
+  "COMPANY_NOT_FOUND": "Azienda non trovata.",
+  "XML_DATA_INCOMPLETE": "Mancano dati che il file FatturaPA richiede: completa l'anagrafica del cliente o i dati dell'azienda."
 }

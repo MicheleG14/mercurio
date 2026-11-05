@@ -3628,6 +3628,52 @@
         ]
       }
     },
+    "/invoices/{id}/xml": {
+      "get": {
+        "operationId": "InvoicesController_fatturaPa",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The FatturaPA XML",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The issued document as a FatturaPA file (FPR12), to download: nothing is sent",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
     "/invoices/{id}/pdf": {
       "get": {
         "operationId": "InvoicesController_print",
