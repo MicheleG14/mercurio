@@ -5,7 +5,11 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
-## [Unreleased]
+## [1.0.0] - 2026-11-05
+
+Phase 6: polish, and the end of the planned scope. Charts on the overview, invoices as FatturaPA
+files, a demo with twelve months of history, a guard on the production Compose file. From here on,
+a change the API's clients must adapt to raises the major version.
 
 ### Added
 
@@ -38,6 +42,8 @@ a release.
 
 - Reading an invoice or the list of payments no longer sends queries side by side on the
   transaction's connection (a deprecation warning of pg, refused by pg 9).
+- Progress cells of order lines tell their figures to screen readers as text (found by axe, now
+  run in the browser tests on the main pages, in both themes).
 
 ## [0.8.0] - 2026-11-05
 
@@ -304,6 +310,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[1.0.0]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.0
 [0.8.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.8.0
 [0.7.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.7.0
 [0.6.1]: https://github.com/MicheleG14/mercurio/releases/tag/v0.6.1
