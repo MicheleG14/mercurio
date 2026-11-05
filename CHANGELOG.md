@@ -5,7 +5,7 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
-## [Unreleased]
+## [0.8.0] - 2026-11-05
 
 Phase 5: invoicing. Invoices from shipments or by hand, issued once and never changed, credit
 notes, due dates and payments, documents in PDF.
@@ -40,6 +40,9 @@ notes, due dates and payments, documents in PDF.
 
 - The API role can no longer change whether an item is stock managed (the privilege on
   `stock_managed` is revoked); 0.7.0 already stopped writing it, so a rollback to it still works.
+- A rollback to 0.7.0 keeps every invoice: 0.7.0 does not know the invoicing tables and leaves
+  them alone; shipments recorded meanwhile do not reach "to invoice" until
+  `republish-fulfilments` runs on 0.8.0 again.
 
 ### Fixed
 
@@ -267,6 +270,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[0.8.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.8.0
 [0.7.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.7.0
 [0.6.1]: https://github.com/MicheleG14/mercurio/releases/tag/v0.6.1
 [0.6.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.6.0

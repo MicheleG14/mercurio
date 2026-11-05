@@ -13,7 +13,9 @@ Named after Mercury, the Roman god of commerce.
 > checks), on the warehouse (documents that are never changed, only reversed; stock computed from
 > the movements and never below zero, even with simultaneous requests; reorder levels) and on
 > orders: purchase orders received in parts, sales orders that reserve the goods available and are
-> shipped in parts, with prices and VAT. Every change is in the activity log. Every phase ships a complete vertical slice (database → API → UI) to
+> shipped in parts, with prices and VAT; and on invoicing: invoices from shipments or by hand,
+> issued once and never changed, credit notes, due dates and payments, documents in PDF. Every
+> change is in the activity log. Every phase ships a complete vertical slice (database → API → UI) to
 > production. See the [roadmap](#roadmap).
 
 ## What it will do
@@ -163,7 +165,7 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 | 2c    | Responsive interface: sidebar, layouts for tablet and phone      | ✅     |
 | 3     | Warehouse: movements, stock levels, goods receipt                | ✅     |
 | 4     | Orders: purchase and sales orders, reservations, concurrency     | ✅     |
-| 5     | Invoicing: invoices, credit notes, due dates, PDF                |        |
+| 5     | Invoicing: invoices, credit notes, due dates, PDF                | ✅     |
 | 6     | Polish: dashboard, architecture decision records, seed data      |        |
 
 ## Out of scope, by choice
