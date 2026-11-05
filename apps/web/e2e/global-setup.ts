@@ -94,6 +94,8 @@ export default function globalSetup(): void {
       // Orders, likewise: one tenant for the desktop flow, one for the phone.
       ordersDesktop: warehouseTenant('od', '0834567890', 'registry,warehouse,orders'),
       ordersPhone: warehouseTenant('op', '0945678901', 'registry,warehouse,orders'),
+      // Invoicing, from shipments of orders.
+      invoicingDesktop: warehouseTenant('id', '1056789012', 'registry,warehouse,orders,invoicing'),
     }),
   );
 }

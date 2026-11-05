@@ -354,9 +354,17 @@ export class InvoiceDto {
   @ApiProperty() number!: number;
   @ApiProperty({ example: '2026-11-05' }) issueDate!: string;
   @ApiProperty() partyId!: string;
-  @ApiProperty({ description: 'The seller as printed, copied when issued' })
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: true,
+    description: 'The seller as printed, copied when issued',
+  })
   seller!: Record<string, unknown>;
-  @ApiProperty({ description: 'The customer as printed, copied when issued' })
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: true,
+    description: 'The customer as printed, copied when issued',
+  })
   customer!: Record<string, unknown>;
   @ApiProperty({ example: 'it' }) language!: string;
   @ApiProperty() paymentTerms!: string;

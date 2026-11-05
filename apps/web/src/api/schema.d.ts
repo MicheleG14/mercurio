@@ -2444,9 +2444,13 @@ export interface components {
             issueDate: string;
             partyId: string;
             /** @description The seller as printed, copied when issued */
-            seller: Record<string, never>;
+            seller: {
+                [key: string]: unknown;
+            };
             /** @description The customer as printed, copied when issued */
-            customer: Record<string, never>;
+            customer: {
+                [key: string]: unknown;
+            };
             /** @example it */
             language: string;
             paymentTerms: string;
