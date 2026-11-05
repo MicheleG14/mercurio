@@ -1,6 +1,6 @@
 // Module boundaries, checked in CI with `pnpm check:boundaries` (docs/conventions.md B3, F11;
-// docs/adr/0011). A module is a folder; what it offers to others is its index.ts, everything else
-// is internal. Limit: one Prisma client serves every module, so reading another module's tables
+// docs/adr/0011). A module is a folder; what it offers to others is its index.ts, and the events
+// it publishes are its events.ts (B4, docs/adr/0027); everything else is internal. Limit: one Prisma client serves every module, so reading another module's tables
 // cannot be detected here; that rule is kept by convention (only a module's repository touches
 // its models) and review.
 /** @type {import('dependency-cruiser').IConfiguration} */
@@ -9,13 +9,25 @@ module.exports = {
     {
       name: 'module-internals',
       comment:
-        'A module imports another module only through its index.ts, never its internal files (B3).',
+        'A module imports another module only through its index.ts or its events.ts, never its internal files (B3, B4).',
       severity: 'error',
       from: { path: '^src/modules/([^/]+)/' },
       to: {
         path: '^src/modules/[^/]+/',
-        pathNot: ['^src/modules/$1/', '^src/modules/[^/]+/index\\.ts$'],
+        pathNot: [
+          '^src/modules/$1/',
+          '^src/modules/[^/]+/index\\.ts$',
+          '^src/modules/[^/]+/events\\.ts$',
+        ],
       },
+    },
+    {
+      name: 'invoicing-only-listens-to-orders',
+      comment:
+        'Invoicing works without orders (S7): it may know their events, never their public service (docs/adr/0027).',
+      severity: 'error',
+      from: { path: '^src/modules/invoicing/' },
+      to: { path: '^src/modules/orders/', pathNot: '^src/modules/orders/events\\.ts$' },
     },
     {
       name: 'outside-into-module-internals',

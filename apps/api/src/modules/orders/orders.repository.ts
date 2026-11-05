@@ -101,6 +101,27 @@ export class OrdersRepository {
     return row ? this.findById(db, companyId, id) : null;
   }
 
+  /**
+   * The shipments of sales orders of a tenant that are not undone, oldest first, each with its
+   * order: what `republish-fulfilments` publishes again.
+   */
+  async liveSalesFulfilments(db: DbClient, tenantId: string) {
+    const fulfilments = await db.orderFulfilment.findMany({
+      where: { tenantId, reversalDocumentId: null, order: { kind: 'SALES' } },
+      orderBy: [{ fulfilmentDate: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
+      include: { lines: true },
+    });
+    const orders = new Map<string, OrderRow>();
+    for (const orderId of new Set(fulfilments.map((f) => f.orderId))) {
+      const order = await db.order.findUniqueOrThrow({ where: { id: orderId } });
+      orders.set(orderId, await this.withChildren(db, order));
+    }
+    return fulfilments.map((fulfilment) => ({
+      order: orders.get(fulfilment.orderId)!,
+      fulfilment,
+    }));
+  }
+
   private async withChildren(db: DbClient, order: Order): Promise<OrderRow> {
     const lines = await db.orderLine.findMany({
       where: { orderId: order.id },

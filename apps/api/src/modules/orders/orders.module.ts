@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EventsModule } from '../../shared/events/index.js';
 import { AuditModule } from '../audit/index.js';
 import { IdentityModule } from '../identity/index.js';
 import { RegistryModule } from '../registry/index.js';
@@ -20,7 +21,7 @@ import { OrdersService } from './orders.service.js';
  * warehouse knows nothing of orders (B35).
  */
 @Module({
-  imports: [AuditModule, IdentityModule, RegistryModule, WarehouseModule],
+  imports: [AuditModule, EventsModule, IdentityModule, RegistryModule, WarehouseModule],
   controllers: [OrdersController],
   providers: [
     OrdersRepository,
