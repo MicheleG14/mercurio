@@ -32,6 +32,11 @@ a decision that changes gets a new record that supersedes the old one.
 | [0024](0024-orders-move-goods-through-the-warehouse.md) | Orders move goods only through the warehouse                              | Accepted |
 | [0025](0025-reservations-and-available-stock.md)        | Reservations and available stock                                          | Accepted |
 | [0026](0026-amounts-and-vat-rounding.md)                | Amounts and VAT: rounding once, in one place                              | Accepted |
+| [0027](0027-events-inside-the-transaction.md)           | Events between modules, inside the publisher's transaction                | Accepted |
+| [0028](0028-issued-documents-insert-only.md)            | Issued invoices are immutable by privileges                               | Accepted |
+| [0029](0029-fiscal-numbering-and-credit-notes.md)       | Fiscal numbering, dates and credit notes                                  | Accepted |
+| [0030](0030-due-dates-and-payments.md)                  | Due dates and payments                                                    | Accepted |
+| [0031](0031-printed-documents.md)                       | Printed documents: made by the API, in the document's language            | Accepted |
 
 ## Template
 

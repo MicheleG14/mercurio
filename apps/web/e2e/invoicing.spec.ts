@@ -45,11 +45,13 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   // Without its registered office the company cannot issue: fill it in.
   await page.getByRole('link', { name: 'Dati azienda' }).click();
   await expect(page.getByText(/Per emettere fatture mancano/)).toBeVisible();
-  await page.getByLabel('Indirizzo della sede').fill('Via Roma 1');
-  await page.getByLabel('CAP').fill('20121');
-  await page.getByLabel('Comune').fill('Milano');
-  await page.getByLabel('Provincia').fill('MI');
-  await page.getByLabel('IBAN per i bonifici').fill('IT60 X054 2811 1010 0000 0123 456');
+  await page.getByLabel('Indirizzo della sede', { exact: true }).fill('Via Roma 1');
+  await page.getByLabel('CAP', { exact: true }).fill('20121');
+  await page.getByLabel('Comune', { exact: true }).fill('Milano');
+  await page.getByLabel('Provincia', { exact: true }).fill('MI');
+  await page
+    .getByLabel('IBAN per i bonifici', { exact: true })
+    .fill('IT60 X054 2811 1010 0000 0123 456');
   await page.getByRole('button', { name: 'Salva' }).click();
   await expect(page.getByText('Pronta per emettere fatture')).toBeVisible();
 
@@ -72,12 +74,12 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await page.getByRole('link', { name: 'Nuovo soggetto' }).click();
   await page.getByLabel('Ragione sociale').fill(customer);
   await page.getByLabel('Partita IVA').fill(newVat());
-  await page.getByLabel('Indirizzo').fill('Via Torino 12');
-  await page.getByLabel('CAP').fill('20123');
-  await page.getByLabel('Città').fill('Milano');
-  await page.getByLabel('Provincia').fill('MI');
-  await page.getByLabel('Codice destinatario').fill('ABC1234');
-  await page.getByLabel('Condizioni di pagamento').selectOption('30FM');
+  await page.getByLabel('Indirizzo', { exact: true }).fill('Via Torino 12');
+  await page.getByLabel('CAP', { exact: true }).fill('20123');
+  await page.getByLabel('Città', { exact: true }).fill('Milano');
+  await page.getByLabel('Provincia', { exact: true }).fill('MI');
+  await page.getByLabel('Codice destinatario', { exact: true }).fill('ABC1234');
+  await page.getByLabel('Condizioni di pagamento', { exact: true }).selectOption('30FM');
   await page.getByRole('button', { name: 'Salva' }).click();
   await expect(page.getByRole('heading', { name: customer })).toBeVisible();
 
@@ -140,7 +142,7 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await page.getByRole('link', { name: 'Fatture' }).click();
   await page.getByRole('link', { name: /^FT 1\/\d{4}$/ }).click();
   await page.getByRole('link', { name: 'Registra incasso' }).click();
-  await page.getByLabel('Importo').fill('20');
+  await page.getByLabel('Importo', { exact: true }).fill('20');
   await page.getByRole('button', { name: 'Registra' }).click();
   await expect(page.getByRole('heading', { name: 'Incassi' })).toBeVisible();
   await page.getByRole('link', { name: /^FT 1\/\d{4}$/ }).click();

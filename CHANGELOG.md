@@ -7,8 +7,32 @@ a release.
 
 ## [Unreleased]
 
+Phase 5: invoicing. Invoices from shipments or by hand, issued once and never changed, credit
+notes, due dates and payments, documents in PDF.
+
 ### Added
 
+- Invoices (`FT`) and credit notes (`NC`): drafts free to change, issued with a number per company
+  and year without gaps, numbers and dates growing together; the database refuses any change to an
+  issued document. Seller and customer are copied when issued.
+- Shipments of sales orders reach invoicing as events, in their own transaction; one or several of
+  a customer become a draft (a deferred invoice naming the delivery notes). A shipment in a draft
+  or an invoice can no longer be undone from its order. The command `republish-fulfilments`
+  publishes again the shipments recorded before.
+- Invoices typed by hand: items, services, free lines, lines of text; the stamp duty on exempt
+  invoices, charged to the customer if the company wants.
+- Credit notes of all or some lines of an invoice, never more than is left of it; they settle the
+  open instalments and owe the customer the rest.
+- Payment terms and methods; due dates computed when issued; payments and refunds spread on due
+  dates, undone by a reversal; a payment schedule; `verify-invoicing`.
+- Invoices, credit notes and delivery notes in PDF, in the language of the document; how the goods
+  of a sale travel, entered with the shipment.
+- The company's invoice header data (registered office, REA, capital, tax regime, IBAN), changed by
+  administrators (permission `companies:manage`); payment terms, method and language on parties;
+  permission `payments:write` for accountants.
+- The overview shows invoicing and the modules the customer lacks.
+- The demo seed issues invoices, credit notes and payments in the demo tenants.
+- ADR 0027-0031; conventions B4, B5, G2b, B37, B38, B34 for invoicing.
 - The version of the running app at the foot of the sidebar (and on hover over the brand when the
   sidebar is collapsed to icons).
 
