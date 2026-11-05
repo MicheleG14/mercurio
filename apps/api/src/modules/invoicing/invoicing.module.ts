@@ -13,10 +13,13 @@ import {
   InvoiceDraftsController,
   InvoicesController,
   InvoicingController,
+  PaymentsController,
 } from './invoicing.controller.js';
 import { InvoicingEvents } from './invoicing-events.js';
 import { InvoicingRepository } from './invoicing.repository.js';
 import { InvoicingService } from './invoicing.service.js';
+import { PaymentsRepository } from './payments.repository.js';
+import { PaymentsService } from './payments.service.js';
 
 /**
  * Invoicing ("fatturazione"): invoices and credit notes, issued once and never changed, with
@@ -26,7 +29,12 @@ import { InvoicingService } from './invoicing.service.js';
  */
 @Module({
   imports: [AuditModule, EventsModule, IdentityModule, RegistryModule, TenancyModule],
-  controllers: [InvoicesController, InvoiceDraftsController, InvoicingController],
+  controllers: [
+    InvoicesController,
+    InvoiceDraftsController,
+    InvoicingController,
+    PaymentsController,
+  ],
   providers: [
     InvoicingRepository,
     InvoicingEvents,
@@ -35,6 +43,8 @@ import { InvoicingService } from './invoicing.service.js';
     InvoiceDraftsService,
     InvoiceIssueService,
     FulfilmentListener,
+    PaymentsRepository,
+    PaymentsService,
     InvoicingService,
   ],
   exports: [InvoicingService],

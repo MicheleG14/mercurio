@@ -4047,6 +4047,156 @@
         ]
       }
     },
+    "/invoicing/summary": {
+      "get": {
+        "operationId": "InvoicingController_summary",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoicingSummaryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "For the overview: to invoice, drafts, overdue, due soon, this month",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoicing/due-dates": {
+      "get": {
+        "operationId": "InvoicingController_dueDates",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "overdue",
+                "paid"
+              ]
+            }
+          },
+          {
+            "name": "partyId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchedulePageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The payment schedule: due dates by date, with open and overdue totals",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
     "/invoicing/to-invoice": {
       "get": {
         "operationId": "InvoicingController_toInvoice",
@@ -4231,6 +4381,250 @@
           }
         ],
         "summary": "Active items and services for a line of an invoice",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/payments": {
+      "get": {
+        "operationId": "PaymentsController_list",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "partyId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "invoicing"
+        ]
+      },
+      "post": {
+        "description": "The same id again answers 200 with the payment (B33).",
+        "operationId": "PaymentsController_create",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Already recorded with this id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record a payment and how it settles due dates of its customer",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "operationId": "PaymentsController_get",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/payments/{id}/reverse": {
+      "post": {
+        "operationId": "PaymentsController_reverse",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Undo a payment: its due dates are open again",
         "tags": [
           "invoicing"
         ]
@@ -8784,6 +9178,138 @@
           "version"
         ]
       },
+      "InvoicingSummaryDto": {
+        "type": "object",
+        "properties": {
+          "toInvoice": {
+            "type": "number"
+          },
+          "drafts": {
+            "type": "number"
+          },
+          "overdue": {
+            "type": "string",
+            "example": "0.00"
+          },
+          "dueSoon": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Open, due in the next 30 days"
+          },
+          "invoicedThisMonth": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Taxable invoiced this month, less credit notes"
+          }
+        },
+        "required": [
+          "toInvoice",
+          "drafts",
+          "overdue",
+          "dueSoon",
+          "invoicedThisMonth"
+        ]
+      },
+      "ScheduleRowDto": {
+        "type": "object",
+        "properties": {
+          "dueDateId": {
+            "type": "string"
+          },
+          "invoiceId": {
+            "type": "string"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceKind"
+              }
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "example": "FT 12/2026"
+          },
+          "issueDate": {
+            "type": "string"
+          },
+          "partyId": {
+            "type": "string"
+          },
+          "partyName": {
+            "type": "string"
+          },
+          "seq": {
+            "type": "number"
+          },
+          "dueDate": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "settledAmount": {
+            "type": "string"
+          },
+          "openAmount": {
+            "type": "string"
+          },
+          "overdue": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "dueDateId",
+          "invoiceId",
+          "kind",
+          "reference",
+          "issueDate",
+          "partyId",
+          "partyName",
+          "seq",
+          "dueDate",
+          "amount",
+          "settledAmount",
+          "openAmount",
+          "overdue"
+        ]
+      },
+      "SchedulePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleRowDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "openTotal": {
+            "type": "string",
+            "description": "Open amount of the whole selection; credit notes count less"
+          },
+          "overdueTotal": {
+            "type": "string",
+            "description": "Of which overdue"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize",
+          "openTotal",
+          "overdueTotal"
+        ]
+      },
       "ToInvoiceDto": {
         "type": "object",
         "properties": {
@@ -8915,6 +9441,214 @@
           "unit",
           "salePrice",
           "vatCode"
+        ]
+      },
+      "PaymentKind": {
+        "type": "string",
+        "enum": [
+          "RECEIPT",
+          "REFUND"
+        ]
+      },
+      "AllocationDto": {
+        "type": "object",
+        "properties": {
+          "dueDateId": {
+            "type": "string"
+          },
+          "invoiceId": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "example": "FT 12/2026"
+          },
+          "dueDate": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dueDateId",
+          "invoiceId",
+          "reference",
+          "dueDate",
+          "amount"
+        ]
+      },
+      "PaymentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentKind"
+              }
+            ]
+          },
+          "partyId": {
+            "type": "string"
+          },
+          "partyName": {
+            "type": "string"
+          },
+          "paymentDate": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "reversesId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The payment this one undoes"
+          },
+          "reversedById": {
+            "type": "string",
+            "nullable": true,
+            "description": "The payment that undid this one"
+          },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AllocationDto"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "partyId",
+          "partyName",
+          "paymentDate",
+          "amount",
+          "method",
+          "reference",
+          "notes",
+          "reversesId",
+          "reversedById",
+          "allocations",
+          "createdAt"
+        ]
+      },
+      "PaymentPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "AllocationInputDto": {
+        "type": "object",
+        "properties": {
+          "dueDateId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "61.00",
+            "description": "Decimal string (B30), positive"
+          }
+        },
+        "required": [
+          "dueDateId",
+          "amount"
+        ]
+      },
+      "CreatePaymentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Chosen by the client (UUID v7): sending it again is not a new payment"
+          },
+          "kind": {
+            "description": "RECEIPT from the customer (default), or REFUND of a credit note",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentKind"
+              }
+            ]
+          },
+          "partyId": {
+            "type": "string"
+          },
+          "paymentDate": {
+            "type": "string",
+            "example": "2026-11-05",
+            "description": "Default today (Italian time)"
+          },
+          "amount": {
+            "type": "string",
+            "example": "122.00"
+          },
+          "method": {
+            "type": "string",
+            "example": "MP05"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 60,
+            "description": "CRO, TRN, cheque"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500
+          },
+          "allocations": {
+            "description": "How the amount settles due dates",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AllocationInputDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "partyId",
+          "amount",
+          "method",
+          "allocations"
         ]
       }
     }

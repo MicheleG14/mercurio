@@ -1034,6 +1034,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/invoicing/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** For the overview: to invoice, drafts, overdue, due soon, this month */
+        get: operations["InvoicingController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoicing/due-dates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The payment schedule: due dates by date, with open and overdue totals */
+        get: operations["InvoicingController_dueDates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/invoicing/to-invoice": {
         parameters: {
             query?: never;
@@ -1079,6 +1113,59 @@ export interface paths {
         get: operations["InvoicingController_searchItems"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PaymentsController_list"];
+        put?: never;
+        /**
+         * Record a payment and how it settles due dates of its customer
+         * @description The same id again answers 200 with the payment (B33).
+         */
+        post: operations["PaymentsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PaymentsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payments/{id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undo a payment: its due dates are open again */
+        post: operations["PaymentsController_reverse"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2418,6 +2505,48 @@ export interface components {
              */
             issueDate?: string;
         };
+        InvoicingSummaryDto: {
+            toInvoice: number;
+            drafts: number;
+            /** @example 0.00 */
+            overdue: string;
+            /**
+             * @description Open, due in the next 30 days
+             * @example 0.00
+             */
+            dueSoon: string;
+            /**
+             * @description Taxable invoiced this month, less credit notes
+             * @example 0.00
+             */
+            invoicedThisMonth: string;
+        };
+        ScheduleRowDto: {
+            dueDateId: string;
+            invoiceId: string;
+            kind: components["schemas"]["InvoiceKind"];
+            /** @example FT 12/2026 */
+            reference: string;
+            issueDate: string;
+            partyId: string;
+            partyName: string;
+            seq: number;
+            dueDate: string;
+            amount: string;
+            settledAmount: string;
+            openAmount: string;
+            overdue: boolean;
+        };
+        SchedulePageDto: {
+            items: components["schemas"]["ScheduleRowDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+            /** @description Open amount of the whole selection; credit notes count less */
+            openTotal: string;
+            /** @description Of which overdue */
+            overdueTotal: string;
+        };
         ToInvoiceDto: {
             fulfilmentId: string;
             orderId: string;
@@ -2456,6 +2585,68 @@ export interface components {
             unit: string;
             salePrice: string | null;
             vatCode: string;
+        };
+        /** @enum {string} */
+        PaymentKind: "RECEIPT" | "REFUND";
+        AllocationDto: {
+            dueDateId: string;
+            invoiceId: string;
+            /** @example FT 12/2026 */
+            reference: string;
+            dueDate: string;
+            amount: string;
+        };
+        PaymentDto: {
+            id: string;
+            kind: components["schemas"]["PaymentKind"];
+            partyId: string;
+            partyName: string;
+            paymentDate: string;
+            amount: string;
+            method: string;
+            reference: string | null;
+            notes: string | null;
+            /** @description The payment this one undoes */
+            reversesId: string | null;
+            /** @description The payment that undid this one */
+            reversedById: string | null;
+            allocations: components["schemas"]["AllocationDto"][];
+            createdAt: string;
+        };
+        PaymentPageDto: {
+            items: components["schemas"]["PaymentDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        AllocationInputDto: {
+            dueDateId: string;
+            /**
+             * @description Decimal string (B30), positive
+             * @example 61.00
+             */
+            amount: string;
+        };
+        CreatePaymentDto: {
+            /** @description Chosen by the client (UUID v7): sending it again is not a new payment */
+            id: string;
+            /** @description RECEIPT from the customer (default), or REFUND of a credit note */
+            kind?: components["schemas"]["PaymentKind"];
+            partyId: string;
+            /**
+             * @description Default today (Italian time)
+             * @example 2026-11-05
+             */
+            paymentDate?: string;
+            /** @example 122.00 */
+            amount: string;
+            /** @example MP05 */
+            method: string;
+            /** @description CRO, TRN, cheque */
+            reference?: string | null;
+            notes?: string | null;
+            /** @description How the amount settles due dates */
+            allocations: components["schemas"]["AllocationInputDto"][];
         };
     };
     responses: never;
@@ -4439,6 +4630,60 @@ export interface operations {
             };
         };
     };
+    InvoicingController_summary: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoicingSummaryDto"];
+                };
+            };
+        };
+    };
+    InvoicingController_dueDates: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                status?: "open" | "overdue" | "paid";
+                partyId?: string;
+                from?: string;
+                to?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SchedulePageDto"];
+                };
+            };
+        };
+    };
     InvoicingController_toInvoice: {
         parameters: {
             query?: {
@@ -4514,6 +4759,120 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InvoiceItemOptionDto"][];
+                };
+            };
+        };
+    };
+    PaymentsController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                partyId?: string;
+                from?: string;
+                to?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentPageDto"];
+                };
+            };
+        };
+    };
+    PaymentsController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePaymentDto"];
+            };
+        };
+        responses: {
+            /** @description Already recorded with this id */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDto"];
+                };
+            };
+        };
+    };
+    PaymentsController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDto"];
+                };
+            };
+        };
+    };
+    PaymentsController_reverse: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDto"];
                 };
             };
         };
