@@ -131,19 +131,25 @@ Container Registry, and pushing a version tag deploys it:
 git tag v0.1.0 && git push origin v0.1.0   # build, publish, deploy
 ```
 
-On the server, the deployment folder holds only `docker-compose.prod.yml`, `deploy/deploy.sh` and
-`.env.production` (from `.env.production.example`, with real passwords and secrets). The script pulls the
+On the server, the deployment folder holds only `docker-compose.prod.yml`, `deploy/deploy.sh`,
+`deploy/compose.sh` and `.env.production` (from `.env.production.example`, with real passwords and
+secrets). The script pulls the
 images, runs the migrations, restarts the app and waits for the health check. Any published version
 can be redeployed by hand from the **Deploy** workflow, which is also the rollback.
 
 The API connects as the `mercurio_app` database role, whose password (`POSTGRES_APP_PASSWORD`)
 lives in `.env.production` next to the owner's. Tenants and people are created with terminal
-commands, which run as the owner and are never exposed over HTTP:
+commands, which run as the owner and are never exposed over HTTP. `compose.sh` runs them from the
+deployment folder, with its settings and the version of the app that is running:
 
 ```bash
-docker compose --env-file .env.production -f docker-compose.prod.yml run --rm cli create-tenant \
+./compose.sh run --rm cli create-tenant \
   --name "…" --slug … --modules all --company-name "…" --vat … --admin-email … --admin-name "…"
 ```
+
+`docker-compose.prod.yml` refuses to start without `MERCURIO_DEPLOYMENT`, which only
+`.env.production` sets: a command typed in a checkout, where `.env` holds the development database
+settings, cannot touch the production containers.
 
 `create-tenant` and `add-user` print a one-time activation code for each new person. The person opens
 `<address>/mercurio/activate#<code>`, chooses a password, sets up an authenticator app and saves the

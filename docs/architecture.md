@@ -38,7 +38,9 @@ flowchart LR
 - **migrate** applies pending Prisma migrations as the owner role, enables the login of the API's
   role (`mercurio_app`) and exits; the app starts only if it succeeds.
 - **cli** runs terminal commands (create tenants and users, demo seed) as the owner role. Compose
-  never starts it with `up`: it runs only with `docker compose run --rm cli <command>`.
+  never starts it with `up`: it runs only with `./compose.sh run --rm cli <command>` in the
+  deployment folder, which passes `.env.production` and the version of the running app. Without
+  `MERCURIO_DEPLOYMENT` (set only there) the production file refuses to start.
 - **app** connects as `mercurio_app`, which Row-Level Security applies to; it never receives the
   owner's credentials and refuses to start in production with a role that could bypass the policies.
 - **db** is reachable only from the Compose network and stores its data in a named volume.
