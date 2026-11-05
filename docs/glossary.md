@@ -88,25 +88,38 @@ term; the interface uses the term of the selected language.
 | close the rest           | chiusura del residuo         | Deciding that what is left on some lines will not come or go any more                  |
 | order from below reorder | proposta di riordino         | A purchase draft with the items below reorder, less what is incoming                   |
 | origin                   | origine                      | The order that made a stock document or a reservation; only it can undo them           |
-| delivery note            | documento di trasporto (DDT) | Document that accompanies goods shipped to a customer (printed with phase 5)           |
+| delivery note            | documento di trasporto (DDT) | Document that accompanies goods shipped to a customer: the stock document of the sale  |
 
 ## Invoicing
 
-| Code (English)   | Italiano          | Meaning                                                                               |
-| ---------------- | ----------------- | ------------------------------------------------------------------------------------- |
-| invoice          | fattura           | Fiscal document requesting payment from a customer                                    |
-| draft            | bozza             | An invoice that can still be changed; it has no fiscal number                         |
-| issue            | emissione         | Making an invoice final: it gets its number and can no longer change                  |
-| invoice number   | numero di fattura | Progressive number per year, without gaps                                             |
-| credit note      | nota di credito   | Document that corrects or cancels an issued invoice, in whole or in part              |
-| taxable amount   | imponibile        | Amount before VAT                                                                     |
-| VAT              | IVA               | Value-added tax                                                                       |
-| VAT summary      | riepilogo IVA     | Taxable amount and VAT grouped by rate                                                |
-| due date         | scadenza          | Date by which a payment is expected                                                   |
-| payment schedule | scadenziario      | List of due dates, paid and unpaid                                                    |
-| payment received | incasso           | A recorded customer payment against one or more due dates                             |
-| SdI              | SdI               | Sistema di Interscambio: the Italian e-invoicing exchange (transmission out of scope) |
-| FatturaPA        | FatturaPA         | The Italian XML e-invoice format                                                      |
+| Code (English)       | Italiano                | Meaning                                                                                                               |
+| -------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| invoice              | fattura                 | Fiscal document requesting payment from a customer                                                                    |
+| draft                | bozza                   | An invoice that can still be changed; it has no fiscal number                                                         |
+| issue                | emissione               | Making an invoice final: it gets its number and can no longer change                                                  |
+| invoice number       | numero di fattura       | Progressive number per year, without gaps                                                                             |
+| credit note          | nota di credito         | Document that corrects or cancels an issued invoice, in whole or in part                                              |
+| taxable amount       | imponibile              | Amount before VAT                                                                                                     |
+| VAT                  | IVA                     | Value-added tax                                                                                                       |
+| VAT summary          | riepilogo IVA           | Taxable amount and VAT grouped by rate                                                                                |
+| due date             | scadenza                | Date by which a payment is expected                                                                                   |
+| payment schedule     | scadenziario            | List of due dates, paid and unpaid                                                                                    |
+| payment received     | incasso                 | A recorded customer payment against one or more due dates                                                             |
+| SdI                  | SdI                     | Sistema di Interscambio: the Italian e-invoicing exchange (transmission out of scope)                                 |
+| FatturaPA            | FatturaPA               | The Italian XML e-invoice format                                                                                      |
+| deferred invoice     | fattura differita       | One invoice for several shipments of a month, issued by the 15th of the next month, naming their delivery notes       |
+| immediate invoice    | fattura immediata       | An invoice issued when the goods leave, within 12 days                                                                |
+| series               | serie                   | The numbering a document belongs to: FT for invoices, NC for credit notes, per company and year                       |
+| to invoice           | da fatturare            | A shipment of a sales order not yet invoiced, as invoicing heard it from orders                                       |
+| payment terms        | condizioni di pagamento | When a total is due: at once (RD), in days from the invoice date (DF) or to the end of the month (FM), in instalments |
+| instalment           | rata                    | One due date of an invoice                                                                                            |
+| settled              | saldato                 | How much of a due date payments and credit notes have covered                                                         |
+| refund               | rimborso                | Money paid back to a customer for what a credit note gave beyond what was open                                        |
+| stamp duty           | imposta di bollo        | 2 € due on invoices whose exempt or non-taxable operations exceed 77.47 €, paid virtually                             |
+| tax regime           | regime fiscale          | The seller's VAT regime, coded as in the e-invoice (RF01 ordinary)                                                    |
+| REA                  | REA                     | Number of the company in the register of the Chamber of Commerce                                                      |
+| reason for transport | causale del trasporto   | Why goods travel, printed on the delivery note (sale, by default)                                                     |
+| event                | evento                  | A fact a module publishes (`OrderFulfilledEvent`), heard by others in the same transaction                            |
 
 ## Status codes
 

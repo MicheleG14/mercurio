@@ -209,8 +209,8 @@ flowchart TB
         registry[registry<br/>parties · items · catalogs]
         warehouse[warehouse<br/>warehouses · documents · stock]
         orders[orders<br/>purchase and sales orders · fulfilments]
-        invoicing[invoicing]
-        shared[shared<br/>errors · text · decimals · money · dates · Italian identifiers]
+        invoicing[invoicing<br/>invoices · credit notes · due dates · payments · PDF]
+        shared[shared<br/>errors · text · decimals · money · dates · events · PDF · Italian identifiers]
     end
 
     ui -- REST + OpenAPI client --> api
@@ -224,16 +224,17 @@ flowchart TB
     orders -- public service, views --> registry
     orders -- public service, views --> warehouse
     orders -- public service --> audit
-    orders -. OrderFulfilledEvent .-> invoicing
-    invoicing -- public service --> registry
-
-    classDef planned stroke-dasharray: 5 5
-    class invoicing planned
+    invoicing -. listens to OrderFulfilledEvent .-> orders
+    invoicing -- public service, views --> registry
+    invoicing -- public service --> tenancy
+    invoicing -- public service --> audit
 ```
 
-Dashed boxes are planned (see the roadmap in the [README](../README.md#roadmap)). Today the API has
-the modules `tenancy`, `identity`, `auth`, `audit`, `registry`, `warehouse` and `orders` (in `src/modules/`), `health`, the
-technical modules `config`, `prisma` and `web`, and the terminal commands in `src/cli/`.
+The dotted arrow is an event: invoicing knows the events of orders (`orders/events.ts`) and nothing
+else of them, and orders do not know invoicing exists. The API has the modules `tenancy`,
+`identity`, `auth`, `audit`, `registry`, `warehouse`, `orders` and `invoicing` (in
+`src/modules/`), `health`, the technical modules `config`, `prisma` and `web`, and the terminal
+commands in `src/cli/`.
 
 Each module can be sold on its own: the catalog in `tenancy` lists modules and their requirements,
 and `@RequiresModule('warehouse')` on a controller answers `403 MODULE_NOT_ENABLED` to tenants that
@@ -241,7 +242,9 @@ have not enabled it ([ADR 0011](adr/0011-module-activation-and-boundaries.md)).
 
 Rules that keep the modules independent:
 
-- A module exposes a **public service** or emits **domain events**; everything else is internal.
+- A module exposes a **public service** or publishes **events** (its `events.ts`); everything else
+  is internal. Events are published inside the publisher's transaction, and a listener may refuse
+  ([ADR 0027](adr/0027-events-inside-the-transaction.md)).
 - A module owns its tables (and its Prisma file, `prisma/schema/<module>.prisma`). No module
   queries another module's tables; it may join the read-only views another module publishes
   (`registry_item_refs`, `registry_party_refs`, `warehouse_refs`, `warehouse_stock_refs`,
@@ -358,6 +361,45 @@ sequenceDiagram
 Line amounts and VAT are computed once, in one place
 ([ADR 0026](adr/0026-amounts-and-vat-rounding.md)): `Money` rounds a line to the cent, the registry's
 VAT summary adds per VAT code and rounds the VAT of each sum.
+
+## Invoicing: issued once, never changed
+
+A draft becomes an issued invoice or credit note in one transaction
+([ADR 0028](adr/0028-issued-documents-insert-only.md),
+[0029](adr/0029-fiscal-numbering-and-credit-notes.md)): drafts and issued documents are different
+tables, and the API role may only insert issued ones. Invoices come from shipments of sales orders,
+which reach invoicing as events, or are typed by hand.
+
+```mermaid
+sequenceDiagram
+    participant F as FulfilmentsService (orders)
+    participant B as EventBus
+    participant L as FulfilmentListener (invoicing)
+    participant DB as PostgreSQL
+    F->>DB: lock the order, record the shipment through the warehouse
+    F->>B: publish OrderFulfilledEvent (lines, prices, VAT, delivery note)
+    B->>L: in the same transaction
+    L->>DB: row "to invoice" (nothing if already there)
+    Note over F,L: undoing a shipment publishes first: an invoiced one is refused (409)
+```
+
+```mermaid
+sequenceDiagram
+    participant I as InvoiceIssueService
+    participant DB as PostgreSQL
+    I->>DB: lock the draft (FOR UPDATE), check its version
+    I->>DB: credit note: lock the due dates of the credited invoice
+    I->>DB: next number of the series, only if the date is not before the last one
+    I->>DB: lock the shipments of the draft
+    Note over I: check it all again: customer, lines, company and customer data, IBAN
+    I->>DB: insert the document with the draft's id: seller and customer copied, VAT summary, stamp duty, due dates
+    I->>DB: shipments invoiced; a credit note settles the open instalments; draft deleted; audit event
+```
+
+Payments settle due dates, locked one by one, never beyond what is due (a `CHECK` on the settled
+amount, [ADR 0030](adr/0030-due-dates-and-payments.md)); a payment is undone by a reversal. The PDF
+of a document is made at every request from what was saved
+([ADR 0031](adr/0031-printed-documents.md)).
 
 ## Request lifecycle
 

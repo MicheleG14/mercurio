@@ -102,6 +102,20 @@ The warehouse is the reference ([ADR 0021](docs/adr/0021-warehouse-documents-and
    transaction, after locking your own document, and pass an origin; undo through the same service
    (B35, [ADR 0024](docs/adr/0024-orders-move-goods-through-the-warehouse.md)). Orders are the
    reference.
+7. **Fiscal documents**: drafts in tables of their own, issued documents insert-only with no
+   `UPDATE` at all, what they print of others copied when issued (B37,
+   [ADR 0028](docs/adr/0028-issued-documents-insert-only.md)); the counter keeps the last date too
+   (B38). Invoicing is the reference.
+
+## Telling another module what happened
+
+Publish an event (B4, [ADR 0027](docs/adr/0027-events-inside-the-transaction.md)): a class in your
+module's `events.ts`, published with `EventBus.publish` inside your transaction, after locking your
+own rows. Listeners subscribe in `onModuleInit`, do as little as possible, and are idempotent on the
+id of the fact. Add a dependency-cruiser rule if the listening module may import nothing else of
+yours. For facts recorded before a listener existed, give the operator a command that publishes them
+again (`republish-fulfilments`), and a check command for any projection the listener keeps
+(`verify-invoicing`).
 
 ## Commits
 
