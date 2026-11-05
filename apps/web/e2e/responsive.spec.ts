@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { expect, type Page, test } from '@playwright/test';
 import { Secret, TOTP } from 'otpauth';
 import { activateAndEnter } from './activation.js';
+import { expectAccessible } from './axe.js';
 
 // The interface on a phone and on a tablet (docs/conventions.md F20), with demo people other
 // than those of registry.spec.ts, so no two tests spend the same one-time code.
@@ -77,6 +78,17 @@ test('@phone menu in a panel, cards, a record with the actions at the bottom', a
   await snap(page, '4-confirm');
   await page.getByRole('alertdialog').getByRole('button', { name: 'Archivia' }).click();
   await expect(page.getByText(/Questa scheda è archiviata/)).toBeVisible();
+
+  // The payment schedule as cards, and the overview's charts one under the other.
+  await page.goto('/mercurio/invoicing/due-dates');
+  await expect(page.getByText('Da incassare').first()).toBeVisible();
+  await expectNoHorizontalScroll(page);
+  await expectAccessible(page, 'phone-due-dates');
+  await page.screenshot({ path: 'screens/readme-phone-due-dates.png' });
+  await page.goto('/mercurio/');
+  await expect(page.getByText('Da incassare per ritardo')).toBeVisible();
+  await expectNoHorizontalScroll(page);
+  await snap(page, '5-overview');
 });
 
 test('@phone a receipt recorded from the phone, the stock as cards', async ({ page }) => {
