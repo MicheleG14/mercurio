@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/index.js';
 import { IdentityModule } from '../identity/index.js';
 import { RegistryModule } from '../registry/index.js';
+import { TenancyModule } from '../tenancy/index.js';
+import { DeliveryNoteService } from './delivery-note.js';
 import { StockDocumentsController } from './stock-documents.controller.js';
 import { StockDocumentsRepository } from './stock-documents.repository.js';
 import { ReservationsService } from './reservations.service.js';
@@ -20,7 +22,7 @@ import { WarehousesService } from './warehouses.service.js';
  * items and parties, through its public service and views.
  */
 @Module({
-  imports: [AuditModule, IdentityModule, RegistryModule],
+  imports: [AuditModule, IdentityModule, RegistryModule, TenancyModule],
   controllers: [WarehousesController, StockController, StockDocumentsController],
   providers: [
     WarehousesRepository,
@@ -30,6 +32,7 @@ import { WarehousesService } from './warehouses.service.js';
     StockRepository,
     StockService,
     ReservationsService,
+    DeliveryNoteService,
     WarehouseService,
   ],
   exports: [WarehouseService],

@@ -2401,6 +2401,52 @@
         ]
       }
     },
+    "/stock-documents/{id}/delivery-note.pdf": {
+      "get": {
+        "operationId": "StockDocumentsController_deliveryNote",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The delivery note in PDF",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The delivery note (DDT) of a sale, in PDF",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
     "/stock-documents/{id}": {
       "get": {
         "operationId": "StockDocumentsController_get",
@@ -3486,6 +3532,52 @@
         ]
       }
     },
+    "/invoices/{id}/pdf": {
+      "get": {
+        "operationId": "InvoicesController_print",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The document in PDF",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The issued document in PDF, in its own language",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
     "/invoices": {
       "get": {
         "operationId": "InvoicesController_list",
@@ -3704,6 +3796,52 @@
           }
         ],
         "summary": "A draft credit note: what is left of the chosen lines of the invoice, or of all",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoice-drafts/{id}/pdf": {
+      "get": {
+        "operationId": "InvoiceDraftsController_print",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The document in PDF",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "A preview of the draft in PDF, marked as a draft",
         "tags": [
           "invoicing"
         ]
@@ -7095,6 +7233,48 @@
           "pageSize"
         ]
       },
+      "TransportDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "by": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SENDER",
+              "RECIPIENT",
+              "CARRIER"
+            ]
+          },
+          "carrier": {
+            "type": "string",
+            "nullable": true
+          },
+          "packages": {
+            "type": "number",
+            "nullable": true
+          },
+          "appearance": {
+            "type": "string",
+            "nullable": true
+          },
+          "weightKg": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "reason",
+          "by",
+          "carrier",
+          "packages",
+          "appearance",
+          "weightKg"
+        ]
+      },
       "StockLineDto": {
         "type": "object",
         "properties": {
@@ -7237,6 +7417,15 @@
             "type": "string",
             "nullable": true
           },
+          "transport": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TransportDto"
+              }
+            ]
+          },
           "createdByName": {
             "type": "string",
             "nullable": true,
@@ -7284,10 +7473,55 @@
           "createdAt",
           "partyDocumentDate",
           "notes",
+          "transport",
           "createdByName",
           "reversedReason",
           "lines"
         ]
+      },
+      "TransportInputDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "example": "Vendita"
+          },
+          "by": {
+            "type": "string",
+            "enum": [
+              "SENDER",
+              "RECIPIENT",
+              "CARRIER"
+            ],
+            "nullable": true,
+            "description": "Who carries the goods"
+          },
+          "carrier": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200
+          },
+          "packages": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 9999
+          },
+          "appearance": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "example": "Scatole"
+          },
+          "weightKg": {
+            "type": "string",
+            "nullable": true,
+            "example": "12.5",
+            "description": "Kilograms"
+          }
+        }
       },
       "StockLineInputDto": {
         "type": "object",
@@ -7363,6 +7597,16 @@
             "type": "string",
             "nullable": true,
             "maxLength": 1000
+          },
+          "transport": {
+            "nullable": true,
+            "description": "Sales only",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TransportInputDto"
+              }
+            ]
           },
           "lines": {
             "minItems": 1,
@@ -8272,6 +8516,16 @@
             "type": "string",
             "nullable": true,
             "maxLength": 1000
+          },
+          "transport": {
+            "nullable": true,
+            "description": "Sales orders: how the goods travel, printed on the delivery note",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TransportInputDto"
+              }
+            ]
           },
           "lines": {
             "minItems": 1,

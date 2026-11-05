@@ -5,11 +5,14 @@ import {
   ArrayMinSize,
   IsArray,
   IsIn,
+  IsInt,
   IsOptional,
   IsString,
   IsUUID,
   Matches,
+  Max,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { PageQuery } from '../../shared/pagination.js';
@@ -46,6 +49,56 @@ export class StockLineInputDto {
   @IsString()
   @MaxLength(20)
   countedQuantity?: string;
+}
+
+export const TRANSPORT_BY = ['SENDER', 'RECIPIENT', 'CARRIER'] as const;
+
+/** How the goods of a sale travel: what the delivery note (DDT) prints. All optional. */
+export class TransportInputDto {
+  @ApiPropertyOptional({ type: String, nullable: true, maxLength: 100, example: 'Vendita' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  reason?: string | null;
+
+  @ApiPropertyOptional({ enum: TRANSPORT_BY, nullable: true, description: 'Who carries the goods' })
+  @IsOptional()
+  @IsIn(TRANSPORT_BY)
+  by?: (typeof TRANSPORT_BY)[number] | null;
+
+  @ApiPropertyOptional({ type: String, nullable: true, maxLength: 200 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  carrier?: string | null;
+
+  @ApiPropertyOptional({ type: Number, nullable: true, minimum: 1, maximum: 9999 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(9999)
+  packages?: number | null;
+
+  @ApiPropertyOptional({ type: String, nullable: true, maxLength: 100, example: 'Scatole' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  appearance?: string | null;
+
+  @ApiPropertyOptional({ type: String, nullable: true, example: '12.5', description: 'Kilograms' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  weightKg?: string | null;
+}
+
+export class TransportDto {
+  @ApiProperty({ type: String, nullable: true }) reason!: string | null;
+  @ApiProperty({ type: String, nullable: true, enum: TRANSPORT_BY }) by!: string | null;
+  @ApiProperty({ type: String, nullable: true }) carrier!: string | null;
+  @ApiProperty({ type: Number, nullable: true }) packages!: number | null;
+  @ApiProperty({ type: String, nullable: true }) appearance!: string | null;
+  @ApiProperty({ type: String, nullable: true }) weightKg!: string | null;
 }
 
 export class CreateStockDocumentDto {
@@ -98,6 +151,12 @@ export class CreateStockDocumentDto {
   @IsString()
   @MaxLength(1000)
   notes?: string | null;
+
+  @ApiPropertyOptional({ type: TransportInputDto, nullable: true, description: 'Sales only' })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TransportInputDto)
+  transport?: TransportInputDto | null;
 
   @ApiProperty({ type: [StockLineInputDto], minItems: 1, maxItems: MAX_LINES })
   @IsArray()
@@ -180,6 +239,7 @@ export class StockDocumentSummaryDto {
 export class StockDocumentDto extends StockDocumentSummaryDto {
   @ApiProperty({ type: String, nullable: true }) partyDocumentDate!: string | null;
   @ApiProperty({ type: String, nullable: true }) notes!: string | null;
+  @ApiProperty({ type: TransportDto, nullable: true }) transport!: TransportDto | null;
   @ApiProperty({ type: String, nullable: true, description: 'Who recorded it' })
   createdByName!: string | null;
   @ApiProperty({

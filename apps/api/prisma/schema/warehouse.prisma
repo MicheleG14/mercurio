@@ -72,6 +72,9 @@ model StockDocument {
   /// The supplier's delivery note (DDT): its number and date.
   partyDocumentRef  String?     @map("party_document_ref")
   partyDocumentDate DateTime?   @map("party_document_date") @db.Date
+  /// How the goods of a sale travel, printed on the delivery note (DDT): reason, by whom,
+  /// carrier, packages, appearance, weight. Sales only (phase 5).
+  transport         Json?
   /// The document this one reverses. Unique: a document is reversed at most once.
   reversesId        String?     @map("reverses_id") @db.Uuid
   notes             String?

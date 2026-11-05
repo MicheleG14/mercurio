@@ -18,6 +18,7 @@ import {
 import { InvoicingEvents } from './invoicing-events.js';
 import { InvoicingRepository } from './invoicing.repository.js';
 import { InvoicingService } from './invoicing.service.js';
+import { InvoicePdfService } from './pdf/invoice-pdf.service.js';
 import { PaymentsRepository } from './payments.repository.js';
 import { PaymentsService } from './payments.service.js';
 
@@ -45,6 +46,7 @@ import { PaymentsService } from './payments.service.js';
     FulfilmentListener,
     PaymentsRepository,
     PaymentsService,
+    InvoicePdfService,
     InvoicingService,
   ],
   exports: [InvoicingService],

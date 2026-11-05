@@ -500,6 +500,38 @@ describe('invoicing (e2e)', () => {
     });
   });
 
+  describe('printing', () => {
+    const pdf = (url: string) =>
+      as('READ_ONLY')
+        .get(url)
+        .buffer(true)
+        .parse((res, done) => {
+          const chunks: Buffer[] = [];
+          res.on('data', (chunk: Buffer) => chunks.push(chunk));
+          res.on('end', () => done(null, Buffer.concat(chunks)));
+        });
+
+    it('prints an issued invoice and a draft in PDF', async () => {
+      const draft = (
+        await manual([
+          { itemId: ids.service, quantity: '3', unitPrice: '50', discountPercent: '10' },
+        ])
+      ).body;
+      const preview = await pdf(`/invoice-drafts/${draft.id}/pdf`).expect(200);
+      expect(preview.headers['content-type']).toBe('application/pdf');
+      expect((preview.body as Buffer).subarray(0, 5).toString()).toBe('%PDF-');
+      const invoice = (await issue(draft).expect(201)).body;
+      const printed = await pdf(`/invoices/${invoice.id}/pdf`).expect(200);
+      expect(printed.headers['content-disposition']).toBe(
+        `attachment; filename="FT-${year}-${String(invoice.number).padStart(4, '0')}.pdf"`,
+      );
+      // The same document prints the same bytes: made from what was saved when issued.
+      const again = await pdf(`/invoices/${invoice.id}/pdf`).expect(200);
+      expect((again.body as Buffer).equals(printed.body as Buffer)).toBe(true);
+      await as('WAREHOUSE_KEEPER').get(`/invoices/${invoice.id}/pdf`).expect(403);
+    });
+  });
+
   describe('lists and access', () => {
     it('lists issued documents with what is open', async () => {
       const page = (await as('READ_ONLY').get('/invoices?kind=INVOICE&pageSize=100').expect(200))

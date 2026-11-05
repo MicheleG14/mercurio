@@ -648,6 +648,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stock-documents/{id}/delivery-note.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The delivery note (DDT) of a sale, in PDF */
+        get: operations["StockDocumentsController_deliveryNote"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/stock-documents/{id}": {
         parameters: {
             query?: never;
@@ -926,6 +943,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/invoices/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The issued document in PDF, in its own language */
+        get: operations["InvoicesController_print"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/invoices": {
         parameters: {
             query?: never;
@@ -970,6 +1004,23 @@ export interface paths {
         put?: never;
         /** A draft credit note: what is left of the chosen lines of the invoice, or of all */
         post: operations["InvoicesController_creditNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoice-drafts/{id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A preview of the draft in PDF, marked as a draft */
+        get: operations["InvoiceDraftsController_print"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1912,6 +1963,15 @@ export interface components {
             page: number;
             pageSize: number;
         };
+        TransportDto: {
+            reason: string | null;
+            /** @enum {string|null} */
+            by: "SENDER" | "RECIPIENT" | "CARRIER" | null;
+            carrier: string | null;
+            packages: number | null;
+            appearance: string | null;
+            weightKg: string | null;
+        };
         StockLineDto: {
             lineNo: number;
             itemId: string;
@@ -1949,6 +2009,7 @@ export interface components {
             createdAt: string;
             partyDocumentDate: string | null;
             notes: string | null;
+            transport: components["schemas"]["TransportDto"] | null;
             /** @description Who recorded it */
             createdByName: string | null;
             /**
@@ -1957,6 +2018,24 @@ export interface components {
              */
             reversedReason: "OPENING" | "PURCHASE_RECEIPT" | "CUSTOMER_RETURN" | "SALE_ISSUE" | "INTERNAL_USE" | "LOSS" | "INVENTORY_ADJUSTMENT" | "TRANSFER" | null;
             lines: components["schemas"]["StockLineDto"][];
+        };
+        TransportInputDto: {
+            /** @example Vendita */
+            reason?: string | null;
+            /**
+             * @description Who carries the goods
+             * @enum {string|null}
+             */
+            by?: "SENDER" | "RECIPIENT" | "CARRIER" | null;
+            carrier?: string | null;
+            packages?: number | null;
+            /** @example Scatole */
+            appearance?: string | null;
+            /**
+             * @description Kilograms
+             * @example 12.5
+             */
+            weightKg?: string | null;
         };
         StockLineInputDto: {
             itemId: string;
@@ -1991,6 +2070,8 @@ export interface components {
             /** @example 2026-10-22 */
             partyDocumentDate?: string | null;
             notes?: string | null;
+            /** @description Sales only */
+            transport?: components["schemas"]["TransportInputDto"] | null;
             lines: components["schemas"]["StockLineInputDto"][];
         };
         OrderSummaryDto: {
@@ -2262,6 +2343,8 @@ export interface components {
             /** @example 2026-10-27 */
             partyDocumentDate?: string | null;
             notes?: string | null;
+            /** @description Sales orders: how the goods travel, printed on the delivery note */
+            transport?: components["schemas"]["TransportInputDto"] | null;
             lines: components["schemas"]["FulfilmentLineInputDto"][];
         };
         /** @enum {string} */
@@ -3835,6 +3918,31 @@ export interface operations {
             };
         };
     };
+    StockDocumentsController_deliveryNote: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The delivery note in PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+        };
+    };
     StockDocumentsController_get: {
         parameters: {
             query?: never;
@@ -4361,6 +4469,31 @@ export interface operations {
             };
         };
     };
+    InvoicesController_print: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The document in PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+        };
+    };
     InvoicesController_list: {
         parameters: {
             query?: {
@@ -4450,6 +4583,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InvoiceDraftDto"];
+                };
+            };
+        };
+    };
+    InvoiceDraftsController_print: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The document in PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
                 };
             };
         };

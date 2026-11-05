@@ -96,6 +96,7 @@ const document = (overrides: Partial<StockDocument> = {}): StockDocument => ({
   origin: null,
   createdAt: '2026-10-22T08:00:00.000Z',
   notes: null,
+  transport: null,
   createdByName: 'Marco Verdi',
   reversedReason: null,
   lines: [

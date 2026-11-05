@@ -14,6 +14,7 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProduces,
   ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
@@ -26,6 +27,7 @@ import {
   StockDocumentPageDto,
   StockDocumentsQuery,
 } from './stock-documents.dto.js';
+import { DeliveryNoteService } from './delivery-note.js';
 import { StockDocumentsService } from './stock-documents.service.js';
 import { COMPANY_HEADER } from './warehouses.controller.js';
 
@@ -36,7 +38,10 @@ import { COMPANY_HEADER } from './warehouses.controller.js';
 @RequiresCompany()
 @Controller('stock-documents')
 export class StockDocumentsController {
-  constructor(private readonly documents: StockDocumentsService) {}
+  constructor(
+    private readonly documents: StockDocumentsService,
+    private readonly deliveryNotes: DeliveryNoteService,
+  ) {}
 
   @Get()
   @RequiresPermission('stock:read')
@@ -44,6 +49,21 @@ export class StockDocumentsController {
   @ApiOkResponse({ type: StockDocumentPageDto })
   list(@Query() query: StockDocumentsQuery): Promise<StockDocumentPageDto> {
     return this.documents.list(query);
+  }
+
+  @Get(':id/delivery-note.pdf')
+  @RequiresPermission('stock:read')
+  @ApiOperation({ summary: 'The delivery note (DDT) of a sale, in PDF' })
+  @ApiProduces('application/pdf')
+  @ApiOkResponse({
+    description: 'The delivery note in PDF',
+    content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
+  })
+  async deliveryNote(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response): Promise<void> {
+    const file = await this.deliveryNotes.print(id);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
+    res.send(file.bytes);
   }
 
   @Get(':id')
