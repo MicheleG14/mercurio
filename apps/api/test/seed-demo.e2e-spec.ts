@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { CliModule } from '../src/cli/cli.module.js';
+import { SEED_TRANSACTION } from '../src/cli/commands.js';
 import { runCli } from '../src/cli/run-cli.js';
 import { DEMO, seedDemo } from '../src/cli/seed-demo.js';
 import { AppConfigModule } from '../src/config/config.module.js';
@@ -10,6 +11,7 @@ import {
   IdentityModule,
   IdentityService,
 } from '../src/modules/identity/index.js';
+import { InvoicingModule, InvoicingService } from '../src/modules/invoicing/index.js';
 import { OrdersModule, OrdersService } from '../src/modules/orders/index.js';
 import { RegistryModule, RegistryService } from '../src/modules/registry/index.js';
 import { TenancyModule, TenancyService } from '../src/modules/tenancy/index.js';
@@ -27,6 +29,7 @@ describe('demo seed (e2e)', () => {
   let registry: RegistryService;
   let warehouse: WarehouseService;
   let orders: OrdersService;
+  let invoicing: InvoicingService;
   let close: () => Promise<void>;
   const suffix = uniqueSuffix();
   const email = (local: string) => `${local}.${suffix}@example.com`;
@@ -44,6 +47,7 @@ describe('demo seed (e2e)', () => {
         RegistryModule,
         WarehouseModule,
         OrdersModule,
+        InvoicingModule,
       ],
     }).compile();
     await moduleRef.init();
@@ -53,10 +57,12 @@ describe('demo seed (e2e)', () => {
     registry = moduleRef.get(RegistryService);
     warehouse = moduleRef.get(WarehouseService);
     orders = moduleRef.get(OrdersService);
+    invoicing = moduleRef.get(InvoicingService);
     close = () => moduleRef.close();
 
-    await admin.$transaction((tx) =>
-      seedDemo(tx, { tenancy, identity, registry, warehouse, orders }, suffix),
+    await admin.$transaction(
+      (tx) => seedDemo(tx, { tenancy, identity, registry, warehouse, orders, invoicing }, suffix),
+      SEED_TRANSACTION,
     );
     const tenants = await admin.tenant.findMany({
       where: { slug: { in: [`rossi-${suffix}`, `bianchi-${suffix}`] } },
@@ -149,7 +155,7 @@ describe('demo seed (e2e)', () => {
     expect(items).toHaveLength(15);
     expect(items.some((i) => !i.stockManaged)).toBe(true);
     expect(items.some((i) => i.vatCode.startsWith('N'))).toBe(true);
-    expect(await admin.party.count({ where: { tenantId: bianchi.id } })).toBe(2);
+    expect(await admin.party.count({ where: { tenantId: bianchi.id } })).toBe(3);
     expect(await admin.item.count({ where: { tenantId: bianchi.id } })).toBe(3);
   });
 
@@ -158,7 +164,7 @@ describe('demo seed (e2e)', () => {
       parties: await tx.party.findMany({ where: { tenantId: { in: [rossi.id, bianchi.id] } } }),
       items: await tx.item.findMany({ where: { tenantId: { in: [rossi.id, bianchi.id] } } }),
     }));
-    expect(seen.parties).toHaveLength(2);
+    expect(seen.parties).toHaveLength(3);
     expect(seen.items).toHaveLength(3);
   });
 
@@ -240,27 +246,73 @@ describe('demo seed (e2e)', () => {
     expect(await admin.order.count({ where: { tenantId: bianchi.id } })).toBe(0);
   });
 
+  it('issues the invoices of Rossi and Bianchi, through the same rules as the API', async () => {
+    const [logistica, srl] = rossi.companies;
+    const documents = async (companyId: string) =>
+      (
+        await admin.invoice.findMany({
+          where: { companyId },
+          orderBy: [{ series: 'asc' }, { number: 'asc' }],
+        })
+      ).map(
+        (i) =>
+          `${i.series} ${i.number}/${i.year} ${i.issueDate.toISOString().slice(0, 10)} ${i.total.toFixed(2)}`,
+      );
+    expect(await documents(srl!.id)).toEqual([
+      'FT 1/2026 2026-10-02 85.40',
+      'FT 2/2026 2026-10-15 132.98',
+      'FT 3/2026 2026-10-20 107.00',
+      'FT 4/2026 2026-10-22 202.00',
+      'FT 5/2026 2026-10-26 42.70',
+      'FT 6/2026 2026-10-31 26.84',
+      'NC 1/2026 2026-10-25 11.96',
+      'NC 2/2026 2026-10-27 42.70',
+    ]);
+    expect(await documents(logistica!.id)).toEqual(['FT 1/2026 2026-10-30 170.80']);
+    const bianchiCompany = await admin.company.findFirstOrThrow({
+      where: { tenantId: bianchi.id },
+    });
+    expect(await documents(bianchiCompany.id)).toEqual([
+      'FT 1/2026 2026-10-10 366.00',
+      'FT 2/2026 2026-10-28 120.54',
+    ]);
+    // The shipment of Ferramenta Bruni of 17 October waits to be invoiced; one draft is open.
+    expect(
+      await admin.invoiceableFulfilment.count({ where: { companyId: srl!.id, invoiceId: null } }),
+    ).toBe(1);
+    expect(await admin.invoiceDraft.count({ where: { companyId: srl!.id } })).toBe(1);
+    const stamped = await admin.invoice.count({
+      where: { companyId: srl!.id, stampDuty: { gt: 0 } },
+    });
+    expect(stamped).toBe(2);
+    expect(await invoicing.verify(admin)).toEqual([]);
+  });
+
   it('adds only what is missing when run again', async () => {
     const people = await admin.user.count({
       where: { email: { endsWith: `.${suffix}@example.com` } },
     });
-    // An item that went missing (deleted by the owner role, never by the API) comes back alone.
-    // A service: goods have stock movements, which keep them.
-    await admin.item.deleteMany({ where: { tenantId: rossi.id, code: 'MDO-ORA' } });
+    // A party that went missing (deleted by the owner role, never by the API) comes back alone:
+    // one that no document points to.
+    await admin.party.deleteMany({
+      where: { tenantId: rossi.id, name: 'Associazione Sportiva Lario' },
+    });
 
-    const again = await admin.$transaction((tx) =>
-      seedDemo(tx, { tenancy, identity, registry, warehouse, orders }, suffix),
+    const again = await admin.$transaction(
+      (tx) => seedDemo(tx, { tenancy, identity, registry, warehouse, orders, invoicing }, suffix),
+      SEED_TRANSACTION,
     );
 
     expect(again.userIds).toEqual([]);
     expect(again.tenants).toEqual([
       expect.objectContaining({
         created: false,
-        parties: 0,
-        items: 1,
+        parties: 1,
+        items: 0,
         warehouses: 0,
         documents: 0,
         orders: 0,
+        invoices: 0,
       }),
       expect.objectContaining({
         created: false,
@@ -269,6 +321,7 @@ describe('demo seed (e2e)', () => {
         warehouses: 0,
         documents: 0,
         orders: 0,
+        invoices: 0,
       }),
     ]);
     expect(await admin.item.count({ where: { tenantId: rossi.id } })).toBe(15);
