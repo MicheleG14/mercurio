@@ -44,7 +44,9 @@
     "search": "Cerca per numero o cliente",
     "filter": {
       "kind": "Tipo",
-      "all": "Tutti"
+      "all": "Tutti",
+      "from": "Dal",
+      "to": "Al"
     },
     "drafts": "Bozze",
     "draftsEmpty": "Nessuna bozza.",
@@ -175,7 +177,9 @@
       "open": "Aperte",
       "overdue": "Scadute",
       "paid": "Saldate",
-      "all": "Tutte"
+      "all": "Tutte",
+      "from": "Dal",
+      "to": "Al"
     },
     "openTotal": "Da incassare",
     "overdueTotal": "Di cui scaduto",

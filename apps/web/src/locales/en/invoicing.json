@@ -44,7 +44,9 @@
     "search": "Search by number or customer",
     "filter": {
       "kind": "Type",
-      "all": "All"
+      "all": "All",
+      "from": "From",
+      "to": "To"
     },
     "drafts": "Drafts",
     "draftsEmpty": "No drafts.",
@@ -175,7 +177,9 @@
       "open": "Open",
       "overdue": "Overdue",
       "paid": "Paid",
-      "all": "All"
+      "all": "All",
+      "from": "From",
+      "to": "To"
     },
     "openTotal": "Open",
     "overdueTotal": "Of which overdue",

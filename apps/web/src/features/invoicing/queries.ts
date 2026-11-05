@@ -48,6 +48,8 @@ export interface InvoicesQuery {
   q?: string;
   kind?: InvoiceKind;
   partyId?: string;
+  from?: string;
+  to?: string;
 }
 
 export function useInvoices(query: InvoicesQuery) {
@@ -122,6 +124,8 @@ export interface DueDatesQuery {
   page: number;
   status?: 'open' | 'overdue' | 'paid';
   partyId?: string;
+  from?: string;
+  to?: string;
   pageSize?: number;
 }
 

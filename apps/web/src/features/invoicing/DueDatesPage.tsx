@@ -5,6 +5,7 @@ import { FilterBar } from '@/components/shared/FilterBar';
 import { MoneyAmount } from '@/components/shared/MoneyAmount';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { formatDate } from '@/lib/format';
 import { useListParams } from '@/lib/list-params';
@@ -19,9 +20,14 @@ const isStatus = (value: string | undefined): value is Status => STATUSES.includ
 export function DueDatesPage() {
   const { t, i18n } = useTranslation('invoicing');
   const { pay } = useInvoicingRights();
-  const list = useListParams(['status'], { field: 'date', direction: 'asc' });
+  const list = useListParams(['status', 'from', 'to'], { field: 'date', direction: 'asc' });
   const status: Status = isStatus(list.filters.status) ? list.filters.status : 'open';
-  const query: DueDatesQuery = { page: list.page, status: status === 'all' ? undefined : status };
+  const query: DueDatesQuery = {
+    page: list.page,
+    status: status === 'all' ? undefined : status,
+    from: list.filters.from || undefined,
+    to: list.filters.to || undefined,
+  };
   const dueDates = useDueDates(query);
 
   return (
@@ -41,7 +47,12 @@ export function DueDatesPage() {
           </dd>
         </div>
       </dl>
-      <FilterBar activeCount={status === 'open' ? 0 : 1} search={null}>
+      <FilterBar
+        activeCount={
+          (status === 'open' ? 0 : 1) + [list.filters.from, list.filters.to].filter(Boolean).length
+        }
+        search={null}
+      >
         <label className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">{t('dueDates.filter.status')}</span>
           <NativeSelect
@@ -60,6 +71,17 @@ export function DueDatesPage() {
             ))}
           </NativeSelect>
         </label>
+        {(['from', 'to'] as const).map((key) => (
+          <label key={key} className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">{t(`dueDates.filter.${key}`)}</span>
+            <Input
+              type="date"
+              className="w-auto"
+              value={list.filters[key] ?? ''}
+              onChange={(event) => list.setFilter(key, event.target.value || undefined)}
+            />
+          </label>
+        ))}
       </FilterBar>
       <DataTable
         rows={dueDates.data?.items}
