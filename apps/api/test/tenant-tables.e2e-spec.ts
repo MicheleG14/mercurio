@@ -99,9 +99,25 @@ describe('tenant tables (guard)', () => {
     // reservation goes when it reaches zero: both deletable.
     // Orders: drafts are deleted (the API checks the status), with their lines; fulfilments and
     // their lines are insert only (B32).
+    // Invoicing: issued documents, their lines and VAT summaries are insert only, with no UPDATE
+    // either (B37); drafts and shipments to invoice are deleted; payments are insert only.
     expect(tableWrites).toEqual([
       { table: 'audit_events', privilege: 'INSERT' },
       { table: 'auth_events', privilege: 'INSERT' },
+      { table: 'credit_allocations', privilege: 'INSERT' },
+      { table: 'invoice_counters', privilege: 'INSERT' },
+      { table: 'invoice_draft_lines', privilege: 'DELETE' },
+      { table: 'invoice_draft_lines', privilege: 'INSERT' },
+      { table: 'invoice_drafts', privilege: 'DELETE' },
+      { table: 'invoice_drafts', privilege: 'INSERT' },
+      { table: 'invoice_due_dates', privilege: 'INSERT' },
+      { table: 'invoice_lines', privilege: 'INSERT' },
+      { table: 'invoice_vat_rows', privilege: 'INSERT' },
+      { table: 'invoiceable_fulfilments', privilege: 'DELETE' },
+      { table: 'invoiceable_fulfilments', privilege: 'INSERT' },
+      { table: 'invoiceable_lines', privilege: 'DELETE' },
+      { table: 'invoiceable_lines', privilege: 'INSERT' },
+      { table: 'invoices', privilege: 'INSERT' },
       { table: 'items', privilege: 'INSERT' },
       { table: 'order_counters', privilege: 'INSERT' },
       { table: 'order_fulfilment_lines', privilege: 'INSERT' },
@@ -111,6 +127,8 @@ describe('tenant tables (guard)', () => {
       { table: 'orders', privilege: 'DELETE' },
       { table: 'orders', privilege: 'INSERT' },
       { table: 'parties', privilege: 'INSERT' },
+      { table: 'payment_allocations', privilege: 'INSERT' },
+      { table: 'payments', privilege: 'INSERT' },
       { table: 'recovery_codes', privilege: 'INSERT' },
       { table: 'reorder_levels', privilege: 'DELETE' },
       { table: 'reorder_levels', privilege: 'INSERT' },
@@ -214,9 +232,33 @@ describe('tenant tables (guard)', () => {
     expect(byTable('order_lines')).toEqual(['closed_quantity', 'done_quantity', 'updated_at']);
     expect(byTable('order_fulfilments')).toEqual(['reversal_document_id', 'reversed_at']);
     expect(byTable('order_counters')).toEqual(['last_number']);
+    // Invoicing: nothing of an issued document changes; after issue only what is settled.
+    for (const issued of ['invoices', 'invoice_lines', 'invoice_vat_rows', 'payments']) {
+      expect(byTable(issued)).toEqual([]);
+    }
+    expect(byTable('invoice_drafts')).toEqual([
+      'credited_invoice_id',
+      'language',
+      'notes',
+      'party_id',
+      'payment_method',
+      'payment_terms',
+      'taxable_total',
+      'total',
+      'updated_at',
+      'vat_total',
+      'version',
+    ]);
+    expect(byTable('invoiceable_fulfilments')).toEqual(['draft_id', 'invoice_id']);
+    expect(byTable('invoice_due_dates')).toEqual(['settled_amount', 'updated_at']);
+    expect(byTable('invoice_counters')).toEqual(['last_date', 'last_number']);
     expect([...new Set(columnUpdates.map((c) => c.table))].sort()).toEqual([
       'companies',
       'credentials',
+      'invoice_counters',
+      'invoice_drafts',
+      'invoice_due_dates',
+      'invoiceable_fulfilments',
       'items',
       'order_counters',
       'order_fulfilments',

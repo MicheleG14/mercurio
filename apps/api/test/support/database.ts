@@ -91,6 +91,22 @@ export async function deleteTenantsAndUsers(
   await admin.session.deleteMany({ where: { userId } });
   await admin.recoveryCode.deleteMany({ where: { userId } });
   await admin.credential.deleteMany({ where: { userId } });
+  // Invoicing: what points to documents goes before them, credit notes before what they credit.
+  await admin.paymentAllocation.deleteMany({ where: { tenantId } });
+  await admin.creditAllocation.deleteMany({ where: { tenantId } });
+  await admin.payment.deleteMany({ where: { tenantId, reversesId: { not: null } } });
+  await admin.payment.deleteMany({ where: { tenantId } });
+  await admin.invoiceDueDate.deleteMany({ where: { tenantId } });
+  await admin.invoiceDraftLine.deleteMany({ where: { tenantId } });
+  await admin.invoiceLine.deleteMany({ where: { tenantId, creditedLineId: { not: null } } });
+  await admin.invoiceLine.deleteMany({ where: { tenantId } });
+  await admin.invoiceVatRow.deleteMany({ where: { tenantId } });
+  await admin.invoiceableLine.deleteMany({ where: { tenantId } });
+  await admin.invoiceableFulfilment.deleteMany({ where: { tenantId } });
+  await admin.invoiceDraft.deleteMany({ where: { tenantId } });
+  await admin.invoice.deleteMany({ where: { tenantId, creditedInvoiceId: { not: null } } });
+  await admin.invoice.deleteMany({ where: { tenantId } });
+  await admin.invoiceCounter.deleteMany({ where: { tenantId } });
   // Orders first: their fulfilments point to stock documents.
   await admin.orderFulfilmentLine.deleteMany({ where: { tenantId } });
   await admin.orderFulfilment.deleteMany({ where: { tenantId } });

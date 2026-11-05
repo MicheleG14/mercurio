@@ -19,18 +19,30 @@ model Tenant {
   parties     Party[]
   items       Item[]
 
-  warehouses            Warehouse[]
-  stockDocuments        StockDocument[]
-  stockMovements        StockMovement[]
-  stockBalances         StockBalance[]
-  reorderLevels         ReorderLevel[]
-  stockDocumentCounters StockDocumentCounter[]
-  stockReservations     StockReservation[]
-  orders                Order[]
-  orderLines            OrderLine[]
-  orderFulfilments      OrderFulfilment[]
-  orderFulfilmentLines  OrderFulfilmentLine[]
-  orderCounters         OrderCounter[]
+  warehouses             Warehouse[]
+  stockDocuments         StockDocument[]
+  stockMovements         StockMovement[]
+  stockBalances          StockBalance[]
+  reorderLevels          ReorderLevel[]
+  stockDocumentCounters  StockDocumentCounter[]
+  stockReservations      StockReservation[]
+  orders                 Order[]
+  orderLines             OrderLine[]
+  orderFulfilments       OrderFulfilment[]
+  orderFulfilmentLines   OrderFulfilmentLine[]
+  orderCounters          OrderCounter[]
+  invoiceableFulfilments InvoiceableFulfilment[]
+  invoiceableLines       InvoiceableLine[]
+  invoiceDrafts          InvoiceDraft[]
+  invoiceDraftLines      InvoiceDraftLine[]
+  invoices               Invoice[]
+  invoiceLines           InvoiceLine[]
+  invoiceVatRows         InvoiceVatRow[]
+  invoiceCounters        InvoiceCounter[]
+  invoiceDueDates        InvoiceDueDate[]
+  payments               Payment[]
+  paymentAllocations     PaymentAllocation[]
+  creditAllocations      CreditAllocation[]
 
   @@map("tenants")
 }
@@ -76,15 +88,20 @@ model Company {
   chargeStampDuty Boolean  @default(true) @map("charge_stamp_duty")
   /// Optimistic concurrency (B29) for the header data.
   version         Int      @default(1)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  tenant              Tenant                 @relation(fields: [tenantId], references: [id])
-  membershipCompanies MembershipCompany[]
-  warehouses          Warehouse[]
-  stockCounters       StockDocumentCounter[]
-  orders              Order[]
-  orderCounters       OrderCounter[]
+  tenant                 Tenant                  @relation(fields: [tenantId], references: [id])
+  membershipCompanies    MembershipCompany[]
+  warehouses             Warehouse[]
+  stockCounters          StockDocumentCounter[]
+  orders                 Order[]
+  orderCounters          OrderCounter[]
+  invoiceableFulfilments InvoiceableFulfilment[]
+  invoiceDrafts          InvoiceDraft[]
+  invoices               Invoice[]
+  invoiceCounters        InvoiceCounter[]
+  payments               Payment[]
 
   /// Target of composite foreign keys: a reference can never cross tenants (B25).
   @@unique([tenantId, id])
