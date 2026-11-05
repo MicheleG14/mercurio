@@ -187,7 +187,8 @@
       "customer": "Cliente",
       "amount": "Importo",
       "open": "Da incassare"
-    }
+    },
+    "refund": "Rimborsa"
   },
   "payments": {
     "title": "Incassi",

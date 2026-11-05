@@ -187,7 +187,8 @@
       "customer": "Customer",
       "amount": "Amount",
       "open": "Open"
-    }
+    },
+    "refund": "Refund"
   },
   "payments": {
     "title": "Payments",
