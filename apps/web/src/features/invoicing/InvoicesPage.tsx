@@ -7,6 +7,7 @@ import { MoneyAmount } from '@/components/shared/MoneyAmount';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { formatDate } from '@/lib/format';
 import { useListParams } from '@/lib/list-params';
@@ -21,9 +22,15 @@ const isKind = (value: string | undefined): value is InvoiceKind => KINDS.includ
 export function InvoicesPage() {
   const { t, i18n } = useTranslation('invoicing');
   const { write } = useInvoicingRights();
-  const list = useListParams(['kind'], { field: 'date', direction: 'desc' });
+  const list = useListParams(['kind', 'from', 'to'], { field: 'date', direction: 'desc' });
   const kind = isKind(list.filters.kind) ? list.filters.kind : undefined;
-  const invoices = useInvoices({ page: list.page, q: list.q || undefined, kind });
+  const invoices = useInvoices({
+    page: list.page,
+    q: list.q || undefined,
+    kind,
+    from: list.filters.from || undefined,
+    to: list.filters.to || undefined,
+  });
   const drafts = useDrafts(1);
 
   return (
@@ -67,7 +74,7 @@ export function InvoicesPage() {
       )}
 
       <FilterBar
-        activeCount={kind ? 1 : 0}
+        activeCount={[kind, list.filters.from, list.filters.to].filter(Boolean).length}
         search={
           <SearchInput
             value={list.q}
@@ -91,6 +98,17 @@ export function InvoicesPage() {
             ))}
           </NativeSelect>
         </label>
+        {(['from', 'to'] as const).map((key) => (
+          <label key={key} className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">{t(`list.filter.${key}`)}</span>
+            <Input
+              type="date"
+              className="w-auto"
+              value={list.filters[key] ?? ''}
+              onChange={(event) => list.setFilter(key, event.target.value || undefined)}
+            />
+          </label>
+        ))}
       </FilterBar>
       <DataTable
         rows={invoices.data?.items}
