@@ -10,6 +10,8 @@ import { ReservationsService } from './reservations.service.js';
 import { StockDocumentsService } from './stock-documents.service.js';
 import { StockController } from './stock.controller.js';
 import { StockRepository } from './stock.repository.js';
+import { StockStatsRepository } from './stock-stats.repository.js';
+import { StockStatsService } from './stock-stats.service.js';
 import { StockService } from './stock.service.js';
 import { WarehouseService } from './warehouse.service.js';
 import { WarehousesController } from './warehouses.controller.js';
@@ -31,6 +33,8 @@ import { WarehousesService } from './warehouses.service.js';
     StockDocumentsService,
     StockRepository,
     StockService,
+    StockStatsRepository,
+    StockStatsService,
     ReservationsService,
     DeliveryNoteService,
     WarehouseService,

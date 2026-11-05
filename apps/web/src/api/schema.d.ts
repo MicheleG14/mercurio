@@ -525,6 +525,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stock/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** For the overview: stock documents by month and type */
+        get: operations["StockController_stats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/stock/summary": {
         parameters: {
             query?: never;
@@ -713,6 +730,23 @@ export interface paths {
          * @description The same id with the same content answers 200 with the draft (B33).
          */
         post: operations["OrdersController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** For the overview: sales ordered and shipped by month, what is left */
+        get: operations["OrdersController_stats"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1079,6 +1113,40 @@ export interface paths {
          * @description Issuing it again answers 200 with the document already issued (B33).
          */
         post: operations["InvoiceDraftsController_issue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoicing/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** For the overview: a year month by month, invoiced and collected; top customers */
+        get: operations["InvoicingController_yearStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoicing/aging": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** For the overview: what customers owe today, by days overdue */
+        get: operations["InvoicingController_aging"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1825,6 +1893,24 @@ export interface components {
             page: number;
             pageSize: number;
         };
+        StockMonthDto: {
+            month: number;
+            /** @description Receipts: opening, from suppliers, returns from customers */
+            receipt: number;
+            /** @description Issues: sales, internal use, losses */
+            issue: number;
+            /** @description Inventory counts */
+            adjustment: number;
+            /** @description Transfers between warehouses */
+            transfer: number;
+        };
+        StockStatsDto: {
+            year: number;
+            /** @description Years with stock documents, newest first */
+            years: number[];
+            /** @description Documents per month and type, reversed ones and reversals left out */
+            months: components["schemas"]["StockMonthDto"][];
+        };
         StockSummaryDto: {
             belowReorder: number;
             documentsToday: number;
@@ -2103,6 +2189,39 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+        };
+        OrdersMonthDto: {
+            month: number;
+            /**
+             * @description Taxable of the sales orders confirmed, by order date
+             * @example 0.00
+             */
+            ordered: string;
+            /**
+             * @description Taxable of the goods shipped, by shipment date
+             * @example 0.00
+             */
+            shipped: string;
+        };
+        BacklogCustomerDto: {
+            partyId: string;
+            name: string;
+            /** @example 0.00 */
+            amount: string;
+        };
+        OrdersStatsDto: {
+            year: number;
+            /** @description Years with sales orders or shipments, newest first */
+            years: number[];
+            /** @description January to December, empty months too */
+            months: components["schemas"]["OrdersMonthDto"][];
+            /**
+             * @description Taxable still to ship on the open sales orders, today
+             * @example 0.00
+             */
+            backlog: string;
+            /** @description At most five, by amount to ship */
+            backlogCustomers: components["schemas"]["BacklogCustomerDto"][];
         };
         OrdersSummaryDto: {
             /** @description Open sales orders */
@@ -2591,6 +2710,71 @@ export interface components {
              * @example 2026-11-05
              */
             issueDate?: string;
+        };
+        InvoicingMonthDto: {
+            month: number;
+            /**
+             * @description Taxable of the invoices less the credit notes
+             * @example 0.00
+             */
+            taxable: string;
+            /**
+             * @description VAT of the invoices less the credit notes
+             * @example 0.00
+             */
+            vat: string;
+            /**
+             * @description Total of the invoices less the credit notes
+             * @example 0.00
+             */
+            total: string;
+            /**
+             * @description Payments less refunds and reversals
+             * @example 0.00
+             */
+            collected: string;
+        };
+        TopCustomerDto: {
+            partyId: string;
+            name: string;
+            /**
+             * @description Taxable invoiced in the year, net
+             * @example 0.00
+             */
+            taxable: string;
+            /**
+             * @description Still to be paid today, any year
+             * @example 0.00
+             */
+            open: string;
+        };
+        InvoicingStatsDto: {
+            year: number;
+            /** @description Years with invoices or payments, newest first */
+            years: number[];
+            /** @description January to December, empty months too */
+            months: components["schemas"]["InvoicingMonthDto"][];
+            /** @description At most five, by taxable invoiced */
+            topCustomers: components["schemas"]["TopCustomerDto"][];
+        };
+        AgingBucketDto: {
+            /** @enum {string} */
+            bucket: "NOT_DUE" | "DAYS_1_30" | "DAYS_31_60" | "DAYS_61_90" | "OVER_90";
+            /** @example 0.00 */
+            amount: string;
+            /** @description Open due dates in the bucket */
+            count: number;
+        };
+        AgingDto: {
+            /** @example 2026-11-05 */
+            asOf: string;
+            /** @description Every bucket, in order, empty ones too */
+            buckets: components["schemas"]["AgingBucketDto"][];
+            /**
+             * @description Open amount of the invoices
+             * @example 0.00
+             */
+            total: string;
         };
         InvoicingSummaryDto: {
             toInvoice: number;
@@ -3667,6 +3851,31 @@ export interface operations {
             };
         };
     };
+    StockController_stats: {
+        parameters: {
+            query?: {
+                /** @description Default: the current year */
+                year?: number;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockStatsDto"];
+                };
+            };
+        };
+    };
     StockController_summary: {
         parameters: {
             query?: never;
@@ -4065,6 +4274,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    OrdersController_stats: {
+        parameters: {
+            query?: {
+                /** @description Default: the current year */
+                year?: number;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrdersStatsDto"];
                 };
             };
         };
@@ -4788,6 +5022,53 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InvoiceDto"];
+                };
+            };
+        };
+    };
+    InvoicingController_yearStats: {
+        parameters: {
+            query?: {
+                /** @description Default: the current year */
+                year?: number;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoicingStatsDto"];
+                };
+            };
+        };
+    };
+    InvoicingController_aging: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgingDto"];
                 };
             };
         };

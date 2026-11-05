@@ -1779,6 +1779,54 @@
         ]
       }
     },
+    "/stock/stats": {
+      "get": {
+        "operationId": "StockController_stats",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "required": false,
+            "in": "query",
+            "description": "Default: the current year",
+            "schema": {
+              "minimum": 2000,
+              "maximum": 2100,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockStatsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "For the overview: stock documents by month and type",
+        "tags": [
+          "warehouse"
+        ]
+      }
+    },
     "/stock/summary": {
       "get": {
         "operationId": "StockController_summary",
@@ -2746,6 +2794,54 @@
           }
         ],
         "summary": "Create a draft",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/orders/stats": {
+      "get": {
+        "operationId": "OrdersController_stats",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "required": false,
+            "in": "query",
+            "description": "Default: the current year",
+            "schema": {
+              "minimum": 2000,
+              "maximum": 2100,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdersStatsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "For the overview: sales ordered and shipped by month, what is left",
         "tags": [
           "orders"
         ]
@@ -4180,6 +4276,91 @@
           }
         ],
         "summary": "Issue a draft: number, due dates; from now on it never changes",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoicing/stats": {
+      "get": {
+        "operationId": "InvoicingController_yearStats",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "required": false,
+            "in": "query",
+            "description": "Default: the current year",
+            "schema": {
+              "minimum": 2000,
+              "maximum": 2100,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoicingStatsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "For the overview: a year month by month, invoiced and collected; top customers",
+        "tags": [
+          "invoicing"
+        ]
+      }
+    },
+    "/invoicing/aging": {
+      "get": {
+        "operationId": "InvoicingController_aging",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgingDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "For the overview: what customers owe today, by days overdue",
         "tags": [
           "invoicing"
         ]
@@ -6707,6 +6888,66 @@
           "pageSize"
         ]
       },
+      "StockMonthDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "receipt": {
+            "type": "number",
+            "description": "Receipts: opening, from suppliers, returns from customers"
+          },
+          "issue": {
+            "type": "number",
+            "description": "Issues: sales, internal use, losses"
+          },
+          "adjustment": {
+            "type": "number",
+            "description": "Inventory counts"
+          },
+          "transfer": {
+            "type": "number",
+            "description": "Transfers between warehouses"
+          }
+        },
+        "required": [
+          "month",
+          "receipt",
+          "issue",
+          "adjustment",
+          "transfer"
+        ]
+      },
+      "StockStatsDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "number"
+          },
+          "years": {
+            "description": "Years with stock documents, newest first",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "months": {
+            "description": "Documents per month and type, reversed ones and reversals left out",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockMonthDto"
+            }
+          }
+        },
+        "required": [
+          "year",
+          "years",
+          "months"
+        ]
+      },
       "StockSummaryDto": {
         "type": "object",
         "properties": {
@@ -7742,6 +7983,92 @@
           "total",
           "page",
           "pageSize"
+        ]
+      },
+      "OrdersMonthDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "ordered": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Taxable of the sales orders confirmed, by order date"
+          },
+          "shipped": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Taxable of the goods shipped, by shipment date"
+          }
+        },
+        "required": [
+          "month",
+          "ordered",
+          "shipped"
+        ]
+      },
+      "BacklogCustomerDto": {
+        "type": "object",
+        "properties": {
+          "partyId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "0.00"
+          }
+        },
+        "required": [
+          "partyId",
+          "name",
+          "amount"
+        ]
+      },
+      "OrdersStatsDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "number"
+          },
+          "years": {
+            "description": "Years with sales orders or shipments, newest first",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "months": {
+            "description": "January to December, empty months too",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrdersMonthDto"
+            }
+          },
+          "backlog": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Taxable still to ship on the open sales orders, today"
+          },
+          "backlogCustomers": {
+            "description": "At most five, by amount to ship",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BacklogCustomerDto"
+            }
+          }
+        },
+        "required": [
+          "year",
+          "years",
+          "months",
+          "backlog",
+          "backlogCustomers"
         ]
       },
       "OrdersSummaryDto": {
@@ -9432,6 +9759,159 @@
         },
         "required": [
           "version"
+        ]
+      },
+      "InvoicingMonthDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "taxable": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Taxable of the invoices less the credit notes"
+          },
+          "vat": {
+            "type": "string",
+            "example": "0.00",
+            "description": "VAT of the invoices less the credit notes"
+          },
+          "total": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Total of the invoices less the credit notes"
+          },
+          "collected": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Payments less refunds and reversals"
+          }
+        },
+        "required": [
+          "month",
+          "taxable",
+          "vat",
+          "total",
+          "collected"
+        ]
+      },
+      "TopCustomerDto": {
+        "type": "object",
+        "properties": {
+          "partyId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "taxable": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Taxable invoiced in the year, net"
+          },
+          "open": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Still to be paid today, any year"
+          }
+        },
+        "required": [
+          "partyId",
+          "name",
+          "taxable",
+          "open"
+        ]
+      },
+      "InvoicingStatsDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "number"
+          },
+          "years": {
+            "description": "Years with invoices or payments, newest first",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "months": {
+            "description": "January to December, empty months too",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvoicingMonthDto"
+            }
+          },
+          "topCustomers": {
+            "description": "At most five, by taxable invoiced",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopCustomerDto"
+            }
+          }
+        },
+        "required": [
+          "year",
+          "years",
+          "months",
+          "topCustomers"
+        ]
+      },
+      "AgingBucketDto": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "enum": [
+              "NOT_DUE",
+              "DAYS_1_30",
+              "DAYS_31_60",
+              "DAYS_61_90",
+              "OVER_90"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "example": "0.00"
+          },
+          "count": {
+            "type": "number",
+            "description": "Open due dates in the bucket"
+          }
+        },
+        "required": [
+          "bucket",
+          "amount",
+          "count"
+        ]
+      },
+      "AgingDto": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string",
+            "example": "2026-11-05"
+          },
+          "buckets": {
+            "description": "Every bucket, in order, empty ones too",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgingBucketDto"
+            }
+          },
+          "total": {
+            "type": "string",
+            "example": "0.00",
+            "description": "Open amount of the invoices"
+          }
+        },
+        "required": [
+          "asOf",
+          "buckets",
+          "total"
         ]
       },
       "InvoicingSummaryDto": {

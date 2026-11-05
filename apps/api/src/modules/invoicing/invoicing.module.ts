@@ -16,6 +16,8 @@ import {
   PaymentsController,
 } from './invoicing.controller.js';
 import { InvoicingEvents } from './invoicing-events.js';
+import { InvoicingStatsRepository } from './invoicing-stats.repository.js';
+import { InvoicingStatsService } from './invoicing-stats.service.js';
 import { InvoicingRepository } from './invoicing.repository.js';
 import { InvoicingService } from './invoicing.service.js';
 import { InvoicePdfService } from './pdf/invoice-pdf.service.js';
@@ -47,6 +49,8 @@ import { PaymentsService } from './payments.service.js';
     PaymentsRepository,
     PaymentsService,
     InvoicePdfService,
+    InvoicingStatsRepository,
+    InvoicingStatsService,
     InvoicingService,
   ],
   exports: [InvoicingService],

@@ -35,6 +35,9 @@ import {
   StockQuery,
   StockSummaryDto,
 } from './stock.dto.js';
+import { YearQuery } from '../../shared/periods.js';
+import { StockStatsDto } from './stock-stats.dto.js';
+import { StockStatsService } from './stock-stats.service.js';
 import { StockService } from './stock.service.js';
 import { COMPANY_HEADER } from './warehouses.controller.js';
 
@@ -45,7 +48,10 @@ import { COMPANY_HEADER } from './warehouses.controller.js';
 @RequiresCompany()
 @Controller('stock')
 export class StockController {
-  constructor(private readonly stock: StockService) {}
+  constructor(
+    private readonly stock: StockService,
+    private readonly stockStats: StockStatsService,
+  ) {}
 
   @Get()
   @RequiresPermission('stock:read')
@@ -53,6 +59,14 @@ export class StockController {
   @ApiOkResponse({ type: StockPageDto })
   list(@Query() query: StockQuery): Promise<StockPageDto> {
     return this.stock.list(query);
+  }
+
+  @Get('stats')
+  @RequiresPermission('stock:read')
+  @ApiOperation({ summary: 'For the overview: stock documents by month and type' })
+  @ApiOkResponse({ type: StockStatsDto })
+  stats(@Query() query: YearQuery): Promise<StockStatsDto> {
+    return this.stockStats.stats(query.year);
   }
 
   @Get('summary')
