@@ -6,6 +6,6 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['test/**/*.e2e-spec.ts'],
-    setupFiles: ['./test/setup-env.ts'],
+    setupFiles: ['./test/setup-env.ts', './test/support/serial-queries.ts'],
   },
 });
