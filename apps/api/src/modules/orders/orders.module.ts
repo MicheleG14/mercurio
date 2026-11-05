@@ -11,6 +11,8 @@ import { OrderDraftsService } from './order-drafts.service.js';
 import { OrderEvents } from './order-events.js';
 import { OrderQueriesService } from './order-queries.service.js';
 import { OrdersController } from './orders.controller.js';
+import { OrdersStatsRepository } from './orders-stats.repository.js';
+import { OrdersStatsService } from './orders-stats.service.js';
 import { OrdersRepository } from './orders.repository.js';
 import { OrdersService } from './orders.service.js';
 
@@ -31,6 +33,8 @@ import { OrdersService } from './orders.service.js';
     OrderDraftsService,
     OrderActionsService,
     FulfilmentsService,
+    OrdersStatsRepository,
+    OrdersStatsService,
     OrdersService,
   ],
   exports: [OrdersService],

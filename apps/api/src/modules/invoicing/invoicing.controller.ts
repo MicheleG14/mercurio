@@ -24,6 +24,7 @@ import {
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { PageQuery } from '../../shared/pagination.js';
+import { YearQuery } from '../../shared/periods.js';
 import { RequiresCompany } from '../auth/index.js';
 import { RequiresPermission } from '../identity/index.js';
 import { RequiresModule } from '../tenancy/index.js';
@@ -31,6 +32,8 @@ import { InvoiceDraftsService } from './invoice-drafts.service.js';
 import { InvoicePdfService, type PdfFile } from './pdf/invoice-pdf.service.js';
 import { InvoiceIssueService } from './invoice-issue.service.js';
 import { InvoiceQueriesService } from './invoice-queries.service.js';
+import { AgingDto, InvoicingStatsDto } from './invoicing-stats.dto.js';
+import { InvoicingStatsService } from './invoicing-stats.service.js';
 import {
   CreatePaymentDto,
   DueDatesQuery,
@@ -238,7 +241,26 @@ export class InvoicingController {
   constructor(
     private readonly queries: InvoiceQueriesService,
     private readonly payments: PaymentsService,
+    private readonly stats: InvoicingStatsService,
   ) {}
+
+  @Get('stats')
+  @RequiresPermission('invoicing:read')
+  @ApiOperation({
+    summary: 'For the overview: a year month by month, invoiced and collected; top customers',
+  })
+  @ApiOkResponse({ type: InvoicingStatsDto })
+  yearStats(@Query() query: YearQuery): Promise<InvoicingStatsDto> {
+    return this.stats.stats(query.year);
+  }
+
+  @Get('aging')
+  @RequiresPermission('invoicing:read')
+  @ApiOperation({ summary: 'For the overview: what customers owe today, by days overdue' })
+  @ApiOkResponse({ type: AgingDto })
+  aging(): Promise<AgingDto> {
+    return this.stats.aging();
+  }
 
   @Get('summary')
   @RequiresPermission('invoicing:read')

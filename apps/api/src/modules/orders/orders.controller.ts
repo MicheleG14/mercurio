@@ -22,6 +22,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
+import { YearQuery } from '../../shared/periods.js';
 import { RequiresCompany } from '../auth/index.js';
 import { RequiresPermission } from '../identity/index.js';
 import { RequiresModule } from '../tenancy/index.js';
@@ -29,6 +30,8 @@ import { FulfilmentsService } from './fulfilments.service.js';
 import { OrderActionsService } from './order-actions.service.js';
 import { OrderDraftsService } from './order-drafts.service.js';
 import { OrderQueriesService } from './order-queries.service.js';
+import { OrdersStatsDto } from './orders-stats.dto.js';
+import { OrdersStatsService } from './orders-stats.service.js';
 import {
   CloseOrderDto,
   CreateFulfilmentDto,
@@ -68,6 +71,7 @@ export class OrdersController {
     private readonly drafts: OrderDraftsService,
     private readonly actions: OrderActionsService,
     private readonly fulfilments: FulfilmentsService,
+    private readonly ordersStats: OrdersStatsService,
   ) {}
 
   @Get()
@@ -79,6 +83,14 @@ export class OrdersController {
   }
 
   // Fixed paths before ':id', so that "summary" is never read as an id.
+  @Get('stats')
+  @RequiresPermission('orders:read')
+  @ApiOperation({ summary: 'For the overview: sales ordered and shipped by month, what is left' })
+  @ApiOkResponse({ type: OrdersStatsDto })
+  stats(@Query() query: YearQuery): Promise<OrdersStatsDto> {
+    return this.ordersStats.stats(query.year);
+  }
+
   @Get('summary')
   @RequiresPermission('orders:read')
   @ApiOkResponse({ type: OrdersSummaryDto })
