@@ -8,7 +8,7 @@
 A vertical ERP for warehouse and invoicing, built as a modular monolith with NestJS and React.
 Named after Mercury, the Roman god of commerce.
 
-> **Status: phase 4.** People sign in with mandatory two-factor authentication and work from a
+> **Status: phase 5.** People sign in with mandatory two-factor authentication and work from a
 > desktop, a tablet or a phone on the registry (customers, suppliers and items, with Italian tax
 > checks), on the warehouse (documents that are never changed, only reversed; stock computed from
 > the movements and never below zero, even with simultaneous requests; reorder levels) and on
