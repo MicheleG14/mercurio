@@ -5,6 +5,22 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [Unreleased]
+
+### Added
+
+- The version of the running app at the foot of the sidebar (and on hover over the brand when the
+  sidebar is collapsed to icons).
+
+### Changed
+
+- The API role can no longer change whether an item is stock managed (the privilege on
+  `stock_managed` is revoked); 0.7.0 already stopped writing it, so a rollback to it still works.
+
+### Fixed
+
+- "Switch customer" in the top bar sits as far from the customer as from the company.
+
 ## [0.7.0] - 2026-10-28
 
 Phase 4: orders. Purchase and sales orders from the database to the browser, moving goods only

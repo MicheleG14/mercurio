@@ -2,7 +2,8 @@
   "app": {
     "name": "Mercurio",
     "tagline": "Warehouse and invoicing ERP",
-    "demo": "Demo environment: all data is fictitious."
+    "demo": "Demo environment: all data is fictitious.",
+    "version": "Version {{version}}"
   },
   "theme": {
     "label": "Theme",
