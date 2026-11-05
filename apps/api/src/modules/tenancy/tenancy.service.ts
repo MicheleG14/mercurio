@@ -2,7 +2,9 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import type { DbClient } from '../../prisma/index.js';
 import { DomainException } from '../../shared/errors/index.js';
 import { normalizeName } from '../../shared/text.js';
+import { changedFields, definedOnly, editConflict } from '../../shared/versioning.js';
 import { normalizeCountry, normalizeTaxCode, normalizeVatNumber } from './company-identifiers.js';
+import { type CompanyProfileInput, normalizeCompanyProfile, profileOf } from './company-profile.js';
 import { applyModuleChange, type ModuleKey, parseModuleKeys } from './module-catalog.js';
 import { TenancyRepository } from './tenancy.repository.js';
 import { normalizeSlug } from './tenant-slug.js';
@@ -117,6 +119,35 @@ export class TenancyService {
   /** Companies of a tenant, by name. */
   listCompanies(db: DbClient, tenantId: string) {
     return this.repository.listCompanies(db, tenantId);
+  }
+
+  /** A company of the current tenant (Row-Level Security), or a 404. */
+  async getCompany(db: DbClient, companyId: string) {
+    const company = await this.repository.findCompany(db, companyId);
+    if (!company) throw new DomainException('COMPANY_NOT_FOUND', HttpStatus.NOT_FOUND);
+    return company;
+  }
+
+  /**
+   * Changes the invoice header data of a company (not its name or identifiers), at the version
+   * it was read (B29). Only the fields sent change; returns the company and the names of the
+   * changed fields, for the audit log.
+   */
+  async updateCompanyProfile(
+    db: DbClient,
+    companyId: string,
+    version: number,
+    changes: CompanyProfileInput,
+  ) {
+    const current = await this.getCompany(db, companyId);
+    if (current.version !== version) throw editConflict();
+    const before = profileOf(current);
+    const after = normalizeCompanyProfile(current.country, { ...before, ...definedOnly(changes) });
+    const fields = changedFields(before, after);
+    if (fields.length === 0) return { company: current, fields };
+    const updated = await this.repository.updateCompanyAtVersion(db, companyId, version, after);
+    if (!updated) throw editConflict();
+    return { company: updated, fields };
   }
 
   listTenants(db: DbClient) {

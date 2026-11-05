@@ -88,6 +88,7 @@
                 "MEMBER_REMOVED",
                 "MODULES_CHANGED",
                 "COMPANY_ADDED",
+                "COMPANY_UPDATED",
                 "PARTY_CREATED",
                 "PARTY_UPDATED",
                 "PARTY_ARCHIVED",
@@ -1232,7 +1233,89 @@
             "bearer": []
           }
         ],
-        "summary": "VAT codes, units of measure and legal forms",
+        "summary": "VAT codes, units of measure, legal forms, payment terms and methods, tax regimes",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/companies/current": {
+      "get": {
+        "operationId": "CompaniesController_current",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The invoice header data of the current company",
+        "tags": [
+          "registry"
+        ]
+      },
+      "put": {
+        "operationId": "CompaniesController_update",
+        "parameters": [
+          {
+            "name": "X-Company-Id",
+            "in": "header",
+            "description": "The company to work on, one the person can reach",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCompanyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change the invoice header data of the current company",
         "tags": [
           "registry"
         ]
@@ -4264,6 +4347,18 @@
             "type": "string",
             "nullable": true
           },
+          "paymentTerms": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentMethod": {
+            "type": "string",
+            "nullable": true
+          },
+          "documentLanguage": {
+            "type": "string",
+            "nullable": true
+          },
           "notes": {
             "type": "string",
             "nullable": true
@@ -4303,6 +4398,9 @@
           "phone",
           "pecEmail",
           "sdiCode",
+          "paymentTerms",
+          "paymentMethod",
+          "documentLanguage",
           "notes",
           "version",
           "archivedAt",
@@ -4408,6 +4506,24 @@
             "nullable": true,
             "maxLength": 7,
             "example": "0000000"
+          },
+          "paymentTerms": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20,
+            "example": "30FM"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 4,
+            "example": "MP05"
+          },
+          "documentLanguage": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2,
+            "example": "it"
           },
           "notes": {
             "type": "string",
@@ -4519,6 +4635,24 @@
             "nullable": true,
             "maxLength": 7,
             "example": "0000000"
+          },
+          "paymentTerms": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20,
+            "example": "30FM"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 4,
+            "example": "MP05"
+          },
+          "documentLanguage": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2,
+            "example": "it"
           },
           "notes": {
             "type": "string",
@@ -4783,6 +4917,42 @@
           "category"
         ]
       },
+      "PaymentInstalmentDto": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "number",
+            "example": 30
+          },
+          "endOfMonth": {
+            "type": "boolean",
+            "description": "Whole months, on the last day of the month"
+          }
+        },
+        "required": [
+          "days",
+          "endOfMonth"
+        ]
+      },
+      "PaymentTermsDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "30-60FM"
+          },
+          "instalments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentInstalmentDto"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "instalments"
+        ]
+      },
       "ReferenceDataDto": {
         "type": "object",
         "properties": {
@@ -4803,12 +4973,258 @@
             "items": {
               "$ref": "#/components/schemas/LegalFormDto"
             }
+          },
+          "paymentTerms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentTermsDto"
+            }
+          },
+          "paymentMethods": {
+            "example": [
+              "MP05"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "taxRegimes": {
+            "example": [
+              "RF01"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "documentLanguages": {
+            "example": [
+              "it",
+              "en"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "vatCodes",
           "units",
-          "legalForms"
+          "legalForms",
+          "paymentTerms",
+          "paymentMethods",
+          "taxRegimes",
+          "documentLanguages"
+        ]
+      },
+      "CompanyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "legalName": {
+            "type": "string"
+          },
+          "vatNumber": {
+            "type": "string"
+          },
+          "taxCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "example": "IT"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "province": {
+            "type": "string",
+            "nullable": true
+          },
+          "reaOffice": {
+            "type": "string",
+            "nullable": true
+          },
+          "reaNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "shareCapital": {
+            "type": "string",
+            "nullable": true
+          },
+          "soleShareholder": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "inLiquidation": {
+            "type": "boolean"
+          },
+          "taxRegime": {
+            "type": "string",
+            "example": "RF01"
+          },
+          "iban": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "pecEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "chargeStampDuty": {
+            "type": "boolean"
+          },
+          "missingForInvoices": {
+            "example": [
+              "address"
+            ],
+            "description": "Fields an invoice needs and the company lacks; empty when it can issue",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "legalName",
+          "vatNumber",
+          "taxCode",
+          "country",
+          "address",
+          "postalCode",
+          "city",
+          "province",
+          "reaOffice",
+          "reaNumber",
+          "shareCapital",
+          "soleShareholder",
+          "inLiquidation",
+          "taxRegime",
+          "iban",
+          "email",
+          "pecEmail",
+          "phone",
+          "chargeStampDuty",
+          "missingForInvoices",
+          "version"
+        ]
+      },
+      "UpdateCompanyDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200,
+            "example": "Via Roma 1"
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20,
+            "example": "20121"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "example": "Milano"
+          },
+          "province": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2,
+            "example": "MI"
+          },
+          "reaOffice": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2,
+            "example": "MI"
+          },
+          "reaNumber": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20,
+            "example": "1234567"
+          },
+          "shareCapital": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 20,
+            "example": "10000.00"
+          },
+          "soleShareholder": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "inLiquidation": {
+            "type": "boolean"
+          },
+          "taxRegime": {
+            "type": "string",
+            "example": "RF01"
+          },
+          "iban": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 40,
+            "example": "IT60X0542811101000000123456"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 320
+          },
+          "pecEmail": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 320
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 40
+          },
+          "chargeStampDuty": {
+            "type": "boolean",
+            "description": "Charge the stamp duty of exempt invoices to the customer"
+          }
+        },
+        "required": [
+          "version"
         ]
       },
       "WarehouseDto": {

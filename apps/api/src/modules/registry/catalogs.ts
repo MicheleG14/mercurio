@@ -76,9 +76,57 @@ export const LEGAL_FORMS = [
   { code: 'OTHER', category: null },
 ] as const satisfies readonly { code: string; category: string | null }[];
 
+/**
+ * Payment terms (phase 5): when the total of an invoice is due, as one or more instalments. Days
+ * from the invoice date ("DF", data fattura); "FM" (fine mese) counts whole months instead and
+ * falls on the last day of the month: 30FM of 15 January is 28 February, 60FM is 31 March.
+ * The instalments split the total in equal parts, the rest on the last one (docs/adr/0030).
+ */
+export const PAYMENT_TERMS = [
+  { code: 'RD', instalments: [{ days: 0, endOfMonth: false }] },
+  { code: '30DF', instalments: [{ days: 30, endOfMonth: false }] },
+  { code: '60DF', instalments: [{ days: 60, endOfMonth: false }] },
+  { code: '30FM', instalments: [{ days: 30, endOfMonth: true }] },
+  { code: '60FM', instalments: [{ days: 60, endOfMonth: true }] },
+  {
+    code: '30-60DF',
+    instalments: [
+      { days: 30, endOfMonth: false },
+      { days: 60, endOfMonth: false },
+    ],
+  },
+  {
+    code: '30-60FM',
+    instalments: [
+      { days: 30, endOfMonth: true },
+      { days: 60, endOfMonth: true },
+    ],
+  },
+  {
+    code: '30-60-90FM',
+    instalments: [
+      { days: 30, endOfMonth: true },
+      { days: 60, endOfMonth: true },
+      { days: 90, endOfMonth: true },
+    ],
+  },
+] as const satisfies readonly {
+  code: string;
+  instalments: readonly { days: number; endOfMonth: boolean }[];
+}[];
+
+/** How a customer pays: the codes of the Italian e-invoice (ModalitaPagamento). */
+export const PAYMENT_METHODS = ['MP01', 'MP02', 'MP05', 'MP08', 'MP12'] as const;
+
+/** Languages a printed document can be in (G2b). */
+export const DOCUMENT_LANGUAGES = ['it', 'en'] as const;
+
 export type Unit = (typeof UNITS)[number]['code'];
 export type VatCode = (typeof VAT_CODES)[number]['code'];
 export type LegalForm = (typeof LEGAL_FORMS)[number]['code'];
+export type PaymentTerms = (typeof PAYMENT_TERMS)[number]['code'];
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+export type DocumentLanguage = (typeof DOCUMENT_LANGUAGES)[number];
 
 export const isUnit = (value: string): value is Unit => UNITS.some((unit) => unit.code === value);
 
@@ -91,3 +139,16 @@ export const isVatCode = (value: string): value is VatCode =>
 
 export const isLegalForm = (value: string): value is LegalForm =>
   LEGAL_FORMS.some((form) => form.code === value);
+
+export const isPaymentTerms = (value: string): value is PaymentTerms =>
+  PAYMENT_TERMS.some((terms) => terms.code === value);
+
+export const isPaymentMethod = (value: string): value is PaymentMethod =>
+  (PAYMENT_METHODS as readonly string[]).includes(value);
+
+export const isDocumentLanguage = (value: string): value is DocumentLanguage =>
+  (DOCUMENT_LANGUAGES as readonly string[]).includes(value);
+
+/** The language of a party's documents when none is chosen: Italian in Italy, English abroad. */
+export const defaultLanguageFor = (country: string): DocumentLanguage =>
+  country === 'IT' ? 'it' : 'en';

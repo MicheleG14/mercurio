@@ -115,6 +115,26 @@ describe('party rules', () => {
     ]);
   });
 
+  it('keeps the payment proposed for invoices and the language of documents, from the catalogs', () => {
+    expect(
+      normalizeParty(
+        company({ paymentTerms: '30fm', paymentMethod: 'mp05', documentLanguage: 'EN' }),
+      ),
+    ).toMatchObject({ paymentTerms: '30FM', paymentMethod: 'MP05', documentLanguage: 'en' });
+    expect(normalizeParty(company())).toMatchObject({
+      paymentTerms: null,
+      paymentMethod: null,
+      documentLanguage: null,
+    });
+    expect(
+      errorsOf(company({ paymentTerms: '45DF', paymentMethod: 'MP99', documentLanguage: 'fr' })),
+    ).toEqual([
+      'paymentTerms:PAYMENT_TERMS_UNKNOWN',
+      'paymentMethod:PAYMENT_METHOD_UNKNOWN',
+      'documentLanguage:LANGUAGE_UNKNOWN',
+    ]);
+  });
+
   it('accepts an organization with only an 11-digit tax code', () => {
     const party = normalizeParty({
       kind: 'ORGANIZATION',

@@ -44,6 +44,11 @@ model Party {
   pecEmail   String?   @map("pec_email")
   /// Recipient code of the Italian e-invoicing exchange system (SdI), 7 characters.
   sdiCode    String?   @map("sdi_code") @db.Char(7)
+  /// Proposed on the customer's invoices: codes of the catalogs in code (phase 5).
+  paymentTerms     String?   @map("payment_terms")
+  paymentMethod    String?   @map("payment_method")
+  /// Language of the party's printed documents; empty follows the country (G2b).
+  documentLanguage String?   @map("document_language")
   notes      String?
   /// Optimistic concurrency (B29): every change sends the version it read.
   version    Int       @default(1)

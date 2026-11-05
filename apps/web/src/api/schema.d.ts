@@ -413,9 +413,27 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** VAT codes, units of measure and legal forms */
+        /** VAT codes, units of measure, legal forms, payment terms and methods, tax regimes */
         get: operations["ReferenceDataController_referenceData"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/companies/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The invoice header data of the current company */
+        get: operations["CompaniesController_current"];
+        /** Change the invoice header data of the current company */
+        put: operations["CompaniesController_update"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1169,6 +1187,9 @@ export interface components {
             phone: string | null;
             pecEmail: string | null;
             sdiCode: string | null;
+            paymentTerms: string | null;
+            paymentMethod: string | null;
+            documentLanguage: string | null;
             notes: string | null;
             version: number;
             archivedAt: string | null;
@@ -1202,6 +1223,12 @@ export interface components {
             pecEmail?: string | null;
             /** @example 0000000 */
             sdiCode?: string | null;
+            /** @example 30FM */
+            paymentTerms?: string | null;
+            /** @example MP05 */
+            paymentMethod?: string | null;
+            /** @example it */
+            documentLanguage?: string | null;
             notes?: string | null;
         };
         UpdatePartyDto: {
@@ -1231,6 +1258,12 @@ export interface components {
             pecEmail?: string | null;
             /** @example 0000000 */
             sdiCode?: string | null;
+            /** @example 30FM */
+            paymentTerms?: string | null;
+            /** @example MP05 */
+            paymentMethod?: string | null;
+            /** @example it */
+            documentLanguage?: string | null;
             notes?: string | null;
             /** @example 1 */
             version: number;
@@ -1340,10 +1373,102 @@ export interface components {
             /** @enum {string|null} */
             category: "CAPITAL" | "PARTNERSHIP" | "COOPERATIVE" | "CONSORTIUM" | null;
         };
+        PaymentInstalmentDto: {
+            /** @example 30 */
+            days: number;
+            /** @description Whole months, on the last day of the month */
+            endOfMonth: boolean;
+        };
+        PaymentTermsDto: {
+            /** @example 30-60FM */
+            code: string;
+            instalments: components["schemas"]["PaymentInstalmentDto"][];
+        };
         ReferenceDataDto: {
             vatCodes: components["schemas"]["VatCodeDto"][];
             units: components["schemas"]["UnitDto"][];
             legalForms: components["schemas"]["LegalFormDto"][];
+            paymentTerms: components["schemas"]["PaymentTermsDto"][];
+            /**
+             * @example [
+             *       "MP05"
+             *     ]
+             */
+            paymentMethods: string[];
+            /**
+             * @example [
+             *       "RF01"
+             *     ]
+             */
+            taxRegimes: string[];
+            /**
+             * @example [
+             *       "it",
+             *       "en"
+             *     ]
+             */
+            documentLanguages: string[];
+        };
+        CompanyDto: {
+            id: string;
+            legalName: string;
+            vatNumber: string;
+            taxCode: string | null;
+            /** @example IT */
+            country: string;
+            address: string | null;
+            postalCode: string | null;
+            city: string | null;
+            province: string | null;
+            reaOffice: string | null;
+            reaNumber: string | null;
+            shareCapital: string | null;
+            soleShareholder: boolean | null;
+            inLiquidation: boolean;
+            /** @example RF01 */
+            taxRegime: string;
+            iban: string | null;
+            email: string | null;
+            pecEmail: string | null;
+            phone: string | null;
+            chargeStampDuty: boolean;
+            /**
+             * @description Fields an invoice needs and the company lacks; empty when it can issue
+             * @example [
+             *       "address"
+             *     ]
+             */
+            missingForInvoices: string[];
+            version: number;
+        };
+        UpdateCompanyDto: {
+            /** @example 1 */
+            version: number;
+            /** @example Via Roma 1 */
+            address?: string | null;
+            /** @example 20121 */
+            postalCode?: string | null;
+            /** @example Milano */
+            city?: string | null;
+            /** @example MI */
+            province?: string | null;
+            /** @example MI */
+            reaOffice?: string | null;
+            /** @example 1234567 */
+            reaNumber?: string | null;
+            /** @example 10000.00 */
+            shareCapital?: string | null;
+            soleShareholder?: boolean | null;
+            inLiquidation?: boolean;
+            /** @example RF01 */
+            taxRegime?: string;
+            /** @example IT60X0542811101000000123456 */
+            iban?: string | null;
+            email?: string | null;
+            pecEmail?: string | null;
+            phone?: string | null;
+            /** @description Charge the stamp duty of exempt invoices to the customer */
+            chargeStampDuty?: boolean;
         };
         WarehouseDto: {
             id: string;
@@ -1939,7 +2064,7 @@ export interface operations {
                 sort?: string;
                 /** @description Text to search for */
                 q?: string;
-                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED" | "WAREHOUSE_CREATED" | "WAREHOUSE_UPDATED" | "WAREHOUSE_ARCHIVED" | "WAREHOUSE_RESTORED" | "STOCK_DOCUMENT_POSTED" | "STOCK_DOCUMENT_REVERSED" | "REORDER_LEVEL_SET" | "REORDER_LEVEL_REMOVED" | "ORDER_CREATED" | "ORDER_UPDATED" | "ORDER_DELETED" | "ORDER_CONFIRMED" | "ORDER_RESERVED" | "ORDER_CLOSED" | "ORDER_CANCELLED" | "ORDER_FULFILLED" | "ORDER_FULFILMENT_REVERSED";
+                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "COMPANY_UPDATED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED" | "WAREHOUSE_CREATED" | "WAREHOUSE_UPDATED" | "WAREHOUSE_ARCHIVED" | "WAREHOUSE_RESTORED" | "STOCK_DOCUMENT_POSTED" | "STOCK_DOCUMENT_REVERSED" | "REORDER_LEVEL_SET" | "REORDER_LEVEL_REMOVED" | "ORDER_CREATED" | "ORDER_UPDATED" | "ORDER_DELETED" | "ORDER_CONFIRMED" | "ORDER_RESERVED" | "ORDER_CLOSED" | "ORDER_CANCELLED" | "ORDER_FULFILLED" | "ORDER_FULFILMENT_REVERSED";
                 /** @description From this instant (ISO 8601), inclusive */
                 from?: string;
                 /** @description Until this instant (ISO 8601), exclusive */
@@ -2573,6 +2698,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReferenceDataDto"];
+                };
+            };
+        };
+    };
+    CompaniesController_current: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyDto"];
+                };
+            };
+        };
+    };
+    CompaniesController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCompanyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyDto"];
                 };
             };
         };

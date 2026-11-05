@@ -249,6 +249,9 @@ function dataOf(party: Party): PartyData {
     phone: party.phone,
     pecEmail: party.pecEmail,
     sdiCode: party.sdiCode,
+    paymentTerms: party.paymentTerms,
+    paymentMethod: party.paymentMethod,
+    documentLanguage: party.documentLanguage,
     notes: party.notes,
   };
 }

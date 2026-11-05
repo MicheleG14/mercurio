@@ -2,7 +2,7 @@ import { MembershipRole } from '../../generated/prisma/client.js';
 import { PERMISSIONS, type Permission, permissionsFor } from './permissions.js';
 
 // The matrix, row by row: a change here must be a deliberate decision (docs/adr/0014, 0018
-// for the registry, 0021 for the warehouse, 0024 for orders), not a side effect.
+// for the registry, 0021 for the warehouse, 0024 for orders, 0030 for invoicing), not a side effect.
 const EXPECTED: Record<MembershipRole, Permission[]> = {
   ADMIN: [...PERMISSIONS],
   WAREHOUSE_KEEPER: [
@@ -25,6 +25,7 @@ const EXPECTED: Record<MembershipRole, Permission[]> = {
     'invoicing:read',
     'invoicing:write',
     'invoicing:issue',
+    'payments:write',
   ],
   READ_ONLY: ['parties:read', 'items:read', 'stock:read', 'orders:read', 'invoicing:read'],
 };
@@ -45,9 +46,10 @@ describe('role permissions', () => {
     expect(permissionsFor('READ_ONLY').every((p) => p.endsWith(':read'))).toBe(true);
   });
 
-  it('lets only administrators set up warehouses', () => {
+  it('lets only administrators set up warehouses and the company data', () => {
     for (const role of Object.values(MembershipRole)) {
       expect(permissionsFor(role).includes('warehouses:manage')).toBe(role === 'ADMIN');
+      expect(permissionsFor(role).includes('companies:manage')).toBe(role === 'ADMIN');
     }
   });
 });

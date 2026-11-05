@@ -6,7 +6,7 @@ import {
   italianVatNumberProblem,
   stripItalianPrefix,
 } from '../../shared/italian-identifiers.js';
-import { isLegalForm } from './catalogs.js';
+import { isDocumentLanguage, isLegalForm, isPaymentMethod, isPaymentTerms } from './catalogs.js';
 import { FieldErrors, optionalLine, optionalText } from '../../shared/errors/index.js';
 
 /** What a person fills in for a party: the form, before any rule is applied. */
@@ -30,6 +30,11 @@ export interface PartyInput {
   phone?: string | null;
   pecEmail?: string | null;
   sdiCode?: string | null;
+  /** Proposed on the customer's invoices (phase 5), from the catalogs. */
+  paymentTerms?: string | null;
+  paymentMethod?: string | null;
+  /** Language of the documents printed for the party; empty follows the country. */
+  documentLanguage?: string | null;
   notes?: string | null;
 }
 
@@ -53,6 +58,9 @@ export interface PartyData {
   phone: string | null;
   pecEmail: string | null;
   sdiCode: string | null;
+  paymentTerms: string | null;
+  paymentMethod: string | null;
+  documentLanguage: string | null;
   notes: string | null;
 }
 
@@ -133,6 +141,20 @@ export function normalizeParty(input: PartyInput): PartyData {
   const sdiCode = optionalText(input.sdiCode)?.toUpperCase() ?? null;
   if (sdiCode && !/^[A-Z0-9]{7}$/.test(sdiCode)) errors.add('sdiCode', 'SDI_CODE_INVALID');
 
+  // What the invoices of the party propose: codes of the catalogs.
+  const paymentTerms = optionalText(input.paymentTerms)?.toUpperCase() ?? null;
+  if (paymentTerms && !isPaymentTerms(paymentTerms)) {
+    errors.add('paymentTerms', 'PAYMENT_TERMS_UNKNOWN');
+  }
+  const paymentMethod = optionalText(input.paymentMethod)?.toUpperCase() ?? null;
+  if (paymentMethod && !isPaymentMethod(paymentMethod)) {
+    errors.add('paymentMethod', 'PAYMENT_METHOD_UNKNOWN');
+  }
+  const documentLanguage = optionalText(input.documentLanguage)?.toLowerCase() ?? null;
+  if (documentLanguage && !isDocumentLanguage(documentLanguage)) {
+    errors.add('documentLanguage', 'LANGUAGE_UNKNOWN');
+  }
+
   errors.throwIfAny();
   return {
     kind: input.kind,
@@ -153,6 +175,9 @@ export function normalizeParty(input: PartyInput): PartyData {
     phone: optionalLine(input.phone),
     pecEmail: optionalText(input.pecEmail)?.toLowerCase() ?? null,
     sdiCode,
+    paymentTerms,
+    paymentMethod,
+    documentLanguage,
     notes: optionalText(input.notes),
   };
 }
