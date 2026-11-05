@@ -117,6 +117,13 @@ yours. For facts recorded before a listener existed, give the operator a command
 again (`republish-fulfilments`), and a check command for any projection the listener keeps
 (`verify-invoicing`).
 
+## Pictures of the README
+
+The pictures in `docs/images` come from the browser tests on the demo: CI saves them in the
+`responsive-screens` artifact (`readme-*.png`). When the interface changes, download the artifact
+of a green run and copy the `readme-*.png` files into `docs/images` in a commit of their own. They
+are not refreshed on every run: a picture that changes at each commit tells nothing.
+
 ## The FatturaPA schema
 
 Tests validate every FatturaPA file against the official schema, kept unchanged in

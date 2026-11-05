@@ -121,6 +121,19 @@ term; the interface uses the term of the selected language.
 | reason for transport | causale del trasporto   | Why goods travel, printed on the delivery note (sale, by default)                                                     |
 | event                | evento                  | A fact a module publishes (`OrderFulfilledEvent`), heard by others in the same transaction                            |
 
+## Overview and FatturaPA
+
+| Code (English)   | Italiano             | Meaning                                                                                     |
+| ---------------- | -------------------- | ------------------------------------------------------------------------------------------- |
+| overview         | panoramica           | The landing page: counters of today, and the charts of a year                               |
+| aging bucket     | fascia di ritardo    | Open amounts grouped by days past the due date: not due, 1-30, 31-60, 61-90, over 90        |
+| backlog          | da evadere           | What is left to ship on the open sales orders, valued at their prices                       |
+| FatturaPA        | FatturaPA            | The Italian XML format of an electronic invoice; FPR12 is the one between businesses        |
+| sending number   | progressivo di invio | The five characters that tell apart the files a sender produces                             |
+| sender           | trasmittente         | Who sends the file to the exchange system: here, the company itself                         |
+| destination code | codice destinatario  | Where the exchange system delivers the file: a code, `0000000` with a PEC, `XXXXXXX` abroad |
+| reference day    | data di riferimento  | The last day of the demo's history (`--today`)                                              |
+
 ## Status codes
 
 Examples of values stored in the database and returned by the API ([G2a](conventions.md)); the

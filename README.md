@@ -8,17 +8,20 @@
 A vertical ERP for warehouse and invoicing, built as a modular monolith with NestJS and React.
 Named after Mercury, the Roman god of commerce.
 
-> **Status: phase 5.** People sign in with mandatory two-factor authentication and work from a
-> desktop, a tablet or a phone on the registry (customers, suppliers and items, with Italian tax
-> checks), on the warehouse (documents that are never changed, only reversed; stock computed from
-> the movements and never below zero, even with simultaneous requests; reorder levels) and on
-> orders: purchase orders received in parts, sales orders that reserve the goods available and are
-> shipped in parts, with prices and VAT; and on invoicing: invoices from shipments or by hand,
-> issued once and never changed, credit notes, due dates and payments, documents in PDF. Every
-> change is in the activity log. Every phase ships a complete vertical slice (database → API → UI) to
-> production. See the [roadmap](#roadmap).
+> **Status: 1.0, the planned scope is complete.** People sign in with mandatory two-factor
+> authentication and work from a desktop, a tablet or a phone on the registry, the warehouse, orders
+> and invoicing; the overview charts the year. Every phase shipped a complete vertical slice
+> (database → API → UI) to production. A [tour](docs/tour.md) follows one order from the customer
+> to the payment.
 
-## What it will do
+![The overview: the year month by month, what customers owe by delay, top customers](docs/images/readme-overview-light.png)
+
+<p>
+  <img src="docs/images/readme-invoice-light.png" alt="An issued invoice, with its PDF and FatturaPA file" width="66%" />
+  <img src="docs/images/readme-phone-due-dates.png" alt="The payment schedule on a phone" width="30%" />
+</p>
+
+## What it does
 
 - **Multi-tenant**: several customers on one installation, each with one or more companies and only
   the modules it bought; one identity per person across customers. Isolation is enforced by the
@@ -39,8 +42,14 @@ Named after Mercury, the Roman god of commerce.
   dates growing together; issued documents the database itself refuses to change, corrected only by
   credit notes; seller and customer copied when issued; stamp duty on exempt invoices; due dates
   from payment terms, payments and refunds, a payment schedule; invoices, credit notes and delivery
-  notes in PDF, in the customer's language.
+  notes in PDF, in the customer's language; invoices and credit notes as **FatturaPA** files,
+  validated against the official schema.
+- **Overview**: invoiced and collected month by month, what customers owe by days overdue, top
+  customers, sales ordered and shipped, stock movements; each chart with its table, each figure
+  with the permission of the page it comes from.
 - **Security**: sign-in with TOTP two-factor authentication, roles, audit log.
+- **Demo**: two fictitious tenants with twelve months of history, written through the same rules as
+  the API, showing every feature at least once.
 
 ## Stack
 
@@ -83,12 +92,38 @@ Named after Mercury, the Roman god of commerce.
 - **Edit conflicts and archiving**: records carry a version, so a change based on an old one is
   refused instead of overwriting someone else's; records are archived, never deleted.
 
+## Modules
+
+```mermaid
+flowchart LR
+    tenancy[tenancy<br/>tenants · companies · modules]
+    identity[identity · auth · audit]
+    registry[registry<br/>parties · items]
+    warehouse[warehouse<br/>documents · stock]
+    orders[orders<br/>purchases · sales]
+    invoicing[invoicing<br/>invoices · payments · PDF · FatturaPA]
+
+    identity --> tenancy
+    warehouse --> registry
+    orders --> registry
+    orders --> warehouse
+    invoicing --> registry
+    invoicing --> tenancy
+    invoicing -. OrderFulfilledEvent .-> orders
+```
+
+Solid arrows are public services and published views, the dotted one an event: invoicing hears the
+shipments of orders, and orders do not know invoicing exists. A module that is not enabled for a
+tenant is simply absent. `pnpm check:boundaries` fails CI on any other import between modules
+([architecture](docs/architecture.md#modules)).
+
 ## Documentation
 
+- [Tour](docs/tour.md): one order from the customer to the payment, screen by screen
 - [Architecture](docs/architecture.md): runtime, data model and tenant isolation, modules, request lifecycle
 - [Conventions](docs/conventions.md): the rules the code follows
 - [Glossary](docs/glossary.md): domain terms, English ↔ Italian
-- [Architecture decision records](docs/adr/)
+- [Architecture decision records](docs/adr/README.md)
 - [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
 
 ## Run it locally
@@ -101,7 +136,7 @@ docker compose up -d db          # PostgreSQL on 127.0.0.1:5432
 pnpm install
 pnpm generate                    # Prisma client
 pnpm db:setup                    # migrations, then the login of the API's database role
-pnpm seed:demo                   # optional: two fictitious tenants with their registry (see below)
+pnpm seed:demo                   # optional: two fictitious tenants, twelve months of history
 
 pnpm dev:api                     # API on http://127.0.0.1:3000/api (docs at /api/docs)
 pnpm dev:web                     # web app on http://127.0.0.1:5173
@@ -111,16 +146,19 @@ The demo people (for example `anna.rossi@example.com`, see `apps/api/src/cli/see
 with the password `Demo-password-2026` and the authenticator secret `JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP`:
 add it to any authenticator app to get the codes. These credentials exist only outside production.
 
-| Command                                    | What it does                                       |
-| ------------------------------------------ | -------------------------------------------------- |
-| `pnpm test` / `pnpm test:e2e`              | Unit tests / API end-to-end tests                  |
-| `pnpm --filter @mercurio/web test:browser` | Browser tests: sign-in, registry, phone and tablet |
-| `pnpm lint` / `pnpm typecheck`             | Static checks                                      |
-| `pnpm check:boundaries`                    | Module boundary check                              |
-| `pnpm openapi`                             | Regenerate the OpenAPI document and client types   |
-| `pnpm cli <command>`                       | Terminal commands (tenants, people, recovery)      |
-| `pnpm format`                              | Format the whole repository                        |
-| `pnpm build`                               | Production build of both apps                      |
+The history ends today (`pnpm cli seed-demo --today 2026-11-05` for another day); its dates do not
+move, so after some months the demo looks old: `pnpm cli reset-demo` writes it again up to today.
+
+| Command                                    | What it does                                     |
+| ------------------------------------------ | ------------------------------------------------ |
+| `pnpm test` / `pnpm test:e2e`              | Unit tests / API end-to-end tests                |
+| `pnpm --filter @mercurio/web test:browser` | Browser tests: every flow, phone and tablet, axe |
+| `pnpm lint` / `pnpm typecheck`             | Static checks                                    |
+| `pnpm check:boundaries`                    | Module boundary check                            |
+| `pnpm openapi`                             | Regenerate the OpenAPI document and client types |
+| `pnpm cli <command>`                       | Terminal commands (tenants, people, recovery)    |
+| `pnpm format`                              | Format the whole repository                      |
+| `pnpm build`                               | Production build of both apps                    |
 
 ## Production
 
@@ -149,7 +187,7 @@ deployment folder, with its settings and the version of the app that is running:
 
 `docker-compose.prod.yml` refuses to start without `MERCURIO_DEPLOYMENT`, which only
 `.env.production` sets: a command typed in a checkout, where `.env` holds the development database
-settings, cannot touch the production containers.
+settings, cannot touch the production containers ([ADR 0035](docs/adr/0035-production-compose-guard.md)).
 
 `create-tenant` and `add-user` print a one-time activation code for each new person. The person opens
 `<address>/mercurio/activate#<code>`, chooses a password, sets up an authenticator app and saves the
@@ -172,7 +210,14 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 | 3     | Warehouse: movements, stock levels, goods receipt                | ✅     |
 | 4     | Orders: purchase and sales orders, reservations, concurrency     | ✅     |
 | 5     | Invoicing: invoices, credit notes, due dates, PDF                | ✅     |
-| 6     | Polish: dashboard, architecture decision records, seed data      |        |
+| 6     | Polish: overview charts, FatturaPA files, demo history, docs     | ✅     |
+
+## Possible next steps
+
+- Transmission to the exchange system through an accredited intermediary, keeping the files sent.
+- An outbox for events, if a module ever moves to a service of its own (ADR 0027).
+- Managing people from the interface (today: terminal commands), passkeys.
+- An installable app (PWA), if working offline ever makes sense for a part of it.
 
 ## Out of scope, by choice
 
@@ -185,8 +230,8 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 - Stock valuation (average cost, FIFO), lots, serial numbers, locations and barcodes.
 - Quotes, price lists per customer, cascading discounts, reserving goods still incoming, automatic
   reordering: orders cover what is ordered, reserved and moved.
-- Transmission to the Italian e-invoicing exchange (SdI); at most, generating the FatturaPA XML.
-  The data already uses its codes (document types, natures, payment methods, tax regimes).
+- Transmission to the Italian e-invoicing exchange (SdI): Mercurio makes the FatturaPA file, it
+  does not send it, nor receive purchase invoices.
 - Split payment, withholding tax, social security contributions, the flat-rate regime's rules,
   debit notes, advance invoices, invoices that also act as delivery notes; returns generated by a
   credit note (a return is a stock document); reminders, interest on late payment, bank files.

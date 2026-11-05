@@ -34,11 +34,6 @@ still have `UPDATE` on the table: one bug, and an issued invoice changes.
 - Issued rows cannot be locked with `SELECT … FOR UPDATE` (PostgreSQL asks for an `UPDATE`
   privilege): what needs serializing on an invoice (credit notes, payments) locks its due dates.
 - The PDF is made from the saved data at every request and is the same every time.
-- **One exception, outside the API: the demo.** `reset-demo` deletes the fictitious demo tenants
-  whole, issued invoices included, and writes them again with a fresh history. It runs as the owner
-  role from the terminal, only on the slugs the demo defines, in one transaction, and never through
-  the application: the API role still cannot change or delete an issued document. A demo tenant can
-  be thrown away as a whole; a document is never changed.
 
 ## Alternatives considered
 

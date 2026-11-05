@@ -18,7 +18,7 @@ import { uuidv7 } from '../shared/uuid.js';
  * (due dates, amounts still open) is planned when the server returns them.
  */
 
-/** What the demo shows at least once; the seed reports what is missing (docs/adr/0028). */
+/** What the demo shows at least once; the seed reports what is missing (docs/adr/0034). */
 export const FEATURES = [
   'stock.opening',
   'stock.purchaseReceipt',
