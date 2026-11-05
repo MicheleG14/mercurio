@@ -2,7 +2,8 @@
   "app": {
     "name": "Mercurio",
     "tagline": "ERP per magazzino e fatturazione",
-    "demo": "Ambiente dimostrativo: tutti i dati sono fittizi."
+    "demo": "Ambiente dimostrativo: tutti i dati sono fittizi.",
+    "version": "Versione {{version}}"
   },
   "theme": {
     "label": "Tema",

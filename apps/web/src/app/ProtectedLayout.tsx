@@ -28,6 +28,7 @@ import { companyStore, useCompanyId } from '@/lib/auth/company';
 import { signOut } from '@/lib/auth/client';
 import { useMe } from '@/lib/auth/me';
 import { useBreakpoint } from '@/lib/breakpoint';
+import { useAppVersion } from '@/lib/health';
 import { unsavedChanges } from '@/lib/unsaved-changes';
 import { visibleNavigation } from './navigation';
 
@@ -111,12 +112,17 @@ function SidebarBody({ panel = false }: { panel?: boolean }) {
   const navigate = useNavigate();
   const { open, setOpenMobile } = useSidebar();
   const closePanel = () => panel && setOpenMobile(false);
+  const version = useAppVersion().data;
 
   return (
     <>
       {/* Collapsed to icons on a desktop, the toggle goes under the brand: it is the way back. */}
       <SidebarHeader className="flex-row items-center justify-between gap-2 group-data-[collapsible=icon]:flex-col">
-        <div className="flex min-w-0 items-center gap-2.5 px-1 py-1">
+        {/* The version is in the footer; collapsed to icons, the brand tells it on hover. */}
+        <div
+          className="flex min-w-0 items-center gap-2.5 px-1 py-1"
+          title={version ? t('app.version', { version }) : undefined}
+        >
           <BrandMark />
           <span className="truncate font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
             {t('app.name')}
@@ -217,6 +223,11 @@ function SidebarBody({ panel = false }: { panel?: boolean }) {
           <LanguageToggle />
           <ThemeToggle />
         </div>
+        {version && (
+          <p className="text-muted-foreground px-1 font-mono text-xs group-data-[collapsible=icon]:hidden">
+            {t('app.version', { version })}
+          </p>
+        )}
       </SidebarFooter>
     </>
   );
@@ -243,7 +254,7 @@ function TopBar() {
         </span>
       ) : (
         <div className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-1 py-2 text-sm">
-          <TenantContext />
+          <TenantContext inline />
           <CompanySelect />
         </div>
       )}
@@ -251,15 +262,19 @@ function TopBar() {
   );
 }
 
-/** The current customer, with the way to switch when the person has several. */
-function TenantContext({ onLeave }: { onLeave?: () => void }) {
+/**
+ * The current customer, with the way to switch when the person has several. `inline` lays name
+ * and button out as items of the top bar, so the button sits as far from the customer as from the
+ * company; in the panel they share a row, the button on the right.
+ */
+function TenantContext({ onLeave, inline = false }: { onLeave?: () => void; inline?: boolean }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const me = useMe().data;
   if (!me?.tenant) return null;
 
   return (
-    <div className="flex items-center justify-between gap-1">
+    <div className={inline ? 'contents' : 'flex items-center justify-between gap-1'}>
       <span>
         <span className="text-muted-foreground">{t('context.tenant')}: </span>
         <span className="font-medium">{me.tenant.name}</span>
