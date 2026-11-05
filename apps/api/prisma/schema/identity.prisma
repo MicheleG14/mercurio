@@ -21,6 +21,9 @@ model User {
   stockDocuments   StockDocument[]
   orders           Order[]
   orderFulfilments OrderFulfilment[]
+  invoiceDrafts    InvoiceDraft[]    @relation("InvoiceDraftCreator")
+  invoicesIssued   Invoice[]         @relation("InvoiceIssuer")
+  payments         Payment[]         @relation("PaymentCreator")
 
   @@map("users")
 }

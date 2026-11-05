@@ -1,0 +1,379 @@
+// Module `invoicing`: invoices and credit notes of a company, the shipments of sales orders still
+// to invoice, due dates and payments. Per company (S2), with composite foreign keys that keep a
+// document, its lines, its due dates and its payments inside one company. See docs/adr/0027-0030.
+// Drafts live in tables of their own; an issued document is insert-only for the API role (B37):
+// no UPDATE, no DELETE, so not even a bug can change an issued invoice. What changes after issue
+// (how much is settled) is kept apart, on the due dates.
+// Written by hand in the migration: checks and grants.
+
+/// An invoice (TD01 in the e-invoice) or a credit note (TD04) correcting an issued invoice.
+enum InvoiceKind {
+  INVOICE
+  CREDIT_NOTE
+
+  @@map("invoice_kind")
+}
+
+/// A payment received from a customer, or a refund paid back to one (a credit note in excess).
+enum PaymentKind {
+  RECEIPT
+  REFUND
+
+  @@map("payment_kind")
+}
+
+/// A shipment of a sales order, as the orders module published it (OrderFulfilledEvent): what
+/// invoicing knows of orders, kept as opaque references without foreign keys to them (B35).
+model InvoiceableFulfilment {
+  /// The id of the shipment in the orders module.
+  fulfilmentId       String    @id @map("fulfilment_id") @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  companyId          String    @map("company_id") @db.Uuid
+  partyId            String    @map("party_id") @db.Uuid
+  orderId            String    @map("order_id") @db.Uuid
+  /// "OC-2026/0012", and the customer's own reference of the order.
+  orderReference     String    @map("order_reference")
+  partyReference     String?   @map("party_reference")
+  partyReferenceDate DateTime? @map("party_reference_date") @db.Date
+  /// The delivery note: "SC-2026/0031" and its date.
+  documentId         String    @map("document_id") @db.Uuid
+  documentReference  String    @map("document_reference")
+  documentDate       DateTime  @map("document_date") @db.Date
+  /// The draft that takes it, if any: a shipment is in one draft at most.
+  draftId            String?   @map("draft_id") @db.Uuid
+  /// The invoice that invoiced it: set once, when the invoice is issued.
+  invoiceId          String?   @map("invoice_id") @db.Uuid
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  tenant  Tenant            @relation(fields: [tenantId], references: [id])
+  company Company           @relation(fields: [tenantId, companyId], references: [tenantId, id])
+  party   Party             @relation(fields: [tenantId, partyId], references: [tenantId, id])
+  draft   InvoiceDraft?     @relation(fields: [tenantId, companyId, draftId], references: [tenantId, companyId, id], onDelete: Restrict)
+  invoice Invoice?          @relation(fields: [tenantId, companyId, invoiceId], references: [tenantId, companyId, id])
+  lines   InvoiceableLine[]
+
+  @@unique([tenantId, fulfilmentId])
+  @@unique([tenantId, companyId, fulfilmentId])
+  @@index([tenantId, companyId, partyId, documentDate])
+  @@map("invoiceable_fulfilments")
+}
+
+/// A line of a shipment to invoice, with what the order agreed: price, discount, VAT.
+model InvoiceableLine {
+  tenantId        String  @map("tenant_id") @db.Uuid
+  fulfilmentId    String  @map("fulfilment_id") @db.Uuid
+  orderLineId     String  @map("order_line_id") @db.Uuid
+  lineNo          Int     @map("line_no")
+  itemId          String  @map("item_id") @db.Uuid
+  description     String
+  unit            String
+  quantity        Decimal @db.Decimal(14, 3)
+  unitPrice       Decimal @map("unit_price") @db.Decimal(14, 4)
+  discountPercent Decimal @map("discount_percent") @db.Decimal(5, 2)
+  vatCode         String  @map("vat_code")
+  vatRate         Decimal @map("vat_rate") @db.Decimal(5, 2)
+  vatNature       String? @map("vat_nature")
+
+  tenant      Tenant                @relation(fields: [tenantId], references: [id])
+  fulfilment  InvoiceableFulfilment @relation(fields: [tenantId, fulfilmentId], references: [tenantId, fulfilmentId])
+  item        Item                  @relation(fields: [tenantId, itemId], references: [tenantId, id])
+  draftLines  InvoiceDraftLine[]
+  invoiceLine InvoiceLine?
+
+  @@id([fulfilmentId, orderLineId])
+  @@unique([tenantId, fulfilmentId, orderLineId])
+  @@map("invoiceable_lines")
+}
+
+/// An invoice or a credit note being prepared: no number, everything editable, deletable.
+model InvoiceDraft {
+  /// Chosen by the client (B33); the issued document gets the same id.
+  id                String      @id @db.Uuid
+  tenantId          String      @map("tenant_id") @db.Uuid
+  companyId         String      @map("company_id") @db.Uuid
+  kind              InvoiceKind
+  /// The customer; may be empty while the draft is being started.
+  partyId           String?     @map("party_id") @db.Uuid
+  /// The invoice a credit note corrects.
+  creditedInvoiceId String?     @map("credited_invoice_id") @db.Uuid
+  /// Language of the printed document (G2b); empty follows the customer.
+  language          String?
+  paymentTerms      String?     @map("payment_terms")
+  paymentMethod     String?     @map("payment_method")
+  notes             String?
+  /// Totals of the lines (B36), kept with them for lists; recomputed at every save.
+  taxableTotal      Decimal     @default(0) @map("taxable_total") @db.Decimal(14, 2)
+  vatTotal          Decimal     @default(0) @map("vat_total") @db.Decimal(14, 2)
+  total             Decimal     @default(0) @db.Decimal(14, 2)
+  version           Int         @default(1)
+  createdById       String?     @map("created_by_id") @db.Uuid
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant          Tenant                  @relation(fields: [tenantId], references: [id])
+  company         Company                 @relation(fields: [tenantId, companyId], references: [tenantId, id])
+  party           Party?                  @relation(fields: [tenantId, partyId], references: [tenantId, id])
+  creditedInvoice Invoice?                @relation("DraftCredits", fields: [tenantId, companyId, creditedInvoiceId], references: [tenantId, companyId, id])
+  createdBy       User?                   @relation("InvoiceDraftCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  lines           InvoiceDraftLine[]
+  fulfilments     InvoiceableFulfilment[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, companyId, id])
+  @@index([tenantId, companyId, createdAt(sort: Desc)])
+  @@map("invoice_drafts")
+}
+
+/// A line of a draft: an item or a service, a line of a shipment, or a description only.
+model InvoiceDraftLine {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  companyId       String   @map("company_id") @db.Uuid
+  draftId         String   @map("draft_id") @db.Uuid
+  lineNo          Int      @map("line_no")
+  itemId          String?  @map("item_id") @db.Uuid
+  description     String
+  /// Empty for a description-only line, with quantity, price and VAT.
+  unit            String?
+  quantity        Decimal? @db.Decimal(14, 3)
+  unitPrice       Decimal? @map("unit_price") @db.Decimal(14, 4)
+  discountPercent Decimal  @default(0) @map("discount_percent") @db.Decimal(5, 2)
+  vatCode         String?  @map("vat_code")
+  vatRate         Decimal? @map("vat_rate") @db.Decimal(5, 2)
+  vatNature       String?  @map("vat_nature")
+  lineAmount      Decimal? @map("line_amount") @db.Decimal(14, 2)
+  /// The line of a shipment it invoices: its quantity is fixed.
+  fulfilmentId    String?  @map("fulfilment_id") @db.Uuid
+  orderLineId     String?  @map("order_line_id") @db.Uuid
+  /// The line of the credited invoice a credit note line corrects.
+  creditedLineId  String?  @map("credited_line_id") @db.Uuid
+  /// The stamp duty charged to the customer (excluded from VAT, art. 15).
+  stampDutyCharge Boolean  @default(false) @map("stamp_duty_charge")
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  draft           InvoiceDraft     @relation(fields: [tenantId, companyId, draftId], references: [tenantId, companyId, id], onDelete: Cascade)
+  item            Item?            @relation("InvoiceDraftLineItem", fields: [tenantId, itemId], references: [tenantId, id])
+  invoiceableLine InvoiceableLine? @relation(fields: [tenantId, fulfilmentId, orderLineId], references: [tenantId, fulfilmentId, orderLineId])
+  creditedLine    InvoiceLine?     @relation("DraftLineCredits", fields: [tenantId, companyId, creditedLineId], references: [tenantId, companyId, id])
+
+  @@unique([draftId, lineNo])
+  @@index([tenantId, draftId])
+  @@map("invoice_draft_lines")
+}
+
+/// An issued invoice or credit note: numbered, immutable (insert-only for the API role, B37).
+model Invoice {
+  /// The id of the draft it was issued from (B33: issuing twice finds this one).
+  id                String      @id @db.Uuid
+  tenantId          String      @map("tenant_id") @db.Uuid
+  companyId         String      @map("company_id") @db.Uuid
+  kind              InvoiceKind
+  /// Numbering series (FT invoices, NC credit notes), year of the document date and number.
+  series            String
+  year              Int
+  number            Int
+  issueDate         DateTime    @map("issue_date") @db.Date
+  partyId           String      @map("party_id") @db.Uuid
+  creditedInvoiceId String?     @map("credited_invoice_id") @db.Uuid
+  /// Seller and customer as they were when issued: what the document prints, forever.
+  seller            Json
+  customer          Json
+  language          String
+  paymentTerms      String      @map("payment_terms")
+  paymentMethod     String      @map("payment_method")
+  /// Where to pay by bank transfer, copied from the company.
+  iban              String?
+  notes             String?
+  /// Totals (B36): taxable and VAT from the VAT summary, the stamp duty, and what is due.
+  taxableTotal      Decimal     @map("taxable_total") @db.Decimal(14, 2)
+  vatTotal          Decimal     @map("vat_total") @db.Decimal(14, 2)
+  /// 2.00 when the invoice needs the stamp duty, paid by the seller (virtual stamp), else 0.
+  stampDuty         Decimal     @map("stamp_duty") @db.Decimal(14, 2)
+  total             Decimal     @db.Decimal(14, 2)
+  issuedById        String?     @map("issued_by_id") @db.Uuid
+  issuedAt          DateTime    @default(now()) @map("issued_at") @db.Timestamptz(6)
+
+  tenant          Tenant                  @relation(fields: [tenantId], references: [id])
+  company         Company                 @relation(fields: [tenantId, companyId], references: [tenantId, id])
+  party           Party                   @relation(fields: [tenantId, partyId], references: [tenantId, id])
+  creditedInvoice Invoice?                @relation("Credits", fields: [tenantId, companyId, creditedInvoiceId], references: [tenantId, companyId, id])
+  creditNotes     Invoice[]               @relation("Credits")
+  draftCredits    InvoiceDraft[]          @relation("DraftCredits")
+  issuedBy        User?                   @relation("InvoiceIssuer", fields: [issuedById], references: [id], onDelete: Restrict)
+  lines           InvoiceLine[]
+  vatRows         InvoiceVatRow[]
+  dueDates        InvoiceDueDate[]
+  fulfilments     InvoiceableFulfilment[]
+  creditsGiven    CreditAllocation[]      @relation("CreditNoteAllocations")
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, companyId, id])
+  @@unique([tenantId, companyId, series, year, number])
+  @@index([tenantId, companyId, issueDate(sort: Desc)])
+  @@index([tenantId, partyId])
+  @@map("invoices")
+}
+
+/// A line of an issued document.
+model InvoiceLine {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  companyId       String   @map("company_id") @db.Uuid
+  invoiceId       String   @map("invoice_id") @db.Uuid
+  lineNo          Int      @map("line_no")
+  itemId          String?  @map("item_id") @db.Uuid
+  description     String
+  unit            String?
+  quantity        Decimal? @db.Decimal(14, 3)
+  unitPrice       Decimal? @map("unit_price") @db.Decimal(14, 4)
+  discountPercent Decimal  @default(0) @map("discount_percent") @db.Decimal(5, 2)
+  vatCode         String?  @map("vat_code")
+  vatRate         Decimal? @map("vat_rate") @db.Decimal(5, 2)
+  vatNature       String?  @map("vat_nature")
+  lineAmount      Decimal? @map("line_amount") @db.Decimal(14, 2)
+  /// The line of a shipment it invoiced: unique, a shipped line is invoiced once.
+  fulfilmentId    String?  @map("fulfilment_id") @db.Uuid
+  orderLineId     String?  @map("order_line_id") @db.Uuid
+  creditedLineId  String?  @map("credited_line_id") @db.Uuid
+  stampDutyCharge Boolean  @default(false) @map("stamp_duty_charge")
+
+  tenant          Tenant             @relation(fields: [tenantId], references: [id])
+  invoice         Invoice            @relation(fields: [tenantId, companyId, invoiceId], references: [tenantId, companyId, id])
+  item            Item?              @relation("InvoiceLineItem", fields: [tenantId, itemId], references: [tenantId, id])
+  invoiceableLine InvoiceableLine?   @relation(fields: [tenantId, fulfilmentId, orderLineId], references: [tenantId, fulfilmentId, orderLineId])
+  creditedLine    InvoiceLine?       @relation("LineCredits", fields: [tenantId, companyId, creditedLineId], references: [tenantId, companyId, id])
+  creditedBy      InvoiceLine[]      @relation("LineCredits")
+  draftCredits    InvoiceDraftLine[] @relation("DraftLineCredits")
+
+  @@unique([tenantId, companyId, id])
+  @@unique([tenantId, fulfilmentId, orderLineId])
+  @@unique([invoiceId, lineNo])
+  @@index([tenantId, creditedLineId])
+  @@map("invoice_lines")
+}
+
+/// The VAT summary of an issued document, as computed when issued (B36): printed, never recomputed.
+model InvoiceVatRow {
+  tenantId  String  @map("tenant_id") @db.Uuid
+  companyId String  @map("company_id") @db.Uuid
+  invoiceId String  @map("invoice_id") @db.Uuid
+  vatCode   String  @map("vat_code")
+  vatRate   Decimal @map("vat_rate") @db.Decimal(5, 2)
+  vatNature String? @map("vat_nature")
+  taxable   Decimal @db.Decimal(14, 2)
+  vat       Decimal @db.Decimal(14, 2)
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  invoice Invoice @relation(fields: [tenantId, companyId, invoiceId], references: [tenantId, companyId, id])
+
+  @@id([invoiceId, vatCode])
+  @@map("invoice_vat_rows")
+}
+
+/// Last number and last date used per company, series and year (B38): number and date grow together.
+model InvoiceCounter {
+  tenantId   String   @map("tenant_id") @db.Uuid
+  companyId  String   @map("company_id") @db.Uuid
+  series     String
+  year       Int
+  lastNumber Int      @map("last_number")
+  lastDate   DateTime @map("last_date") @db.Date
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  company Company @relation(fields: [tenantId, companyId], references: [tenantId, id])
+
+  @@id([companyId, series, year])
+  @@map("invoice_counters")
+}
+
+/// When an issued document is due: an instalment of an invoice, or what a credit note gives back
+/// beyond what was still open. `settled_amount` is a projection (B11) of payments and credit notes.
+model InvoiceDueDate {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  companyId     String   @map("company_id") @db.Uuid
+  invoiceId     String   @map("invoice_id") @db.Uuid
+  seq           Int
+  dueDate       DateTime @map("due_date") @db.Date
+  amount        Decimal  @db.Decimal(14, 2)
+  settledAmount Decimal  @default(0) @map("settled_amount") @db.Decimal(14, 2)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant      Tenant              @relation(fields: [tenantId], references: [id])
+  invoice     Invoice             @relation(fields: [tenantId, companyId, invoiceId], references: [tenantId, companyId, id])
+  allocations PaymentAllocation[]
+  credits     CreditAllocation[]
+
+  @@unique([tenantId, companyId, id])
+  @@unique([invoiceId, seq])
+  @@index([tenantId, companyId, dueDate])
+  @@map("invoice_due_dates")
+}
+
+/// A payment from a customer, or a refund to one; undone by another payment that reverses it.
+model Payment {
+  /// Chosen by the client (B33).
+  id          String      @id @db.Uuid
+  tenantId    String      @map("tenant_id") @db.Uuid
+  companyId   String      @map("company_id") @db.Uuid
+  kind        PaymentKind
+  partyId     String      @map("party_id") @db.Uuid
+  paymentDate DateTime    @map("payment_date") @db.Date
+  /// Always positive; a reversal repeats it and its allocations with the opposite sign.
+  amount      Decimal     @db.Decimal(14, 2)
+  method      String
+  /// The bank's reference (CRO, TRN) or the cheque number.
+  reference   String?
+  notes       String?
+  /// The payment this one undoes. Unique: a payment is undone at most once.
+  reversesId  String?     @map("reverses_id") @db.Uuid
+  createdById String?     @map("created_by_id") @db.Uuid
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  tenant      Tenant              @relation(fields: [tenantId], references: [id])
+  company     Company             @relation(fields: [tenantId, companyId], references: [tenantId, id])
+  party       Party               @relation(fields: [tenantId, partyId], references: [tenantId, id])
+  reverses    Payment?            @relation("PaymentReversal", fields: [tenantId, companyId, reversesId], references: [tenantId, companyId, id])
+  reversedBy  Payment?            @relation("PaymentReversal")
+  createdBy   User?               @relation("PaymentCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  allocations PaymentAllocation[]
+
+  @@unique([tenantId, companyId, id])
+  @@unique([tenantId, companyId, reversesId])
+  @@index([tenantId, companyId, paymentDate(sort: Desc)])
+  @@map("payments")
+}
+
+/// How much of a payment settles one due date (negative in a reversal).
+model PaymentAllocation {
+  tenantId  String  @map("tenant_id") @db.Uuid
+  companyId String  @map("company_id") @db.Uuid
+  paymentId String  @map("payment_id") @db.Uuid
+  dueDateId String  @map("due_date_id") @db.Uuid
+  amount    Decimal @db.Decimal(14, 2)
+
+  tenant  Tenant         @relation(fields: [tenantId], references: [id])
+  payment Payment        @relation(fields: [tenantId, companyId, paymentId], references: [tenantId, companyId, id])
+  dueDate InvoiceDueDate @relation(fields: [tenantId, companyId, dueDateId], references: [tenantId, companyId, id])
+
+  @@id([paymentId, dueDateId])
+  @@index([tenantId, dueDateId])
+  @@map("payment_allocations")
+}
+
+/// How much of a credit note settles a due date of the invoice it corrects.
+model CreditAllocation {
+  tenantId     String  @map("tenant_id") @db.Uuid
+  companyId    String  @map("company_id") @db.Uuid
+  creditNoteId String  @map("credit_note_id") @db.Uuid
+  dueDateId    String  @map("due_date_id") @db.Uuid
+  amount       Decimal @db.Decimal(14, 2)
+
+  tenant     Tenant         @relation(fields: [tenantId], references: [id])
+  creditNote Invoice        @relation("CreditNoteAllocations", fields: [tenantId, companyId, creditNoteId], references: [tenantId, companyId, id])
+  dueDate    InvoiceDueDate @relation(fields: [tenantId, companyId, dueDateId], references: [tenantId, companyId, id])
+
+  @@id([creditNoteId, dueDateId])
+  @@index([tenantId, dueDateId])
+  @@map("credit_allocations")
+}
