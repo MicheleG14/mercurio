@@ -27,8 +27,16 @@ async function signIn(page: Page) {
   await page.getByLabel('Azienda:').selectOption({ label: 'Rossi Srl' });
 }
 
-/** A picture for the README, at a fixed size (docs/images, refreshed by hand). */
+/**
+ * A picture for the README, at a fixed size (docs/images, refreshed by hand). On the overview it
+ * starts at the charts: the counters above them are not what the picture is about.
+ */
 async function picture(page: Page, name: string) {
+  // A string runs in the page: this file is compiled without the DOM types.
+  await page.evaluate(
+    "document.getElementById('overview-trends')?.scrollIntoView({ block: 'start' })",
+  );
+  await page.waitForTimeout(300);
   await page.screenshot({ path: `screens/readme-${name}.png`, fullPage: false });
 }
 
