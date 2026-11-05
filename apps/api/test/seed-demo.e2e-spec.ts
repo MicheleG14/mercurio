@@ -18,7 +18,9 @@ import { OrdersModule, OrdersService } from '../src/modules/orders/index.js';
 import { RegistryModule, RegistryService } from '../src/modules/registry/index.js';
 import { TenancyModule, TenancyService } from '../src/modules/tenancy/index.js';
 import { WarehouseModule, WarehouseService } from '../src/modules/warehouse/index.js';
-import { PrismaModule, TenantDatabase } from '../src/prisma/index.js';
+import { InvoiceXmlService } from '../src/modules/invoicing/xml/invoice-xml.service.js';
+import { PrismaModule, TenantContextService, TenantDatabase } from '../src/prisma/index.js';
+import { fatturaPaErrors } from './support/fatturapa-schema.js';
 import { adminClient, deleteTenantsAndUsers, uniqueSuffix } from './support/database.js';
 
 // The demo seed (docs/conventions.md B21), created with a test suffix so it never touches the
@@ -39,6 +41,8 @@ describe('demo seed (e2e)', () => {
     orders: OrdersService;
     invoicing: InvoicingService;
   };
+  let xml: InvoiceXmlService;
+  let contexts: TenantContextService;
   let close: () => Promise<void>;
   const suffix = uniqueSuffix();
   const email = (local: string) => `${local}.${suffix}@example.com`;
@@ -105,6 +109,8 @@ describe('demo seed (e2e)', () => {
       orders: moduleRef.get(OrdersService),
       invoicing: moduleRef.get(InvoicingService),
     };
+    xml = moduleRef.get(InvoiceXmlService, { strict: false });
+    contexts = moduleRef.get(TenantContextService);
     close = () => moduleRef.close();
 
     seeded = await admin.$transaction(
@@ -258,6 +264,28 @@ describe('demo seed (e2e)', () => {
     expect(await services.invoicing.verify(admin)).toEqual([]);
     expect(await services.warehouse.verifyStock(admin)).toEqual([]);
   });
+
+  it('writes every issued document of the demo as a FatturaPA file the schema accepts', async () => {
+    const documents = await admin.invoice.findMany({
+      where: { tenantId: { in: [rossi.id, bianchi.id] } },
+      select: { id: true, tenantId: true, companyId: true },
+    });
+    expect(documents.length).toBeGreaterThan(150);
+    const refused: string[] = [];
+    const names = new Set<string>();
+    for (const document of documents) {
+      const file = await contexts.run(
+        { tenantId: document.tenantId, companyId: document.companyId },
+        () => xml.file(document.id),
+      );
+      names.add(file.fileName);
+      const errors = await fatturaPaErrors(file.xml);
+      if (errors.length > 0) refused.push(`${file.fileName}: ${errors.join('; ')}`);
+    }
+    expect(refused).toEqual([]);
+    // One sending number per document.
+    expect(names.size).toBe(documents.length);
+  }, 120_000);
 
   it('leaves the demo as it is when run again', async () => {
     const before = await story(rossi.id);

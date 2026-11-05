@@ -30,6 +30,7 @@ import { RequiresPermission } from '../identity/index.js';
 import { RequiresModule } from '../tenancy/index.js';
 import { InvoiceDraftsService } from './invoice-drafts.service.js';
 import { InvoicePdfService, type PdfFile } from './pdf/invoice-pdf.service.js';
+import { InvoiceXmlService } from './xml/invoice-xml.service.js';
 import { InvoiceIssueService } from './invoice-issue.service.js';
 import { InvoiceQueriesService } from './invoice-queries.service.js';
 import { AgingDto, InvoicingStatsDto } from './invoicing-stats.dto.js';
@@ -92,7 +93,25 @@ export class InvoicesController {
     private readonly queries: InvoiceQueriesService,
     private readonly drafts: InvoiceDraftsService,
     private readonly pdf: InvoicePdfService,
+    private readonly xml: InvoiceXmlService,
   ) {}
+
+  @Get(':id/xml')
+  @RequiresPermission('invoicing:read')
+  @ApiOperation({
+    summary: 'The issued document as a FatturaPA file (FPR12), to download: nothing is sent',
+  })
+  @ApiProduces('application/xml')
+  @ApiOkResponse({
+    description: 'The FatturaPA XML',
+    content: { 'application/xml': { schema: { type: 'string', format: 'binary' } } },
+  })
+  async fatturaPa(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response): Promise<void> {
+    const file = await this.xml.file(id);
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
+    res.send(file.xml);
+  }
 
   @Get(':id/pdf')
   @RequiresPermission('invoicing:read')

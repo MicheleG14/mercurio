@@ -14,6 +14,9 @@ a release.
   type; each with the permission of its page and the same figures as a table
   (`GET /invoicing/stats`, `/invoicing/aging`, `/orders/stats`, `/stock/stats`).
 - A period ("from", "to") on the invoice list and on the payment schedule.
+- Issued invoices and credit notes as FatturaPA files (FPR12, schema 1.2.3), to download from the
+  document (`GET /invoices/{id}/xml`): made from the saved document, never transmitted, validated
+  in the tests against the official schema.
 - The demo seed writes twelve months of history up to a reference day (`--today`, default today),
   through the same rules as the API, and shows every feature at least once. `reset-demo` deletes
   the demo tenants and writes them again, putting back the people outside the demo who belonged

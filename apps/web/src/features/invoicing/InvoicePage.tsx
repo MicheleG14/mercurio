@@ -1,4 +1,4 @@
-import { FileDownIcon } from 'lucide-react';
+import { FileCodeIcon, FileDownIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
@@ -13,7 +13,7 @@ import { formatDate } from '@/lib/format';
 import { uuidv7 } from '@/lib/uuid';
 import { useInvoicingRights, usePaymentTermsLabel, useVatLabel } from './hooks';
 import { DocumentTotals, PaymentStatusBadges } from './parts';
-import { type Invoice, useCreditNote, useInvoice, usePdf } from './queries';
+import { type Invoice, useCreditNote, useFatturaPa, useInvoice, usePdf } from './queries';
 
 /** A seller or a customer as the document printed it. */
 interface PrintedParty {
@@ -47,6 +47,7 @@ function InvoiceView({ invoice }: { invoice: Invoice }) {
   const termsLabel = usePaymentTermsLabel();
   const vatLabel = useVatLabel();
   const pdf = usePdf();
+  const fatturaPa = useFatturaPa();
   const creditNote = useCreditNote(invoice.id);
   const [crediting, setCrediting] = useState(false);
   const [creditLines, setCreditLines] = useState<Set<string>>(new Set());
@@ -81,6 +82,14 @@ function InvoiceView({ invoice }: { invoice: Invoice }) {
               <FileDownIcon data-icon="inline-start" />
               {t('detail.pdf')}
             </Button>
+            <Button
+              variant="outline"
+              disabled={fatturaPa.isPending}
+              onClick={() => fatturaPa.mutate(invoice.id)}
+            >
+              <FileCodeIcon data-icon="inline-start" />
+              {t('detail.xml')}
+            </Button>
             {rights.write && !refund && creditable.length > 0 && (
               <Button variant="outline" onClick={() => setCrediting(true)}>
                 {t('detail.creditNote')}
@@ -97,7 +106,9 @@ function InvoiceView({ invoice }: { invoice: Invoice }) {
           </div>
         }
       />
-      {(pdf.error ?? creditNote.error) && <ErrorMessage error={pdf.error ?? creditNote.error} />}
+      {(pdf.error ?? fatturaPa.error ?? creditNote.error) && (
+        <ErrorMessage error={pdf.error ?? fatturaPa.error ?? creditNote.error} />
+      )}
       <PaymentStatusBadges status={invoice.paymentStatus} overdue={invoice.overdue} />
       {crediting && (
         <section className="border-border flex flex-col gap-3 rounded-lg border p-3 text-sm">

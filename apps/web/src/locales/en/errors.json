@@ -149,5 +149,6 @@
   "PAYMENT_IS_REVERSAL": "This undoes a payment: it cannot be undone.",
   "PAYMENT_NOT_FOUND": "Payment not found.",
   "NOT_A_SALE": "Delivery notes print for sales only.",
-  "COMPANY_NOT_FOUND": "Company not found."
+  "COMPANY_NOT_FOUND": "Company not found.",
+  "XML_DATA_INCOMPLETE": "The FatturaPA file needs data that is missing: complete the customer or the company data."
 }
