@@ -185,7 +185,7 @@ function toColumns(data: ItemData) {
 
 /**
  * The columns an update writes: never stock_managed, which is fixed at creation. Writing it even
- * unchanged would need a privilege the API role is going to lose (B13, docs/adr/0021).
+ * unchanged would need a privilege the API role no longer has (B13, docs/adr/0021).
  */
 function toUpdatedColumns(data: ItemData) {
   const { stockManaged: _fixed, ...columns } = toColumns(data);
