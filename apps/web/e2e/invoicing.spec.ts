@@ -102,10 +102,10 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await page.getByRole('link', { name: 'Evadi' }).click();
   await page.getByLabel(/Da spedire/).fill('2');
   await page.getByRole('button', { name: "Registra l'evasione" }).click();
-  await expect(page.getByText('Evaso in parte', { exact: true })).toBeVisible();
+  await expect(page.getByText('Evaso in parte', { exact: true }).first()).toBeVisible();
   await page.getByRole('link', { name: 'Evadi' }).click();
   await page.getByRole('button', { name: "Registra l'evasione" }).click();
-  await expect(page.getByText('Evaso', { exact: true })).toBeVisible();
+  await expect(page.getByText('Evaso', { exact: true }).first()).toBeVisible();
 
   // Both shipments in one invoice.
   await page.getByRole('link', { name: 'Da fatturare' }).click();
@@ -122,7 +122,7 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await expect(dialog).toContainText(customer);
   await dialog.getByRole('button', { name: 'Emetti' }).click();
   await expect(page.getByRole('heading', { name: /^Fattura FT 1\/\d{4}$/ })).toBeVisible();
-  await expect(page.getByText('Da incassare', { exact: true })).toBeVisible();
+  await expect(page.getByText('Da incassare', { exact: true }).first()).toBeVisible();
   await snap(page, '3-invoice');
 
   const download = page.waitForEvent('download');
@@ -146,7 +146,7 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await page.getByRole('button', { name: 'Registra' }).click();
   await expect(page.getByRole('heading', { name: 'Incassi' })).toBeVisible();
   await page.getByRole('link', { name: /^FT 1\/\d{4}$/ }).click();
-  await expect(page.getByText('Incassata in parte', { exact: true })).toBeVisible();
+  await expect(page.getByText('Incassata in parte', { exact: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Nota di credito' }).click();
   await page.getByRole('button', { name: 'Storna tutto' }).click();
   await expect(page.getByRole('heading', { name: 'Bozza di nota di credito' })).toBeVisible();
@@ -154,7 +154,7 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await page.getByRole('alertdialog').getByRole('button', { name: 'Emetti' }).click();
   await expect(page.getByRole('heading', { name: /^Nota di credito NC 1\/\d{4}$/ })).toBeVisible();
   // It gave back 20 € more than was open: owed to the customer.
-  await expect(page.getByText('Da rimborsare', { exact: true })).toBeVisible();
+  await expect(page.getByText('Da rimborsare', { exact: true }).first()).toBeVisible();
 
   await page.getByRole('link', { name: 'Scadenziario' }).click();
   await snap(page, '4-schedule');
