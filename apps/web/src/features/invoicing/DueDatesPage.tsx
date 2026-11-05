@@ -132,7 +132,7 @@ export function DueDatesPage() {
                   to={`/invoicing/payments/new?party=${row.partyId}&kind=${row.kind === 'CREDIT_NOTE' ? 'REFUND' : 'RECEIPT'}`}
                   className="text-primary relative z-10 underline-offset-4 hover:underline"
                 >
-                  {t('dueDates.pay')}
+                  {row.kind === 'CREDIT_NOTE' ? t('dueDates.refund') : t('dueDates.pay')}
                 </Link>
               ) : null,
           },
