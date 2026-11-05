@@ -2,9 +2,15 @@
 # the server only pulls them: see deploy/deploy.sh. nginx on the host proxies /mercurio/
 # to 127.0.0.1:8001.
 #
-# The `build` sections let you build and try the same images locally:
-#   APP_VERSION=local docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
-name: mercurio-prod
+# On the server, run it only through deploy/deploy.sh and deploy/compose.sh, from the deployment
+# folder: they pass --env-file .env.production, which sets MERCURIO_DEPLOYMENT=prod. Without it
+# the file refuses to start, so a command typed in a checkout (where .env holds the development
+# database settings) cannot recreate the production containers.
+#
+# The `build` sections let you build and try the same images locally, as a separate project:
+#   MERCURIO_DEPLOYMENT=local APP_VERSION=local docker compose --env-file .env.production \
+#     -f docker-compose.prod.yml up -d --build
+name: mercurio-${MERCURIO_DEPLOYMENT:?run it from the deployment folder with --env-file .env.production (see deploy/compose.sh)}
 
 x-hardening: &hardening
   security_opt:

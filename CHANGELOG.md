@@ -5,6 +5,22 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [Unreleased]
+
+### Changed
+
+- `docker-compose.prod.yml` refuses to start without `MERCURIO_DEPLOYMENT`, set only in
+  `.env.production`, so that a command typed in a checkout cannot act on the production containers.
+  **Before deploying, add `MERCURIO_DEPLOYMENT=prod` to `.env.production`** and copy the new
+  `docker-compose.prod.yml` and `deploy/compose.sh` to the deployment folder: "prod" keeps the
+  project name and the database volume.
+- Terminal commands in production run with `./compose.sh run --rm cli <command>`.
+
+### Fixed
+
+- Reading an invoice or the list of payments no longer sends queries side by side on the
+  transaction's connection (a deprecation warning of pg, refused by pg 9).
+
 ## [0.8.0] - 2026-11-05
 
 Phase 5: invoicing. Invoices from shipments or by hand, issued once and never changed, credit

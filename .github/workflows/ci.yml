@@ -135,6 +135,22 @@ jobs:
       PUBLISH: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v7
+      # The production Compose file must refuse to start without MERCURIO_DEPLOYMENT (a command
+      # typed in a checkout would otherwise act on the production project), and with "prod" keep
+      # the project and the database volume the server already has.
+      - name: Production Compose file guard
+        run: |
+          grep -v '^MERCURIO_DEPLOYMENT=' .env.production.example > "$RUNNER_TEMP/no-deployment.env"
+          if out=$(APP_VERSION=0.0.0 docker compose --env-file "$RUNNER_TEMP/no-deployment.env" \
+              -f docker-compose.prod.yml config 2>&1); then
+            echo "docker-compose.prod.yml started without MERCURIO_DEPLOYMENT" >&2
+            exit 1
+          fi
+          grep -q MERCURIO_DEPLOYMENT <<< "$out"
+          config=$(APP_VERSION=0.0.0 docker compose --env-file .env.production.example \
+            -f docker-compose.prod.yml config --format json)
+          test "$(jq -r .name <<< "$config")" = mercurio-prod
+          test "$(jq -r '.volumes["db-data"].name' <<< "$config")" = mercurio-prod_db-data
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
         if: env.PUBLISH == 'true'
