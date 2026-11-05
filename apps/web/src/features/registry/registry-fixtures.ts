@@ -20,6 +20,13 @@ export const referenceData: ReferenceData = {
     { code: 'SNC', category: 'PARTNERSHIP' },
     { code: 'OTHER', category: null },
   ],
+  paymentTerms: [
+    { code: 'RD', instalments: [{ days: 0, endOfMonth: false }] },
+    { code: '30FM', instalments: [{ days: 30, endOfMonth: true }] },
+  ],
+  paymentMethods: ['MP01', 'MP05'],
+  taxRegimes: ['RF01', 'RF19'],
+  documentLanguages: ['it', 'en'],
 };
 
 export const party = (overrides: Partial<Party> = {}): Party => ({
@@ -43,6 +50,9 @@ export const party = (overrides: Partial<Party> = {}): Party => ({
   phone: null,
   pecEmail: null,
   sdiCode: null,
+  paymentTerms: null,
+  paymentMethod: null,
+  documentLanguage: null,
   notes: null,
   version: 3,
   archivedAt: null,

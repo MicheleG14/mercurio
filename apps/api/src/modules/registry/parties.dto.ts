@@ -82,6 +82,12 @@ export class CreatePartyDto {
   pecEmail?: string | null;
 
   @Text(7, '0000000') sdiCode?: string | null;
+  /** Proposed on the customer's invoices: a code of the payment terms catalog. */
+  @Text(20, '30FM') paymentTerms?: string | null;
+  /** Proposed on the customer's invoices: an e-invoice payment method (MP05 bank transfer). */
+  @Text(4, 'MP05') paymentMethod?: string | null;
+  /** Language of the party's documents; empty: Italian for Italy, English abroad. */
+  @Text(2, 'it') documentLanguage?: string | null;
   @Text(2000) notes?: string | null;
 }
 
@@ -122,6 +128,9 @@ export class PartyDto {
   @ApiProperty({ type: String, nullable: true }) phone!: string | null;
   @ApiProperty({ type: String, nullable: true }) pecEmail!: string | null;
   @ApiProperty({ type: String, nullable: true }) sdiCode!: string | null;
+  @ApiProperty({ type: String, nullable: true }) paymentTerms!: string | null;
+  @ApiProperty({ type: String, nullable: true }) paymentMethod!: string | null;
+  @ApiProperty({ type: String, nullable: true }) documentLanguage!: string | null;
   @ApiProperty({ type: String, nullable: true }) notes!: string | null;
   @ApiProperty() version!: number;
   @ApiProperty({ type: String, nullable: true }) archivedAt!: string | null;
@@ -141,6 +150,9 @@ export class PartySummaryDto extends OmitType(PartyDto, [
   'phone',
   'pecEmail',
   'sdiCode',
+  'paymentTerms',
+  'paymentMethod',
+  'documentLanguage',
   'notes',
   'updatedAt',
 ] as const) {}

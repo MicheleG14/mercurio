@@ -397,6 +397,90 @@ describe('registry (e2e)', () => {
     });
   });
 
+  describe('company data', () => {
+    const on = (who: keyof typeof token) => ({
+      get: () =>
+        http()
+          .get('/api/companies/current')
+          .set(bearer(token[who]))
+          .set('X-Company-Id', world.companies.a),
+      put: (body: object) =>
+        http()
+          .put('/api/companies/current')
+          .set(bearer(token[who]))
+          .set('X-Company-Id', world.companies.a)
+          .send(body),
+    });
+
+    it('lets an administrator fill in the invoice header data, at the version read', async () => {
+      const before = (await on('admin').get().expect(200)).body;
+      expect(before).toMatchObject({ taxRegime: 'RF01', chargeStampDuty: true });
+      expect(before.missingForInvoices).toEqual(['address', 'postalCode', 'city', 'province']);
+
+      const saved = await on('admin')
+        .put({
+          version: before.version,
+          address: 'Via Roma 1',
+          postalCode: '20121',
+          city: 'Milano',
+          province: 'mi',
+          iban: 'IT60 X054 2811 1010 0000 0123 456',
+        })
+        .expect(200);
+      expect(saved.body).toMatchObject({
+        province: 'MI',
+        iban: 'IT60X0542811101000000123456',
+        missingForInvoices: [],
+        version: before.version + 1,
+        legalName: before.legalName,
+      });
+
+      const stale = await on('admin').put({ version: before.version, city: 'Roma' }).expect(409);
+      expect(stale.body.code).toBe('EDIT_CONFLICT');
+      const invalid = await on('admin')
+        .put({ version: saved.body.version, iban: 'IT00X0542811101000000123456' })
+        .expect(400);
+      expect(invalid.body.errors).toEqual([
+        expect.objectContaining({ field: 'iban', code: 'IBAN_INVALID' }),
+      ]);
+
+      const events = await admin.auditEvent.findMany({
+        where: { tenantId: world.tenants.a, type: 'COMPANY_UPDATED' },
+      });
+      expect(events.at(-1)?.details).toEqual({
+        fields: ['address', 'postalCode', 'city', 'province', 'iban'],
+      });
+    });
+
+    it('shows it to who invoices, and lets only administrators change it', async () => {
+      await on('ACCOUNTANT').get().expect(200);
+      await on('READ_ONLY').get().expect(200);
+      await on('WAREHOUSE_KEEPER').get().expect(403);
+      const { version } = (await on('admin').get()).body;
+      await on('ACCOUNTANT').put({ version, city: 'Roma' }).expect(403);
+    });
+  });
+
+  describe('payment of parties', () => {
+    it('keeps the payment proposed for invoices and the language of documents', async () => {
+      const created = await as('admin')
+        .post('/parties', company({ paymentTerms: '30-60FM', paymentMethod: 'MP05' }))
+        .expect(201);
+      expect(created.body).toMatchObject({
+        paymentTerms: '30-60FM',
+        paymentMethod: 'MP05',
+        documentLanguage: null,
+      });
+      const updated = await as('admin')
+        .patch(`/parties/${created.body.id}`, { version: 1, documentLanguage: 'en' })
+        .expect(200);
+      expect(updated.body).toMatchObject({ documentLanguage: 'en', paymentTerms: '30-60FM' });
+      const data = await as('admin').get('/registry/reference-data').expect(200);
+      expect(data.body.paymentTerms.map((t: { code: string }) => t.code)).toContain('30-60-90FM');
+      expect(data.body.taxRegimes).toContain('RF19');
+    });
+  });
+
   describe('isolation', () => {
     it('answers 404 for another tenant’s party or item, whatever the operation', async () => {
       const party = await as('admin').post('/parties', company()).expect(201);

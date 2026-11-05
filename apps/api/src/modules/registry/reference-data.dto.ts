@@ -32,4 +32,18 @@ export class ReferenceDataDto {
   @ApiProperty({ type: [VatCodeDto] }) vatCodes!: VatCodeDto[];
   @ApiProperty({ type: [UnitDto] }) units!: UnitDto[];
   @ApiProperty({ type: [LegalFormDto] }) legalForms!: LegalFormDto[];
+  @ApiProperty({ type: () => [PaymentTermsDto] }) paymentTerms!: PaymentTermsDto[];
+  @ApiProperty({ type: [String], example: ['MP05'] }) paymentMethods!: string[];
+  @ApiProperty({ type: [String], example: ['RF01'] }) taxRegimes!: string[];
+  @ApiProperty({ type: [String], example: ['it', 'en'] }) documentLanguages!: string[];
+}
+
+export class PaymentInstalmentDto {
+  @ApiProperty({ example: 30 }) days!: number;
+  @ApiProperty({ description: 'Whole months, on the last day of the month' }) endOfMonth!: boolean;
+}
+
+export class PaymentTermsDto {
+  @ApiProperty({ example: '30-60FM' }) code!: string;
+  @ApiProperty({ type: [PaymentInstalmentDto] }) instalments!: PaymentInstalmentDto[];
 }

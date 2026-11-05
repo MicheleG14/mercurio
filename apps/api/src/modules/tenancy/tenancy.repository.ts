@@ -1,6 +1,8 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { type DbClient, isUniqueViolation } from '../../prisma/index.js';
+import { Prisma } from '../../generated/prisma/client.js';
 import { DomainException } from '../../shared/errors/index.js';
+import type { CompanyProfileData } from './company-profile.js';
 import { MODULE_KEYS, type ModuleKey } from './module-catalog.js';
 
 export interface NewCompany {
@@ -92,5 +94,26 @@ export class TenancyRepository {
         modules: { orderBy: { moduleKey: 'asc' } },
       },
     });
+  }
+
+  findCompany(db: DbClient, id: string) {
+    return db.company.findUnique({ where: { id } });
+  }
+
+  async updateCompanyAtVersion(
+    db: DbClient,
+    id: string,
+    version: number,
+    data: CompanyProfileData,
+  ) {
+    const [updated] = await db.company.updateManyAndReturn({
+      where: { id, version },
+      data: {
+        ...data,
+        shareCapital: data.shareCapital === null ? null : new Prisma.Decimal(data.shareCapital),
+        version: { increment: 1 },
+      },
+    });
+    return updated ?? null;
   }
 }

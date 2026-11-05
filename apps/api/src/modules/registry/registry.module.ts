@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/index.js';
+import { TenancyModule } from '../tenancy/index.js';
+import { CompaniesController } from './companies.controller.js';
+import { CompaniesService } from './companies.service.js';
 import { ItemsController } from './items.controller.js';
 import { ItemsRepository } from './items.repository.js';
 import { ItemsService } from './items.service.js';
@@ -9,11 +12,21 @@ import { PartiesService } from './parties.service.js';
 import { ReferenceDataController } from './reference-data.controller.js';
 import { RegistryService } from './registry.service.js';
 
-/** Registry ("anagrafiche"): customers, suppliers and items, shared by a tenant's companies. */
+/**
+ * Registry ("anagrafiche"): customers, suppliers and items, shared by a tenant's companies, and
+ * the invoice header data of each company (kept by tenancy, served here).
+ */
 @Module({
-  imports: [AuditModule],
-  controllers: [PartiesController, ItemsController, ReferenceDataController],
-  providers: [PartiesRepository, PartiesService, ItemsRepository, ItemsService, RegistryService],
+  imports: [AuditModule, TenancyModule],
+  controllers: [PartiesController, ItemsController, ReferenceDataController, CompaniesController],
+  providers: [
+    PartiesRepository,
+    PartiesService,
+    ItemsRepository,
+    ItemsService,
+    RegistryService,
+    CompaniesService,
+  ],
   exports: [RegistryService],
 })
 export class RegistryModule {}

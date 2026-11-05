@@ -157,6 +157,26 @@ describe('tenant tables (guard)', () => {
         .filter((column) => ![...identity, 'code', 'stock_managed'].includes(column))
         .sort(),
     );
+    // A company changes only in its invoice header data: never its name or identifiers.
+    expect(byTable('companies')).toEqual([
+      'address',
+      'charge_stamp_duty',
+      'city',
+      'email',
+      'iban',
+      'in_liquidation',
+      'pec_email',
+      'phone',
+      'postal_code',
+      'province',
+      'rea_number',
+      'rea_office',
+      'share_capital',
+      'sole_shareholder',
+      'tax_regime',
+      'updated_at',
+      'version',
+    ]);
     // Warehouse: a balance changes only in quantity and what is reserved, a reservation only in
     // quantity, a warehouse never in code or company, a counter only in its last number.
     expect(byTable('stock_balances')).toEqual(['quantity', 'reserved_quantity', 'updated_at']);
@@ -195,6 +215,7 @@ describe('tenant tables (guard)', () => {
     expect(byTable('order_fulfilments')).toEqual(['reversal_document_id', 'reversed_at']);
     expect(byTable('order_counters')).toEqual(['last_number']);
     expect([...new Set(columnUpdates.map((c) => c.table))].sort()).toEqual([
+      'companies',
       'credentials',
       'items',
       'order_counters',

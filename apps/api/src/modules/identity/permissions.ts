@@ -6,7 +6,8 @@ import type { MembershipRole } from '../../generated/prisma/client.js';
  * permissions, never roles, so a role can change without touching the routes
  * (docs/adr/0014). The matrix is provisional for the areas not built yet: the phase that builds
  * an area refines its actions, as phase 2 did for the registry (parties and items apart), phase 3 for the
- * warehouse and phase 4 for orders (moving goods apart).
+ * warehouse, phase 4 for orders (moving goods apart) and phase 5 for invoicing (payments and the
+ * company's header data apart).
  */
 export const PERMISSIONS = [
   'parties:read',
@@ -22,6 +23,8 @@ export const PERMISSIONS = [
   'invoicing:read',
   'invoicing:write',
   'invoicing:issue',
+  'payments:write',
+  'companies:manage',
   'users:read',
   'audit:read',
 ] as const;
@@ -51,7 +54,16 @@ export const ROLE_PERMISSIONS: Record<MembershipRole, readonly Permission[]> = {
     'orders:write',
     'orders:fulfil',
   ],
-  ACCOUNTANT: [...READ, 'parties:write', 'orders:write', 'invoicing:write', 'invoicing:issue'],
+  // The accountant also records what customers pay; only administrators change the company's
+  // invoice header data (phase 5).
+  ACCOUNTANT: [
+    ...READ,
+    'parties:write',
+    'orders:write',
+    'invoicing:write',
+    'invoicing:issue',
+    'payments:write',
+  ],
   READ_ONLY: READ,
 };
 

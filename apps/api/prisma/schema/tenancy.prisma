@@ -43,15 +43,39 @@ enum TenantStatus {
 }
 
 /// A legal entity of a tenant (its own VAT number, invoice numbering, warehouses).
-/// Invoice header data (address, REA, SdI code…) arrives with the invoicing phase.
+/// The header data an invoice prints is optional here and required to issue one (phase 5).
 model Company {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  tenantId  String   @map("tenant_id") @db.Uuid
-  legalName String   @map("legal_name")
-  vatNumber String   @map("vat_number")
-  taxCode   String?  @map("tax_code")
+  id              String   @id @default(uuid(7)) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  legalName       String   @map("legal_name")
+  vatNumber       String   @map("vat_number")
+  taxCode         String?  @map("tax_code")
   /// ISO 3166-1 alpha-2.
-  country   String   @default("IT") @db.Char(2)
+  country         String   @default("IT") @db.Char(2)
+  /// Registered office.
+  address         String?
+  postalCode      String?  @map("postal_code")
+  city            String?
+  province        String?  @db.Char(2)
+  /// Register of companies (REA): the province of the office and the number.
+  reaOffice       String?  @map("rea_office") @db.Char(2)
+  reaNumber       String?  @map("rea_number")
+  /// Share capital, for companies that print it.
+  shareCapital    Decimal? @map("share_capital") @db.Decimal(14, 2)
+  /// One shareholder (true), several (false), not a company with shares (empty).
+  soleShareholder Boolean? @map("sole_shareholder")
+  inLiquidation   Boolean  @default(false) @map("in_liquidation")
+  /// Tax regime from the catalog (RF01 ordinary).
+  taxRegime       String   @default("RF01") @map("tax_regime")
+  /// Where customers pay by bank transfer.
+  iban            String?
+  email           String?
+  pecEmail        String?  @map("pec_email")
+  phone           String?
+  /// Whether the stamp duty of exempt invoices is charged to the customer (phase 5).
+  chargeStampDuty Boolean  @default(true) @map("charge_stamp_duty")
+  /// Optimistic concurrency (B29) for the header data.
+  version         Int      @default(1)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
