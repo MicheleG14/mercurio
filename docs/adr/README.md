@@ -62,3 +62,8 @@ What becomes easier, what becomes harder, what we accept.
 
 Each option and why it was not chosen.
 ```
+
+| [0032](0032-overview-statistics.md) | Overview statistics: computed when asked, per module | Accepted |
+| [0033](0033-fatturapa-files.md) | FatturaPA files: made from the issued document, never transmitted | Accepted |
+| [0034](0034-demo-history-and-reset.md) | The demo: a history through the use cases, and a reset | Accepted |
+| [0035](0035-production-compose-guard.md) | The production Compose file works only in the deployment folder | Accepted |

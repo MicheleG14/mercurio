@@ -40,7 +40,8 @@ flowchart LR
 - **cli** runs terminal commands (create tenants and users, demo seed) as the owner role. Compose
   never starts it with `up`: it runs only with `./compose.sh run --rm cli <command>` in the
   deployment folder, which passes `.env.production` and the version of the running app. Without
-  `MERCURIO_DEPLOYMENT` (set only there) the production file refuses to start.
+  `MERCURIO_DEPLOYMENT` (set only there) the production file refuses to start
+  ([ADR 0035](adr/0035-production-compose-guard.md)).
 - **app** connects as `mercurio_app`, which Row-Level Security applies to; it never receives the
   owner's credentials and refuses to start in production with a role that could bypass the policies.
 - **db** is reachable only from the Compose network and stores its data in a named volume.
@@ -211,8 +212,8 @@ flowchart TB
         registry[registry<br/>parties · items · catalogs]
         warehouse[warehouse<br/>warehouses · documents · stock]
         orders[orders<br/>purchase and sales orders · fulfilments]
-        invoicing[invoicing<br/>invoices · credit notes · due dates · payments · PDF]
-        shared[shared<br/>errors · text · decimals · money · dates · events · PDF · Italian identifiers]
+        invoicing[invoicing<br/>invoices · credit notes · due dates · payments · PDF · FatturaPA]
+        shared[shared<br/>errors · text · decimals · money · dates · periods · events · PDF · XML · Italian identifiers]
     end
 
     ui -- REST + OpenAPI client --> api
@@ -402,6 +403,38 @@ Payments settle due dates, locked one by one, never beyond what is due (a `CHECK
 amount, [ADR 0030](adr/0030-due-dates-and-payments.md)); a payment is undone by a reversal. The PDF
 of a document is made at every request from what was saved
 ([ADR 0031](adr/0031-printed-documents.md)).
+
+## Overview: statistics per module
+
+The overview shows the counters of today and, under them, a year month by month. Each module
+computes its own figures with `GROUP BY` on its tables, when asked, for the current company and
+with the permission of its pages ([ADR 0032](adr/0032-overview-statistics.md)):
+
+| Route                        | Permission       | Figures                                                                                |
+| ---------------------------- | ---------------- | -------------------------------------------------------------------------------------- |
+| `GET /invoicing/stats?year=` | `invoicing:read` | Invoiced (less credit notes) and collected (less refunds) by month; top five customers |
+| `GET /invoicing/aging`       | `invoicing:read` | What customers owe today, by days overdue                                              |
+| `GET /orders/stats?year=`    | `orders:read`    | Sales ordered and shipped by month; what is left to ship, by customer                  |
+| `GET /stock/stats?year=`     | `stock:read`     | Stock documents by month and type, a reversed one and its reversal left out            |
+
+The web app loads the charts apart from the page. Every chart has its table, and a click opens the
+list behind the bar.
+
+## FatturaPA files
+
+`GET /invoices/{id}/xml` gives an issued document as a FatturaPA file (FPR12, schema 1.2.3), made
+from the same data the API returns for it, with a small XML writer in `shared`
+([ADR 0033](adr/0033-fatturapa-files.md)). Nothing is transmitted. The tests validate every case,
+and every document of the demo, against the official schema in `test/fixtures/fatturapa`.
+
+## The demo
+
+`seed-demo` writes two fictitious tenants with twelve months of history up to a reference day,
+through the same use cases as the API, each action on its own day: purchases, sales, shipments,
+deferred and immediate invoices, credit notes, payments on time, late or never, and every special
+case once. A seeded generator gives the same story for the same day. `reset-demo` deletes the demo
+tenants (the one place where issued documents are deleted, [ADR 0034](adr/0034-demo-history-and-reset.md))
+and writes them again, putting back the people outside the demo who belonged to them.
 
 ## Request lifecycle
 

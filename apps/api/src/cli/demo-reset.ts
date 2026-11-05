@@ -14,7 +14,7 @@ import {
  * not of a tenant, and may belong to others. The audit log of these tenants goes too: its
  * append-only trigger is turned off for this transaction only, which no API role can do.
  *
- * The one place where issued fiscal documents are deleted (docs/adr/0028): `reset-demo` calls it
+ * The one place where issued fiscal documents are deleted (docs/adr/0034): `reset-demo` calls it
  * for the demo tenants only, and tests for their own. Afterwards it checks that no table with a
  * `tenant_id` still holds a row of these tenants, so a table added later cannot be forgotten.
  */
