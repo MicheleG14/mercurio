@@ -1,4 +1,4 @@
-import { RotateCcwIcon } from 'lucide-react';
+import { FileDownIcon, RotateCcwIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
@@ -19,7 +19,12 @@ import {
 } from '@/components/ui/table';
 import { formatDate } from '@/lib/format';
 import { useQuantity, useWarehouseRights } from './hooks';
-import { type StockDocument, useReverseDocument, useStockDocument } from './queries';
+import {
+  type StockDocument,
+  useDeliveryNote,
+  useReverseDocument,
+  useStockDocument,
+} from './queries';
 
 /** `/stock/documents/:id`: a recorded document, read only; it can be reversed once. */
 export function DocumentPage() {
@@ -36,6 +41,7 @@ function DocumentView({ document }: { document: StockDocument }) {
   const navigate = useNavigate();
   const { write } = useWarehouseRights();
   const reverse = useReverseDocument(document.id);
+  const deliveryNote = useDeliveryNote();
   const [asking, setAsking] = useState(false);
   const date = (value: string) => formatDate(value, i18n.language);
   // A document made by an order is undone from the order, which then knows (B35).
@@ -94,6 +100,16 @@ function DocumentView({ document }: { document: StockDocument }) {
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">{t(`type.${document.type}`)}</Badge>
             {document.reversedBy && <Badge variant="warning">{t('documents.reversed')}</Badge>}
+            {document.reason === 'SALE_ISSUE' && (
+              <Button
+                variant="outline"
+                disabled={deliveryNote.isPending}
+                onClick={() => deliveryNote.mutate(document.id)}
+              >
+                <FileDownIcon data-icon="inline-start" />
+                {t('document.deliveryNote')}
+              </Button>
+            )}
             {canReverse && (
               <Button variant="outline" onClick={() => setAsking(true)}>
                 <RotateCcwIcon data-icon="inline-start" />
@@ -103,7 +119,7 @@ function DocumentView({ document }: { document: StockDocument }) {
           </div>
         }
       />
-      <ErrorMessage error={reverse.error} />
+      <ErrorMessage error={reverse.error ?? deliveryNote.error} />
       {document.reversedBy && (
         <Alert variant="warning">
           <Link

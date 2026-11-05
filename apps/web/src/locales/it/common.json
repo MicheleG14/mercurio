@@ -40,7 +40,8 @@
       "registry": "Anagrafiche",
       "administration": "Amministrazione",
       "warehouse": "Magazzino",
-      "orders": "Ordini"
+      "orders": "Ordini",
+      "invoicing": "Fatturazione"
     },
     "open": "Apri il menu",
     "toggle": "Riduci o espandi il menu",
@@ -49,7 +50,12 @@
     "belowReorder": "Sotto scorta",
     "warehouses": "Magazzini",
     "salesOrders": "Ordini clienti",
-    "purchaseOrders": "Ordini fornitori"
+    "purchaseOrders": "Ordini fornitori",
+    "invoices": "Fatture",
+    "toInvoice": "Da fatturare",
+    "dueDates": "Scadenziario",
+    "payments": "Incassi",
+    "company": "Dati azienda"
   },
   "actions": {
     "continue": "Continua",

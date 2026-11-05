@@ -73,7 +73,8 @@
       "tax": "Dati fiscali",
       "address": "Sede",
       "contacts": "Contatti e fatturazione elettronica",
-      "notes": "Note"
+      "notes": "Note",
+      "invoicing": "Fatturazione"
     },
     "field": {
       "kind": "Tipologia",
@@ -96,13 +97,17 @@
       "phone": "Telefono",
       "pecEmail": "PEC",
       "sdiCode": "Codice destinatario",
-      "notes": "Note"
+      "notes": "Note",
+      "paymentTerms": "Condizioni di pagamento",
+      "paymentMethod": "Modalità di pagamento",
+      "documentLanguage": "Lingua dei documenti"
     },
     "hint": {
       "foreignIdentifier": "Paese estero: l'identificativo fiscale si inserisce come appare sui documenti.",
       "sdiCode": "7 caratteri, assegnato dal Sistema di Interscambio. 0000000 se il cliente riceve le fatture via PEC.",
       "province": "Sigla di due lettere, ad esempio MI.",
-      "taxCodeCompany": "11 cifre, di solito uguale alla partita IVA."
+      "taxCodeCompany": "11 cifre, di solito uguale alla partita IVA.",
+      "documentLanguage": "Vuota: italiano per l'Italia, inglese per l'estero."
     },
     "lookup": {
       "active": "Esiste già «{{name}}» con questo identificativo.",
@@ -110,7 +115,23 @@
       "open": "Apri la scheda",
       "openToRestore": "Apri per ripristinarla"
     },
-    "existing": "Apri il soggetto esistente"
+    "existing": "Apri il soggetto esistente",
+    "paymentTerms": {
+      "RD": "Rimessa diretta",
+      "DF": "{{days}} gg data fattura",
+      "FM": "{{days}} gg fine mese"
+    },
+    "paymentMethods": {
+      "MP01": "Contanti",
+      "MP02": "Assegno",
+      "MP05": "Bonifico",
+      "MP08": "Carta di pagamento",
+      "MP12": "RIBA"
+    },
+    "languages": {
+      "it": "Italiano",
+      "en": "Inglese"
+    }
   },
   "items": {
     "title": "Articoli",

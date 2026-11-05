@@ -12,7 +12,15 @@ import { ItemPage } from '@/features/registry/items/ItemPage';
 import { ItemsPage } from '@/features/registry/items/ItemsPage';
 import { PartiesPage } from '@/features/registry/parties/PartiesPage';
 import { PartyPage } from '@/features/registry/parties/PartyPage';
+import { CompanyPage } from '@/features/settings/CompanyPage';
 import { StatusPage } from '@/features/status/StatusPage';
+import { DraftPage, NewDraftPage } from '@/features/invoicing/DraftPage';
+import { DueDatesPage } from '@/features/invoicing/DueDatesPage';
+import { InvoicePage } from '@/features/invoicing/InvoicePage';
+import { InvoicesPage } from '@/features/invoicing/InvoicesPage';
+import { PaymentFormPage } from '@/features/invoicing/PaymentFormPage';
+import { PaymentsPage } from '@/features/invoicing/PaymentsPage';
+import { ToInvoicePage } from '@/features/invoicing/ToInvoicePage';
 import { FulfilPage } from '@/features/orders/FulfilPage';
 import { OrderFormPage } from '@/features/orders/OrderFormPage';
 import { OrderPage } from '@/features/orders/OrderPage';
@@ -73,6 +81,15 @@ export const routes = [
           { path: 'orders/:id', element: <OrderPage /> },
           { path: 'orders/:id/edit', element: <OrderFormPage /> },
           { path: 'orders/:id/fulfil', element: <FulfilPage /> },
+          { path: 'invoicing/invoices', element: <InvoicesPage /> },
+          { path: 'invoicing/invoices/:id', element: <InvoicePage /> },
+          { path: 'invoicing/new', element: <NewDraftPage /> },
+          { path: 'invoicing/drafts/:id', element: <DraftPage /> },
+          { path: 'invoicing/to-invoice', element: <ToInvoicePage /> },
+          { path: 'invoicing/due-dates', element: <DueDatesPage /> },
+          { path: 'invoicing/payments', element: <PaymentsPage /> },
+          { path: 'invoicing/payments/new', element: <PaymentFormPage /> },
+          { path: 'settings/company', element: <CompanyPage /> },
         ],
       },
     ],

@@ -25,5 +25,21 @@
     "salesLate": "Clienti in ritardo",
     "purchaseOpen": "Fornitori in arrivo",
     "purchaseLate": "Fornitori in ritardo"
+  },
+  "invoicing": {
+    "title": "Fatturazione",
+    "toInvoice": "Da fatturare",
+    "drafts": "Bozze",
+    "overdue": "Scaduto",
+    "dueSoon": "In scadenza (30 giorni)",
+    "invoicedThisMonth": "Fatturato del mese",
+    "open": "Vedi le fatture"
+  },
+  "inactive": {
+    "title": "Altri moduli",
+    "description": "Il cliente su cui lavori non ha questi moduli. Per attivarli chiedi a chi amministra Mercurio.",
+    "warehouse": "Giacenze calcolate dai movimenti, carichi, scarichi, trasferimenti e sotto scorta.",
+    "orders": "Ordini clienti e fornitori, prenotazione della merce, ricezione ed evasione anche parziali.",
+    "invoicing": "Fatture e note di credito numerate, PDF, scadenziario e incassi."
   }
 }

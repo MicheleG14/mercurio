@@ -25,5 +25,21 @@
     "salesLate": "Sales late",
     "purchaseOpen": "Purchases incoming",
     "purchaseLate": "Purchases late"
+  },
+  "invoicing": {
+    "title": "Invoicing",
+    "toInvoice": "To invoice",
+    "drafts": "Drafts",
+    "overdue": "Overdue",
+    "dueSoon": "Due in 30 days",
+    "invoicedThisMonth": "Invoiced this month",
+    "open": "See invoices"
+  },
+  "inactive": {
+    "title": "Other modules",
+    "description": "The customer you work on does not have these modules. Ask whoever runs Mercurio to enable them.",
+    "warehouse": "Stock computed from movements, receipts, issues, transfers and reorder levels.",
+    "orders": "Sales and purchase orders, reservations, receiving and shipping in parts.",
+    "invoicing": "Numbered invoices and credit notes, PDF, payment schedule and payments."
   }
 }

@@ -37,6 +37,9 @@ export const partySchema = z
     phone: text,
     pecEmail: text,
     sdiCode: text,
+    paymentTerms: text,
+    paymentMethod: text,
+    documentLanguage: text,
     notes: text,
   })
   .superRefine((v, ctx) => {
@@ -107,6 +110,9 @@ export const emptyParty: PartyFormValues = {
   phone: '',
   pecEmail: '',
   sdiCode: '',
+  paymentTerms: '',
+  paymentMethod: '',
+  documentLanguage: '',
   notes: '',
 };
 
@@ -130,6 +136,9 @@ export function partyValues(party: Party): PartyFormValues {
     phone: party.phone ?? '',
     pecEmail: party.pecEmail ?? '',
     sdiCode: party.sdiCode ?? '',
+    paymentTerms: party.paymentTerms ?? '',
+    paymentMethod: party.paymentMethod ?? '',
+    documentLanguage: party.documentLanguage ?? '',
     notes: party.notes ?? '',
   };
 }
@@ -170,6 +179,9 @@ export function partyBody(values: PartyFormValues): PartyBody {
     phone: value(values.phone),
     pecEmail: value(values.pecEmail),
     sdiCode: value(values.sdiCode),
+    paymentTerms: value(values.paymentTerms),
+    paymentMethod: value(values.paymentMethod),
+    documentLanguage: value(values.documentLanguage),
     notes: value(values.notes),
   };
 }

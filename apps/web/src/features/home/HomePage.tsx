@@ -5,9 +5,17 @@ import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMe } from '@/lib/auth/me';
-import { useOrdersSummary, useStockSummary } from './queries';
+import { MoneyAmount } from '@/components/shared/MoneyAmount';
+import { useInvoicingSummary, useOrdersSummary, useStockSummary } from './queries';
 
-/** The landing page after signing in. Module features join it in the next phases. */
+/** The modules a tenant can have, besides the registry that is always there. */
+const OPTIONAL_MODULES = ['warehouse', 'orders', 'invoicing'] as const;
+
+/**
+ * The landing page after signing in: a card per module the person can see, and the modules the
+ * customer lacks with what they would add (a person working on a customer without a module
+ * otherwise looks for its screens in vain).
+ */
 export function HomePage() {
   const { t } = useTranslation('home');
   const { t: tAuth } = useTranslation('auth');
@@ -18,7 +26,12 @@ export function HomePage() {
   const orders =
     Boolean(me?.modules.includes('orders')) && Boolean(me?.permissions.includes('orders:read'));
   const ordersSummary = useOrdersSummary(orders).data;
+  const invoicing =
+    Boolean(me?.modules.includes('invoicing')) &&
+    Boolean(me?.permissions.includes('invoicing:read'));
+  const invoicingSummary = useInvoicingSummary(invoicing).data;
   if (!me?.tenant) return null;
+  const inactive = OPTIONAL_MODULES.filter((key) => !me.modules.includes(key));
 
   return (
     <div className="flex flex-col gap-6">
@@ -102,6 +115,76 @@ export function HomePage() {
                   </div>
                 ))}
               </dl>
+            </CardContent>
+          </Card>
+        )}
+        {invoicing && (
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>{t('invoicing.title')}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap items-end justify-between gap-4">
+              <dl className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+                <div>
+                  <dt className="text-muted-foreground text-sm">{t('invoicing.toInvoice')}</dt>
+                  <dd className="text-2xl font-semibold tabular-nums">
+                    <Link to="/invoicing/to-invoice" className="underline-offset-4 hover:underline">
+                      {invoicingSummary?.toInvoice ?? '–'}
+                    </Link>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground text-sm">{t('invoicing.drafts')}</dt>
+                  <dd className="text-2xl font-semibold tabular-nums">
+                    <Link to="/invoicing/invoices" className="underline-offset-4 hover:underline">
+                      {invoicingSummary?.drafts ?? '–'}
+                    </Link>
+                  </dd>
+                </div>
+                {(['overdue', 'dueSoon', 'invoicedThisMonth'] as const).map((key) => (
+                  <div key={key}>
+                    <dt className="text-muted-foreground text-sm">{t(`invoicing.${key}`)}</dt>
+                    <dd className="text-xl font-semibold">
+                      {invoicingSummary ? (
+                        <Link
+                          to={
+                            key === 'invoicedThisMonth'
+                              ? '/invoicing/invoices'
+                              : `/invoicing/due-dates${key === 'overdue' ? '?status=overdue' : ''}`
+                          }
+                          className="underline-offset-4 hover:underline"
+                        >
+                          <MoneyAmount value={invoicingSummary[key]} />
+                        </Link>
+                      ) : (
+                        '–'
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <Link to="/invoicing/invoices" className={buttonVariants({ variant: 'outline' })}>
+                {t('invoicing.open')}
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+        {inactive.length > 0 && (
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>{t('inactive.title')}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 text-sm">
+              <p className="text-muted-foreground">{t('inactive.description')}</p>
+              <ul className="flex flex-col gap-2">
+                {inactive.map((key) => (
+                  <li key={key}>
+                    <span className="font-medium">{t(`module.${key}`)}</span>
+                    {' · '}
+                    {t(`inactive.${key}`)}
+                  </li>
+                ))}
+              </ul>
             </CardContent>
           </Card>
         )}

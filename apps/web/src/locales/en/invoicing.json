@@ -1,0 +1,240 @@
+{
+  "kind": {
+    "INVOICE": "Invoice",
+    "CREDIT_NOTE": "Credit note"
+  },
+  "paymentStatus": {
+    "UNPAID": "Unpaid",
+    "PARTIAL": "Partly paid",
+    "PAID": "Paid",
+    "CREDITED": "Credited",
+    "SETTLED": "Settled",
+    "REFUND_DUE": "Refund due",
+    "REFUNDED": "Refunded"
+  },
+  "overdue": "Overdue",
+  "draft": "Draft",
+  "terms": {
+    "RD": "Payment on receipt",
+    "DF": "{{days}} days from invoice date",
+    "FM": "{{days}} days end of month"
+  },
+  "methods": {
+    "MP01": "Cash",
+    "MP02": "Cheque",
+    "MP05": "Bank transfer",
+    "MP08": "Payment card",
+    "MP12": "RIBA"
+  },
+  "languages": {
+    "it": "Italian",
+    "en": "English"
+  },
+  "totals": {
+    "taxable": "Taxable amount",
+    "vatRow": "VAT {{code}} on",
+    "vat": "VAT",
+    "total": "Total",
+    "stampDuty": "Stamp duty paid virtually"
+  },
+  "list": {
+    "title": "Invoices",
+    "description": "Issued invoices and credit notes, with what is still to be paid.",
+    "new": "New invoice",
+    "search": "Search by number or customer",
+    "filter": {
+      "kind": "Type",
+      "all": "All"
+    },
+    "drafts": "Drafts",
+    "draftsEmpty": "No drafts.",
+    "noCustomer": "No customer yet",
+    "empty": "No documents issued.",
+    "columns": {
+      "number": "Number",
+      "date": "Date",
+      "customer": "Customer",
+      "total": "Total",
+      "open": "Open",
+      "status": "Status",
+      "due": "Next due date",
+      "updated": "Changed"
+    }
+  },
+  "toInvoice": {
+    "title": "To invoice",
+    "description": "Goods shipped to customers and not yet invoiced. Choose shipments of one customer and create an invoice: immediate with one shipment, deferred with several of the month.",
+    "empty": "Nothing to invoice.",
+    "create": "Create invoice",
+    "choose": "Choose",
+    "inDraft": "In a draft",
+    "openDraft": "Open the draft",
+    "selected_one": "{{count}} shipment chosen",
+    "selected_other": "{{count}} shipments chosen",
+    "oneCustomer": "One customer at a time: choose shipments of the same customer.",
+    "columns": {
+      "document": "Delivery note",
+      "date": "Date",
+      "order": "Order",
+      "taxable": "Taxable"
+    }
+  },
+  "editor": {
+    "newTitle": "New invoice",
+    "editTitle": "Draft invoice",
+    "creditTitle": "Draft credit note",
+    "description": "A draft can change as much as needed. Once issued, the invoice gets its number and never changes: it is corrected by a credit note only.",
+    "credits": "Credits {{reference}} of {{date}}",
+    "section": {
+      "header": "Customer and payment",
+      "lines": "Lines",
+      "notes": "Notes"
+    },
+    "fields": {
+      "customer": "Customer",
+      "paymentTerms": "Payment terms",
+      "paymentMethod": "Payment method",
+      "language": "Language of the document",
+      "fromCustomer": "The customer's",
+      "notes": "Notes"
+    },
+    "searchCustomer": "Search a customer",
+    "lines": {
+      "line": "Line {{n}}",
+      "item": "Item or service",
+      "searchItem": "Search by code or description",
+      "description": "Description",
+      "quantity": "Quantity",
+      "unitPrice": "Price",
+      "discount": "Discount %",
+      "vat": "VAT",
+      "add": "Add a line",
+      "addText": "Add text",
+      "remove": "Remove line {{n}}",
+      "shipped": "Shipped with {{document}}: quantity fixed",
+      "credited": "Credits a line of the invoice",
+      "text": "Text only",
+      "stampDuty": "Stamp duty recharge"
+    },
+    "stampDuty": {
+      "required": "Exempt operations exceed €77.47: the invoice carries the €2 stamp duty.",
+      "charge": "Charge the stamp duty to the customer",
+      "charged": "The stamp duty is charged to the customer."
+    },
+    "deferred": "Deferred invoice: issue it by {{date}}.",
+    "dueDates": "Due dates if issued today",
+    "save": "Save draft",
+    "saving": "Saving…",
+    "preview": "PDF preview",
+    "issue": "Issue",
+    "delete": "Delete draft",
+    "deleteTitle": "Delete the draft?",
+    "deleteDescription": "The shipments it held are to invoice again.",
+    "issueDialog": {
+      "title": "Issue the {{kind}}?",
+      "description": "From {{company}} to {{customer}}, total {{total}}. Once issued the document has a number and can no longer change.",
+      "date": "Date of the document",
+      "confirm": "Issue"
+    },
+    "unsaved": "Save the draft before issuing it."
+  },
+  "detail": {
+    "number": "{{kind}} {{reference}}",
+    "issued": "Issued on {{date}}",
+    "seller": "Seller",
+    "customer": "Customer",
+    "lines": "Lines",
+    "dueDates": "Due dates",
+    "dueColumns": {
+      "date": "Due",
+      "amount": "Amount",
+      "settled": "Paid",
+      "open": "Open"
+    },
+    "creditNotes": "Credit notes",
+    "creditedInvoice": "Credits",
+    "shipments": "Shipments invoiced",
+    "pdf": "Download PDF",
+    "creditNote": "Credit note",
+    "creditAll": "Credit everything",
+    "creditLines": "Credit the chosen lines",
+    "creditDialog": {
+      "title": "Credit note",
+      "description": "A draft is prepared with what is left to credit of the chosen lines: prices and quantities can be lowered before issuing it. Returned goods are recorded in the warehouse separately."
+    },
+    "recordPayment": "Record payment",
+    "recordRefund": "Record refund",
+    "payment": "Payment: {{terms}}, {{method}}",
+    "nothingToCredit": "Nothing to credit."
+  },
+  "dueDates": {
+    "title": "Payment schedule",
+    "description": "The due dates of invoices and the refunds of credit notes, by date.",
+    "filter": {
+      "status": "Due dates",
+      "open": "Open",
+      "overdue": "Overdue",
+      "paid": "Paid",
+      "all": "All"
+    },
+    "openTotal": "Open",
+    "overdueTotal": "Of which overdue",
+    "empty": "No due dates.",
+    "pay": "Pay",
+    "columns": {
+      "date": "Due",
+      "document": "Document",
+      "customer": "Customer",
+      "amount": "Amount",
+      "open": "Open"
+    }
+  },
+  "payments": {
+    "title": "Payments",
+    "description": "Payments received from customers and refunds of credit notes.",
+    "new": "Record payment",
+    "empty": "No payments recorded.",
+    "reverse": "Undo the payment",
+    "reverseTitle": "Undo the payment?",
+    "reverseDescription": "The due dates it settled are open again. The payment stays in the list, with its undoing.",
+    "reversed": "Undone",
+    "reversal": "Undoing",
+    "kind": {
+      "RECEIPT": "Payment",
+      "REFUND": "Refund"
+    },
+    "columns": {
+      "date": "Date",
+      "customer": "Customer",
+      "amount": "Amount",
+      "method": "Method",
+      "documents": "Documents"
+    },
+    "form": {
+      "title": "Record payment",
+      "description": "The open due dates of the customer are settled from the oldest: change the amounts if the customer paid something else.",
+      "kind": "Type",
+      "customer": "Customer",
+      "date": "Date",
+      "amount": "Amount",
+      "method": "Method",
+      "reference": "Reference (bank, cheque)",
+      "allocations": "Due dates settled",
+      "allocated": "Allocated {{allocated}} of {{amount}}",
+      "noOpen": "The customer has no open due dates of this type.",
+      "save": "Record"
+    }
+  },
+  "home": {
+    "title": "Invoicing",
+    "toInvoice": "To invoice",
+    "drafts": "Drafts",
+    "overdue": "Overdue",
+    "dueSoon": "Due in 30 days",
+    "invoicedThisMonth": "Invoiced this month",
+    "open": "Open invoices"
+  },
+  "errors": {
+    "companyIncomplete": "The company lacks data to issue. Complete it in Company data."
+  }
+}

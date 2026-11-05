@@ -176,7 +176,8 @@
     "reversedBy": "Stornato da {{reference}}",
     "origin": "Registrato dall'ordine {{reference}}: si annulla da lì.",
     "reverses": "Storno di {{reference}}",
-    "reversedReason": "Causale stornata"
+    "reversedReason": "Causale stornata",
+    "deliveryNote": "Stampa DDT"
   },
   "warehouses": {
     "title": "Magazzini",

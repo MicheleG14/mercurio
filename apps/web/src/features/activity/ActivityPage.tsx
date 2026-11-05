@@ -48,6 +48,8 @@ const SUBJECT_PATHS: Record<string, string> = {
   item: '/items',
   stock_document: '/stock/documents',
   order: '/orders',
+  invoice: '/invoicing/invoices',
+  invoice_draft: '/invoicing/drafts',
 };
 
 /** The audit log of the current customer, for administrators (permission audit:read). */

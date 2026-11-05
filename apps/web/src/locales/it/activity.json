@@ -40,14 +40,26 @@
     "ORDER_CLOSED": "Residuo dell'ordine chiuso",
     "ORDER_CANCELLED": "Ordine annullato",
     "ORDER_FULFILLED": "Ordine ricevuto o evaso",
-    "ORDER_FULFILMENT_REVERSED": "Ricezione o evasione annullata"
+    "ORDER_FULFILMENT_REVERSED": "Ricezione o evasione annullata",
+    "COMPANY_UPDATED": "Dati azienda modificati",
+    "INVOICE_DRAFT_CREATED": "Bozza di fattura creata",
+    "INVOICE_DRAFT_UPDATED": "Bozza di fattura modificata",
+    "INVOICE_DRAFT_DELETED": "Bozza di fattura eliminata",
+    "INVOICE_ISSUED": "Fattura emessa",
+    "CREDIT_NOTE_ISSUED": "Nota di credito emessa",
+    "PAYMENT_RECORDED": "Incasso registrato",
+    "PAYMENT_REVERSED": "Incasso annullato"
   },
   "subjectType": {
     "party": "Soggetto",
     "item": "Articolo",
     "warehouse": "Magazzino",
     "stock_document": "Documento di magazzino",
-    "order": "Ordine"
+    "order": "Ordine",
+    "company": "Azienda",
+    "invoice": "Fattura",
+    "invoice_draft": "Bozza di fattura",
+    "payment": "Incasso"
   },
   "fields": "Campi: {{fields}}"
 }

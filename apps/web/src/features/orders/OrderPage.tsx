@@ -39,7 +39,7 @@ type Asking = 'delete' | 'close' | 'cancel' | { reverse: string } | null;
 function OrderView({ order }: { order: Order }) {
   const { t, i18n } = useTranslation('orders');
   const navigate = useNavigate();
-  const { write, fulfil } = useOrderRights();
+  const { write, fulfil, invoice } = useOrderRights();
   const action = useOrderAction(order.id);
   const remove = useDeleteOrder(order.id);
   const [asking, setAsking] = useState<Asking>(null);
@@ -239,12 +239,23 @@ function OrderView({ order }: { order: Order }) {
                     </Badge>
                   )}
                 </span>
-                {!f.reversalDocumentId && fulfil && (
-                  <Button variant="ghost" size="sm" onClick={() => setAsking({ reverse: f.id })}>
-                    <RotateCcwIcon data-icon="inline-start" />
-                    {t('actions.reverse')}
-                  </Button>
-                )}
+                <span className="flex flex-wrap gap-1">
+                  {!f.reversalDocumentId && order.kind === 'SALES' && invoice && (
+                    // Built from the address: orders do not import the invoicing feature (F12).
+                    <Link
+                      to={`/invoicing/new?fulfilments=${f.id}`}
+                      className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                    >
+                      {t('actions.invoice')}
+                    </Link>
+                  )}
+                  {!f.reversalDocumentId && fulfil && (
+                    <Button variant="ghost" size="sm" onClick={() => setAsking({ reverse: f.id })}>
+                      <RotateCcwIcon data-icon="inline-start" />
+                      {t('actions.reverse')}
+                    </Button>
+                  )}
+                </span>
               </li>
             ))}
           </ul>

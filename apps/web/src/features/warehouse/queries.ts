@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { components } from '@/api/schema';
+import { ApiError } from '@/lib/api';
 import { api, unwrap } from '@/lib/api-client';
 import { useCompanyId } from '@/lib/auth/company';
 
@@ -318,5 +319,28 @@ export function useArchiveWarehouse() {
             }),
       ),
     onSuccess: invalidate,
+  });
+}
+
+/** Downloads the delivery note (DDT) of a sale, with the name the API gives it. */
+export function useDeliveryNote() {
+  const company = useCompanyId();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, response } = await api.GET('/stock-documents/{id}/delivery-note.pdf', {
+        params: { header: { 'X-Company-Id': company ?? '' }, path: { id } },
+        parseAs: 'blob',
+      });
+      if (!response.ok || !data) throw new ApiError(response.status);
+      const name =
+        /filename="([^"]+)"/.exec(response.headers.get('content-disposition') ?? '')?.[1] ??
+        'ddt.pdf';
+      const url = URL.createObjectURL(data as Blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = name;
+      link.click();
+      URL.revokeObjectURL(url);
+    },
   });
 }
