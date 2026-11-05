@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { CompanyContext, DbClient, TenantTransaction } from '../../prisma/index.js';
+import { fromDbDate } from '../../shared/dates.js';
 import { InvoiceDraftsService } from './invoice-drafts.service.js';
 import { InvoiceIssueService } from './invoice-issue.service.js';
 import type {
@@ -34,6 +35,16 @@ export class InvoicingService {
     today?: string,
   ): Promise<PaymentDto> {
     return (await this.payments.recordIn(tx, company, dto, today)).payment;
+  }
+
+  /** Undoes a payment with its reversal, on `today` (a bounced bank receipt). */
+  reversePayment(
+    tx: TenantTransaction,
+    company: CompanyContext,
+    id: string,
+    today?: string,
+  ): Promise<PaymentDto> {
+    return this.payments.reverseIn(tx, company, id, today);
   }
 
   /** Due dates whose settled amount differs from its payments and credit notes (B11). */
@@ -88,6 +99,20 @@ export class InvoicingService {
       partyId: row.partyId,
       documentDate: row.documentDate,
       draftId: row.draftId,
+    }));
+  }
+
+  /** The due dates of a document with what is still open on each, in order. */
+  async openDueDates(
+    tx: TenantTransaction,
+    companyId: string,
+    invoiceId: string,
+  ): Promise<{ id: string; dueDate: string; open: string }[]> {
+    const invoice = await this.repository.findInvoice(tx, companyId, invoiceId);
+    return (invoice?.dueDates ?? []).map((due) => ({
+      id: due.id,
+      dueDate: fromDbDate(due.dueDate),
+      open: due.amount.minus(due.settledAmount).toFixed(2),
     }));
   }
 

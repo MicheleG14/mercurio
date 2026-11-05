@@ -1,22 +1,29 @@
 import type { IdentityService } from '../modules/identity/index.js';
-import type { PartyInput, RegistryService } from '../modules/registry/index.js';
-import type { TenancyService } from '../modules/tenancy/index.js';
 import type { InvoicingService } from '../modules/invoicing/index.js';
 import type { OrdersService } from '../modules/orders/index.js';
-import type { CreateStockDocumentDto, WarehouseService } from '../modules/warehouse/index.js';
-import { uuidv7 } from '../shared/uuid.js';
+import type { PartyInput, RegistryService } from '../modules/registry/index.js';
+import type { TenancyService } from '../modules/tenancy/index.js';
+import type { WarehouseService } from '../modules/warehouse/index.js';
 import type { DbClient } from '../prisma/index.js';
+import { businessToday } from '../shared/dates.js';
 import { italianCheckDigit, personalTaxCodeCheckChar } from '../shared/italian-identifiers.js';
+import {
+  type Feature,
+  FEATURES,
+  type HistoryItem,
+  type Story,
+  writeHistory,
+} from './demo-history.js';
 
 /**
  * Fictitious demo data (S2, S8; docs/conventions.md B21): two tenants that show both the
- * company and the tenant boundaries. Content is deterministic; emails use example.com, a domain
- * reserved for examples (RFC 2606), and VAT numbers and tax codes are made up with a valid check
- * character.
+ * company and the tenant boundaries, with twelve months of history up to a reference day
+ * (`demo-history.ts`). Emails use example.com, a domain reserved for examples (RFC 2606), and
+ * VAT numbers and tax codes are made up with a valid check character.
  *
  * - rossi: two companies, one person per role, two people limited to one company; a registry
  *   with every kind of party (one archived, one abroad) and goods and services;
- * - bianchi: one company, its own admin, a small registry of its own;
+ * - bianchi: one company, its own admin, invoicing without orders;
  * - Paola Conti, a consultant, belongs to both tenants with a different role in each (S4).
  *
  * The command gives every demo person the same fictitious password and authenticator secret
@@ -26,6 +33,9 @@ export const DEMO_PASSWORD = 'Demo-password-2026';
 /** Base32 secret shared by all demo people: add it to any authenticator app to get the codes. */
 export const DEMO_TOTP_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
 
+/** A demo party with the short name the history uses for it. */
+type DemoParty = { key: string } & PartyInput & { archived?: boolean };
+
 export const DEMO = {
   tenants: [
     {
@@ -33,8 +43,12 @@ export const DEMO = {
       name: 'Gruppo Rossi',
       modules: ['all'],
       companies: [
-        { legalName: 'Rossi Srl', vatNumber: withCheckDigit('0274651096') },
-        { legalName: 'Rossi Logistica Srl', vatNumber: withCheckDigit('0381927364') },
+        { legalName: 'Rossi Srl', vatNumber: withCheckDigit('0274651096'), story: 'rossi-srl' },
+        {
+          legalName: 'Rossi Logistica Srl',
+          vatNumber: withCheckDigit('0381927364'),
+          story: 'rossi-logistica',
+        },
       ],
       members: [
         { email: 'anna.rossi', name: 'Anna Rossi', role: 'ADMIN', companies: 'all' },
@@ -44,30 +58,41 @@ export const DEMO = {
         { email: 'paola.conti', name: 'Paola Conti', role: 'ACCOUNTANT', companies: 'all' },
       ],
       parties: [
-        company('Ferramenta Bruni Srl', '0612345678', 'SRL', 'customer', {
+        company('bruni', 'Ferramenta Bruni Srl', '0612345678', 'SRL', 'customer', {
           address: 'Via Torino 12',
           postalCode: '20123',
           city: 'Milano',
           province: 'MI',
           email: 'ordini@ferramenta-bruni.example.com',
           sdiCode: 'M5UXCR1',
+          paymentTerms: '30FM',
+          paymentMethod: 'MP05',
         }),
-        company('Edilnord Spa', '0723456789', 'SPA', 'both', {
+        company('edilnord', 'Edilnord Spa', '0723456789', 'SPA', 'both', {
           address: 'Via Bergamo 140',
           postalCode: '24047',
           city: 'Treviglio',
           province: 'BG',
           pecEmail: 'edilnord@pec.example.com',
           sdiCode: '0000000',
+          paymentTerms: '30-60FM',
+          paymentMethod: 'MP12',
         }),
-        company('Viteria Lombarda Srl', '0834567890', 'SRL', 'supplier', {
+        company('viteria', 'Viteria Lombarda Srl', '0834567890', 'SRL', 'supplier', {
           address: 'Via dei Mille 8',
           postalCode: '25122',
           city: 'Brescia',
           province: 'BS',
           phone: '030 123456',
         }),
+        company('cementi', 'Cementi Bergamaschi Spa', '1490123456', 'SPA', 'supplier', {
+          address: 'Via Cave 3',
+          postalCode: '24030',
+          city: 'Calusco d’Adda',
+          province: 'BG',
+        }),
         {
+          key: 'marino',
           kind: 'SOLE_TRADER',
           isCustomer: true,
           isSupplier: false,
@@ -76,11 +101,14 @@ export const DEMO = {
           lastName: 'Marino',
           vatNumber: withCheckDigit('0945678901'),
           taxCode: withCheckChar('MRNLCU79L04F704'),
+          address: 'Via Lecco 7',
+          postalCode: '20900',
           city: 'Monza',
           province: 'MB',
-          postalCode: '20900',
+          sdiCode: 'KRRH6B9',
         },
         {
+          key: 'ferri',
           kind: 'PRIVATE',
           isCustomer: true,
           isSupplier: false,
@@ -92,18 +120,26 @@ export const DEMO = {
           city: 'Como',
           province: 'CO',
           email: 'giulia.ferri@example.com',
+          sdiCode: '0000000',
+          paymentTerms: 'RD',
+          paymentMethod: 'MP08',
         },
         {
+          key: 'lario',
           kind: 'ORGANIZATION',
           isCustomer: true,
           isSupplier: false,
           legalName: 'Associazione Sportiva Lario',
           taxCode: withCheckDigit('9301234567'),
+          address: 'Via Promessi Sposi 20',
+          postalCode: '23900',
           city: 'Lecco',
           province: 'LC',
-          postalCode: '23900',
+          pecEmail: 'aslario@pec.example.com',
+          sdiCode: '0000000',
         },
         {
+          key: 'muller',
           kind: 'COMPANY',
           isCustomer: true,
           isSupplier: false,
@@ -116,7 +152,7 @@ export const DEMO = {
           notes: 'Prezzi concordati in euro.',
         },
         {
-          ...company('Elettroforniture Riva Snc', '1056789012', 'SNC', 'supplier', {
+          ...company('riva', 'Elettroforniture Riva Snc', '1056789012', 'SNC', 'supplier', {
             city: 'Varese',
             province: 'VA',
           }),
@@ -141,83 +177,13 @@ export const DEMO = {
         service('MDO-ORA', 'Manodopera specializzata', 'H', '35.00', '22'),
         service('CORSO-SIC', 'Corso di formazione sulla sicurezza', 'H', '50.00', 'N4'),
       ],
-      // Per company (by position in `companies`): warehouses, documents in date order, reorder
-      // levels. Parties are named by the first 10 digits of their VAT number, as above.
-      warehouse: [
+      // Per company, by position in `companies`: warehouses and reorder levels.
+      warehouses: [
         {
           warehouses: [
             { code: 'SEDE', name: 'Magazzino della sede' },
             { code: 'DEP', name: 'Deposito Nord' },
           ],
-          documents: [
-            doc('OPENING', '2026-09-01', 'SEDE', [
-              ['VT-M6-20', '2000'],
-              ['VT-M8-30', '1500'],
-              ['DD-M6', '3000'],
-              ['RN-M6', '3000'],
-              ['TS-8', '40'],
-              ['CH-BRU', '12'],
-              ['TR-18V', '6'],
-              ['SM-125', '4'],
-              ['CV-3G15', '250'],
-              ['CM-PORT', '500'],
-              ['VR-BIA', '60'],
-              ['GU-NIT', '30'],
-              ['MAN-INST', '10'],
-            ]),
-            doc(
-              'PURCHASE_RECEIPT',
-              '2026-09-15',
-              'SEDE',
-              [
-                ['VT-M6-20', '1000'],
-                ['DD-M6', '1000'],
-              ],
-              {
-                party: '0834567890',
-                ref: 'VL-2026/0815',
-                refDate: '2026-09-14',
-              },
-            ),
-            doc(
-              'SALE_ISSUE',
-              '2026-09-22',
-              'SEDE',
-              [
-                ['VT-M6-20', '1800'],
-                ['DD-M6', '1200'],
-                ['TR-18V', '4'],
-              ],
-              {
-                party: '0612345678',
-              },
-            ),
-            doc('INTERNAL_USE', '2026-09-25', 'SEDE', [['GU-NIT', '4']], {
-              notes: 'Uso in officina',
-            }),
-            doc(
-              'TRANSFER',
-              '2026-09-29',
-              'SEDE',
-              [
-                ['CM-PORT', '200'],
-                ['VR-BIA', '20'],
-              ],
-              { target: 'DEP' },
-            ),
-            // Recorded with the wrong supplier and reversed the next day.
-            doc('PURCHASE_RECEIPT', '2026-10-02', 'SEDE', [['CM-PORT', '300']], {
-              party: '0723456789',
-              ref: 'EN 4471',
-              reverseOn: '2026-10-03',
-            }),
-            doc('INVENTORY_ADJUSTMENT', '2026-10-05', 'SEDE', [['TS-8', '37']]),
-            doc('LOSS', '2026-10-08', 'SEDE', [['SM-125', '1']], { notes: 'Caduta dal bancale' }),
-            doc('CUSTOMER_RETURN', '2026-10-12', 'SEDE', [['TR-18V', '1']], {
-              party: '0612345678',
-            }),
-          ],
-          // TR-18V (3 left), SM-125 (3) and GU-NIT (26) end up below their reorder point.
           reorderLevels: [
             { warehouse: 'SEDE', item: 'TR-18V', reorderPoint: '5', reorderQuantity: '10' },
             { warehouse: 'SEDE', item: 'SM-125', reorderPoint: '3', reorderQuantity: '5' },
@@ -227,217 +193,35 @@ export const DEMO = {
         },
         {
           warehouses: [{ code: 'HUB', name: 'Hub logistico' }],
-          documents: [
-            doc('OPENING', '2026-09-01', 'HUB', [
-              ['CV-3G15', '1000'],
-              ['CM-PORT', '2000'],
-              ['GU-NIT', '50'],
-            ]),
-            doc('SALE_ISSUE', '2026-10-06', 'HUB', [['CM-PORT', '1200']], { party: '0723456789' }),
-          ],
           reorderLevels: [
             { warehouse: 'HUB', item: 'CM-PORT', reorderPoint: '1000', reorderQuantity: '2000' },
           ],
         },
       ],
-      // Per company: orders in the order they are recorded, purchases first so the goods are
-      // there when sales reserve them. Lines as [item code, quantity, unit price, discount].
-      // Every status shows up: received in two deliveries, partial, incoming, cancelled, draft;
-      // shipped, partial, reserved, uncovered and late, a shipment undone, a rest closed.
-      orders: [
+      // Per company: header data for the invoices.
+      profiles: [
         {
-          warehouse: 'SEDE',
-          orders: [
-            order(
-              'PURCHASE',
-              '2026-10-13',
-              '0834567890',
-              [
-                ['VT-M6-20', '2000', '0.06'],
-                ['DD-M6', '1000', '0.025'],
-              ],
-              {
-                ref: 'Conf. VL 1022',
-                requested: '2026-10-20',
-                fulfil: [
-                  {
-                    date: '2026-10-16',
-                    ref: 'VL-2026/0901',
-                    lines: [
-                      ['VT-M6-20', '1000'],
-                      ['DD-M6', '1000'],
-                    ],
-                  },
-                  { date: '2026-10-21', ref: 'VL-2026/0933', lines: [['VT-M6-20', '1000']] },
-                ],
-              },
-            ),
-            order('PURCHASE', '2026-10-19', '0723456789', [['CM-PORT', '1000', '0.15']], {
-              requested: '2026-10-30',
-              fulfil: [{ date: '2026-10-22', ref: 'EN 4520', lines: [['CM-PORT', '400']] }],
-            }),
-            order(
-              'PURCHASE',
-              '2026-10-24',
-              '0834567890',
-              [
-                ['TR-18V', '10', '55'],
-                ['SM-125', '5', '40'],
-              ],
-              {
-                requested: '2026-11-05',
-              },
-            ),
-            order('PURCHASE', '2026-10-06', '0723456789', [['VR-BIA', '50', '4.5']], {
-              cancelOn: '2026-10-07',
-              notes: 'Annullato: prezzo non confermato dal fornitore.',
-            }),
-            order('PURCHASE', '2026-10-27', '0834567890', [['GU-NIT', '50', '3.2']], {
-              draft: true,
-            }),
-            order(
-              'SALES',
-              '2026-10-14',
-              '0612345678',
-              [
-                ['VT-M6-20', '500', '0.12'],
-                ['TS-8', '10', '4.90'],
-              ],
-              {
-                ref: 'ORD 2026/311',
-                fulfil: [
-                  {
-                    date: '2026-10-15',
-                    lines: [
-                      ['VT-M6-20', '500'],
-                      ['TS-8', '10'],
-                    ],
-                  },
-                ],
-              },
-            ),
-            order(
-              'SALES',
-              '2026-10-20',
-              '0723456789',
-              [
-                ['CM-PORT', '200', '0.22'],
-                ['CV-3G15', '100', '0.85'],
-              ],
-              {
-                requested: '2026-11-02',
-                fulfil: [{ date: '2026-10-21', lines: [['CM-PORT', '100']] }],
-              },
-            ),
-            order(
-              'SALES',
-              '2026-10-26',
-              '0945678901',
-              [
-                ['CH-BRU', '4', '12.50', '5'],
-                ['TR-18V', '2', '89'],
-              ],
-              {
-                requested: '2026-11-10',
-              },
-            ),
-            order('SALES', '2026-10-23', 'DE811234567', [['SM-125', '5', '64.90']], {
-              ref: 'PO 77812',
-              requested: '2026-10-25',
-              notes: 'Spedire tutto insieme quando arrivano le smerigliatrici.',
-            }),
-            order('SALES', '2026-10-09', '0612345678', [['VR-BIA', '4', '7.80']], {
-              fulfil: [{ date: '2026-10-10', lines: [['VR-BIA', '4']], reverseOn: '2026-10-11' }],
-              notes: 'Prima spedizione annullata: colore sbagliato.',
-            }),
-            order('SALES', '2026-10-16', '0612345678', [['RN-M6', '1000', '0.03']], {
-              fulfil: [{ date: '2026-10-17', lines: [['RN-M6', '600']] }],
-              closeOn: '2026-10-18',
-              notes: 'Il cliente non vuole il resto.',
-            }),
-            order(
-              'SALES',
-              '2026-10-27',
-              '0612345678',
-              [
-                ['GU-NIT', '10', '6.40'],
-                ['MAN-INST', '2', '18'],
-              ],
-              {
-                draft: true,
-              },
-            ),
-          ],
+          address: "Via dell'Industria 21",
+          postalCode: '20141',
+          city: 'Milano',
+          province: 'MI',
+          reaOffice: 'MI',
+          reaNumber: '1987654',
+          shareCapital: '50000',
+          soleShareholder: false,
+          iban: 'IT60X0542811101000000123456',
+          pecEmail: 'rossisrl@pec.example.com',
         },
         {
-          warehouse: 'HUB',
-          orders: [
-            order('PURCHASE', '2026-10-26', '0723456789', [['CM-PORT', '2000', '0.14']], {
-              requested: '2026-11-03',
-            }),
-            order('SALES', '2026-10-27', '0723456789', [['CM-PORT', '500', '0.20']]),
-          ],
-        },
-      ],
-      // Per company: header data for the invoices, then documents in date order (numbers and
-      // dates grow together). Parties by VAT number; shipments by the day they left.
-      invoicing: [
-        {
-          profile: {
-            address: "Via dell'Industria 21",
-            postalCode: '20141',
-            city: 'Milano',
-            province: 'MI',
-            reaOffice: 'MI',
-            reaNumber: '1987654',
-            shareCapital: '50000',
-            soleShareholder: false,
-            iban: 'IT60X0542811101000000123456',
-            pecEmail: 'rossisrl@pec.example.com',
-          },
-          documents: [
-            invoice('2026-10-02', '0612345678', 'RD', 'MP05', {
-              lines: [['MDO-ORA', '2']],
-            }),
-            invoice('2026-10-15', '0612345678', '30FM', 'MP05', {
-              shipments: ['2026-10-15'],
-              pay: [{ date: '2026-11-03', amount: '60.00' }],
-            }),
-            invoice('2026-10-20', 'DE811234567', 'RD', 'MP05', {
-              lines: [['MDO-ORA', '3', 'N2.1']],
-              stampDuty: true,
-              pay: [{ date: '2026-10-28', amount: '107.00' }],
-              notes: 'Operazione non soggetta, art. 7-ter DPR 633/72.',
-            }),
-            invoice('2026-10-22', '0723456789', '30DF', 'MP05', {
-              lines: [['CORSO-SIC', '4']],
-              stampDuty: true,
-            }),
-            credit('2026-10-25', 2, ['TS-8'], '2'),
-            invoice('2026-10-26', '0612345678', 'RD', 'MP05', { lines: [['MDO-ORA', '1']] }),
-            credit('2026-10-27', 6),
-            invoice('2026-10-31', '0723456789', '30-60FM', 'MP12', { shipments: ['2026-10-21'] }),
-            invoice('2026-11-04', 'DE811234567', '30DF', 'MP05', {
-              lines: [['MDO-ORA', '8', 'N2.1']],
-              draft: true,
-            }),
-          ],
-        },
-        {
-          profile: {
-            address: 'Via del Porto 5',
-            postalCode: '24121',
-            city: 'Bergamo',
-            province: 'BG',
-            reaOffice: 'BG',
-            reaNumber: '765432',
-            shareCapital: '20000',
-            soleShareholder: true,
-            iban: 'IT07X0542811101000000654321',
-          },
-          documents: [
-            invoice('2026-10-30', '0723456789', '30DF', 'MP05', { lines: [['MDO-ORA', '4']] }),
-          ],
+          address: 'Via del Porto 5',
+          postalCode: '24121',
+          city: 'Bergamo',
+          province: 'BG',
+          reaOffice: 'BG',
+          reaNumber: '765432',
+          shareCapital: '20000',
+          soleShareholder: true,
+          iban: 'IT07X0542811101000000654321',
         },
       ],
     },
@@ -445,21 +229,28 @@ export const DEMO = {
       slug: 'bianchi',
       name: 'Bianchi Snc',
       modules: ['registry', 'invoicing'],
-      companies: [{ legalName: 'Bianchi Snc', vatNumber: withCheckDigit('0519283746') }],
+      companies: [
+        { legalName: 'Bianchi Snc', vatNumber: withCheckDigit('0519283746'), story: 'bianchi' },
+      ],
       members: [
         { email: 'giorgio.bianchi', name: 'Giorgio Bianchi', role: 'ADMIN', companies: 'all' },
         { email: 'paola.conti', name: 'Paola Conti', role: 'READ_ONLY', companies: 'all' },
       ],
       parties: [
-        company('Cartoleria Centrale Srl', '1167890123', 'SRL', 'supplier', {
+        company('cartoleria', 'Cartoleria Centrale Srl', '1167890123', 'SRL', 'supplier', {
           city: 'Bologna',
           province: 'BO',
         }),
-        company('Studio Associato Gentile', '1278901234', null, 'customer', {
+        company('gentile', 'Studio Associato Gentile', '1278901234', null, 'customer', {
+          address: 'Corso Canalgrande 40',
+          postalCode: '41121',
           city: 'Modena',
           province: 'MO',
+          pecEmail: 'gentile@pec.example.com',
+          paymentTerms: '30DF',
+          paymentMethod: 'MP05',
         }),
-        company('Studio Legale Ferraro', '1389012345', null, 'customer', {
+        company('ferraro', 'Studio Legale Ferraro', '1389012345', null, 'customer', {
           address: 'Via Farini 14',
           postalCode: '40124',
           city: 'Bologna',
@@ -474,533 +265,215 @@ export const DEMO = {
         good('CARTA-A4', 'Carta A4 80 g (5 risme)', 'CF', '24.90'),
         good('TONER-K', 'Toner nero per stampante laser', 'PZ', '49.00'),
       ],
-      // Invoicing without orders (S7): invoices by hand only.
-      invoicing: [
+      warehouses: [],
+      profiles: [
         {
-          profile: {
-            address: 'Via Emilia Ponente 100',
-            postalCode: '40133',
-            city: 'Bologna',
-            province: 'BO',
-            reaOffice: 'BO',
-            reaNumber: '345678',
-            iban: 'IT20Y0306909606100000063789',
-          },
-          documents: [
-            invoice('2026-10-10', '1389012345', '30DF', 'MP05', {
-              lines: [['CONS-ORA', '5']],
-              pay: [{ date: '2026-11-02', amount: '366.00' }],
-            }),
-            invoice('2026-10-28', '1389012345', 'RD', 'MP05', {
-              lines: [
-                ['CARTA-A4', '2'],
-                ['TONER-K', '1'],
-              ],
-            }),
-          ],
+          address: 'Via Emilia Ponente 100',
+          postalCode: '40133',
+          city: 'Bologna',
+          province: 'BO',
+          reaOffice: 'BO',
+          reaNumber: '345678',
+          iban: 'IT20Y0306909606100000063789',
         },
       ],
     },
   ],
 } as const;
 
+/** The slugs of the demo tenants: `reset-demo` may delete these, and nothing else. */
+export const DEMO_SLUGS: readonly string[] = DEMO.tenants.map((t) => t.slug);
+/** The emails of the demo people (without a test suffix). */
+export const DEMO_EMAILS: readonly string[] = [
+  ...new Set(DEMO.tenants.flatMap((t) => t.members.map((m) => `${m.email}@example.com`))),
+];
+
 export interface SeedSummary {
   slug: string;
-  /** False when the tenant was already there: its companies and people are left as they are. */
+  /** False when the tenant was already there: nothing was added to it. */
   created: boolean;
   companies: number;
   members: number;
-  /** Parties and items added by this run. */
   parties: number;
   items: number;
-  /** Warehouses and stock documents added by this run. */
-  warehouses: number;
   documents: number;
-  /** Orders added by this run. */
   orders: number;
-  /** Invoices and credit notes issued by this run. */
   invoices: number;
 }
 
+export interface SeedServices {
+  tenancy: TenancyService;
+  identity: IdentityService;
+  registry: RegistryService;
+  warehouse: WarehouseService;
+  orders: OrdersService;
+  invoicing: InvoicingService;
+}
+
+export interface SeedOptions {
+  /** The last day of the story; default today (Italian time). */
+  today?: string;
+  /** For tests only: makes slugs and emails unique, so tests never touch the real demo data. */
+  suffix?: string;
+}
+
 /**
- * Creates the demo data in `db` (call it inside one transaction). It only adds what is missing:
- * a demo tenant that exists keeps its companies and people and gets the registry entries it
- * lacks, so the command can run again, also after an upgrade, without duplicating anything.
- * `suffix` exists for tests only: it makes slugs and emails unique, so tests never touch the
- * real demo data.
+ * Creates the demo tenants that are missing, with their history (call it inside one
+ * transaction). A demo tenant that exists is left as it is: its history is written once, from the
+ * first day, because numbers and dates of invoices must grow together. To start again, use
+ * `reset-demo`.
  */
-export async function seedDemo(
-  db: DbClient,
-  services: {
-    tenancy: TenancyService;
-    identity: IdentityService;
-    registry: RegistryService;
-    warehouse: WarehouseService;
-    orders: OrdersService;
-    invoicing: InvoicingService;
-  },
-  suffix = '',
-) {
+export async function seedDemo(db: DbClient, services: SeedServices, options: SeedOptions = {}) {
+  const suffix = options.suffix ?? '';
+  const today = options.today ?? businessToday();
   const slug = (base: string) => (suffix ? `${base}-${suffix}` : base);
   const email = (local: string) => `${local}${suffix ? `.${suffix}` : ''}@example.com`;
   const summary: SeedSummary[] = [];
   const userIds = new Set<string>();
+  const shown = new Set<Feature>();
 
   for (const tenant of DEMO.tenants) {
-    let tenantId = (await services.tenancy.findTenantBySlug(db, slug(tenant.slug)))?.id;
-    const created = !tenantId;
-    if (!tenantId) {
-      const [first, ...others] = tenant.companies;
-      const made = await services.tenancy.createTenant(db, {
-        name: tenant.name,
+    if (await services.tenancy.findTenantBySlug(db, slug(tenant.slug))) {
+      summary.push({
         slug: slug(tenant.slug),
-        modules: tenant.modules,
-        company: first,
+        created: false,
+        companies: tenant.companies.length,
+        members: tenant.members.length,
+        parties: 0,
+        items: 0,
+        documents: 0,
+        orders: 0,
+        invoices: 0,
       });
-      tenantId = made.tenant.id;
-      const companyIds = [made.company.id];
-      for (const company of others) {
-        companyIds.push((await services.tenancy.addCompany(db, made.tenant.slug, company)).id);
-      }
-      for (const member of tenant.members) {
-        const added = await services.identity.addMember(db, {
-          tenantId,
-          email: email(member.email),
-          name: member.name,
-          role: member.role,
-          companies:
-            member.companies === 'all'
-              ? 'all'
-              : member.companies.map((index) => companyIds[index]!),
-        });
-        userIds.add(added.userId);
-      }
+      continue;
     }
-
-    let parties = 0;
-    for (const party of tenant.parties) {
-      if (await services.registry.addPartyIfMissing(db, tenantId, party)) parties++;
-    }
-    let items = 0;
-    for (const item of tenant.items) {
-      if (await services.registry.addItemIfMissing(db, tenantId, item)) items++;
-    }
-    const stock =
-      'warehouse' in tenant
-        ? await seedWarehouse(db, services, tenantId, tenant)
-        : { warehouses: 0, documents: 0 };
-    const orders = 'orders' in tenant ? await seedOrders(db, services, tenantId, tenant) : 0;
-    const invoices = await seedInvoicing(db, services, tenantId, tenant);
-    summary.push({
+    const [first, ...others] = tenant.companies;
+    const made = await services.tenancy.createTenant(db, {
+      name: tenant.name,
       slug: slug(tenant.slug),
-      created,
-      companies: tenant.companies.length,
-      members: tenant.members.length,
-      parties,
-      items,
-      ...stock,
-      orders,
-      invoices,
+      modules: tenant.modules,
+      company: { legalName: first.legalName, vatNumber: first.vatNumber },
     });
-  }
-  return { tenants: summary, userIds: [...userIds] };
-}
-
-/**
- * Warehouses, documents and reorder levels of a demo tenant. Documents go through the same use
- * case as the API (same rules, locks, numbering), each recorded "on its own day" so the date
- * rules hold whatever today is; they are added only to a company whose warehouses have none.
- */
-async function seedWarehouse(
-  db: DbClient,
-  services: { tenancy: TenancyService; registry: RegistryService; warehouse: WarehouseService },
-  tenantId: string,
-  tenant: (typeof DEMO.tenants)[0],
-) {
-  let warehouses = 0;
-  let documents = 0;
-  const companyIds = await services.tenancy.companyIdsByVat(
-    db,
-    tenantId,
-    tenant.companies.map((c) => c.vatNumber),
-  );
-  const itemIds = await services.registry.itemIdsByCode(
-    db,
-    tenantId,
-    tenant.items.map((i) => i.code),
-  );
-  for (const [index, spec] of tenant.warehouse.entries()) {
-    const company = { tenantId, companyId: companyIds[index]!, userId: null };
-    const warehouseIds = new Map<string, string>();
-    let hasDocuments = false;
-    for (const warehouse of spec.warehouses) {
-      const ensured = await services.warehouse.ensureWarehouse(db, company, warehouse);
-      if (ensured.created) warehouses++;
-      warehouseIds.set(warehouse.code, ensured.id);
-      hasDocuments ||= await services.warehouse.hasDocuments(db, ensured.id);
-    }
-    if (!hasDocuments) {
-      for (const spec_ of spec.documents) {
-        const partyId = spec_.party
-          ? await services.registry.partyIdByVat(db, tenantId, withCheckDigit(spec_.party))
-          : null;
-        const counted = spec_.reason === 'INVENTORY_ADJUSTMENT';
-        const dto: CreateStockDocumentDto = {
-          id: uuidv7(Date.parse(`${spec_.date}T09:00:00Z`)),
-          reason: spec_.reason,
-          documentDate: spec_.date,
-          warehouseId: warehouseIds.get(spec_.warehouse)!,
-          targetWarehouseId: spec_.target ? warehouseIds.get(spec_.target)! : null,
-          partyId,
-          partyDocumentRef: spec_.ref ?? null,
-          partyDocumentDate: spec_.refDate ?? null,
-          notes: spec_.notes ?? null,
-          lines: spec_.lines.map(([code, quantity]) => ({
-            itemId: itemIds.get(code)!,
-            ...(counted ? { countedQuantity: quantity } : { quantity }),
-          })),
-        };
-        const posted = await services.warehouse.postDocument(db, company, dto, {
-          today: spec_.date,
-        });
-        documents++;
-        if (spec_.reverseOn) {
-          await services.warehouse.reverseDocument(db, company, posted.id, {
-            today: spec_.reverseOn,
-          });
-          documents++;
-        }
-      }
-    }
-    for (const level of spec.reorderLevels) {
-      await services.warehouse.setReorderLevelIfMissing(db, company, {
-        warehouseId: warehouseIds.get(level.warehouse)!,
-        itemId: itemIds.get(level.item)!,
-        reorderPoint: level.reorderPoint,
-        reorderQuantity: level.reorderQuantity,
+    const tenantId = made.tenant.id;
+    const companyIds = [made.company.id];
+    for (const company of others) {
+      const added = await services.tenancy.addCompany(db, made.tenant.slug, {
+        legalName: company.legalName,
+        vatNumber: company.vatNumber,
       });
+      companyIds.push(added.id);
     }
-  }
-  return { warehouses, documents };
-}
-
-/**
- * Orders of a demo tenant, added only to a company that has none. Each action goes through the
- * same use case as the API and is recorded "on its own day", like the stock documents: created
- * on the order date, confirmed the same day unless it stays a draft, then received or shipped,
- * undone, closed or cancelled on the dates given.
- */
-async function seedOrders(
-  db: DbClient,
-  services: {
-    tenancy: TenancyService;
-    registry: RegistryService;
-    warehouse: WarehouseService;
-    orders: OrdersService;
-  },
-  tenantId: string,
-  tenant: (typeof DEMO.tenants)[0],
-): Promise<number> {
-  let added = 0;
-  const companyIds = await services.tenancy.companyIdsByVat(
-    db,
-    tenantId,
-    tenant.companies.map((c) => c.vatNumber),
-  );
-  const itemIds = await services.registry.itemIdsByCode(
-    db,
-    tenantId,
-    tenant.items.map((i) => i.code),
-  );
-  for (const [index, spec] of tenant.orders.entries()) {
-    const company = { tenantId, companyId: companyIds[index]!, userId: null };
-    if (await services.orders.hasOrders(db, company.companyId)) continue;
-    const warehouse = tenant.warehouse[index]!.warehouses.find((w) => w.code === spec.warehouse)!;
-    const warehouseId = (await services.warehouse.ensureWarehouse(db, company, warehouse)).id;
-    for (const o of spec.orders) {
-      const vat = /^\d/.test(o.party) ? withCheckDigit(o.party) : o.party;
-      const id = uuidv7(Date.parse(`${o.date}T08:00:00Z`));
-      let current = await services.orders.createDraft(
-        db,
-        company,
-        {
-          id,
-          kind: o.kind,
-          orderDate: o.date,
-          partyId: (await services.registry.partyIdByVat(db, tenantId, vat))!,
-          warehouseId,
-          partyReference: o.ref ?? null,
-          requestedDate: o.requested ?? null,
-          notes: o.notes ?? null,
-          lines: o.lines.map(([code, quantity, unitPrice, discountPercent]) => ({
-            itemId: itemIds.get(code)!,
-            quantity,
-            unitPrice,
-            ...(discountPercent ? { discountPercent } : {}),
-          })),
-        },
-        o.date,
-      );
-      added++;
-      if (o.draft) continue;
-      current = await services.orders.confirm(db, company, id, current.version, o.date);
-      const lineOf = (code: string) => current.lines[o.lines.findIndex(([c]) => c === code)]!.id;
-      for (const f of o.fulfil ?? []) {
-        const fulfilmentId = uuidv7(Date.parse(`${f.date}T10:00:00Z`));
-        current = await services.orders.fulfil(
-          db,
-          company,
-          id,
-          {
-            id: fulfilmentId,
-            documentDate: f.date,
-            partyDocumentRef: f.ref ?? null,
-            lines: f.lines.map(([code, quantity]) => ({ orderLineId: lineOf(code), quantity })),
-          },
-          f.date,
-        );
-        if (f.reverseOn) {
-          current = await services.orders.reverseFulfilment(
-            db,
-            company,
-            id,
-            fulfilmentId,
-            f.reverseOn,
-          );
-        }
-      }
-      if (o.closeOn) current = await services.orders.close(db, company, id, current.version);
-      if (o.cancelOn) current = await services.orders.cancel(db, company, id, current.version);
+    for (const member of tenant.members) {
+      const added = await services.identity.addMember(db, {
+        tenantId,
+        email: email(member.email),
+        name: member.name,
+        role: member.role,
+        companies:
+          member.companies === 'all' ? 'all' : member.companies.map((index) => companyIds[index]!),
+      });
+      userIds.add(added.userId);
     }
-  }
-  return added;
-}
 
-/**
- * Invoices, credit notes and payments of a demo tenant, added only to a company that has no
- * invoice. The header data of each company is filled in only where it is missing. Shipments
- * recorded before invoicing existed are published again first (idempotent), so they are there to
- * invoice. Every action goes through the same use case as the API, "on its own day".
- */
-async function seedInvoicing(
-  db: DbClient,
-  services: {
-    tenancy: TenancyService;
-    registry: RegistryService;
-    orders: OrdersService;
-    invoicing: InvoicingService;
-  },
-  tenantId: string,
-  tenant: (typeof DEMO.tenants)[number],
-): Promise<number> {
-  let issued = 0;
-  const companyIds = await services.tenancy.companyIdsByVat(
-    db,
-    tenantId,
-    tenant.companies.map((c) => c.vatNumber),
-  );
-  const itemIds = await services.registry.itemIdsByCode(
-    db,
-    tenantId,
-    tenant.items.map((i) => i.code),
-  );
-  if ('orders' in tenant) await services.orders.republishFulfilments(db, tenantId);
-  for (const [index, spec] of tenant.invoicing.entries()) {
-    const company = { tenantId, companyId: companyIds[index]!, userId: null };
-    const current = await services.tenancy.getCompany(db, company.companyId);
-    if (!current.address) {
+    const parties = new Map<string, string>();
+    for (const { key, ...party } of tenant.parties as readonly DemoParty[]) {
+      parties.set(key, (await services.registry.addPartyIfMissing(db, tenantId, party)).id);
+    }
+    for (const item of tenant.items) await services.registry.addItemIfMissing(db, tenantId, item);
+    const itemIds = await services.registry.itemIdsByCode(
+      db,
+      tenantId,
+      tenant.items.map((i) => i.code),
+    );
+    const items = new Map<string, HistoryItem>(
+      tenant.items.map((i) => [i.code, { id: itemIds.get(i.code)!, salePrice: i.salePrice }]),
+    );
+
+    let documents = 0;
+    let orders = 0;
+    let invoices = 0;
+    for (const [index, spec] of tenant.companies.entries()) {
+      const company = { tenantId, companyId: companyIds[index]!, userId: null };
+      const current = await services.tenancy.getCompany(db, company.companyId);
       await services.tenancy.updateCompanyProfile(
         db,
         company.companyId,
         current.version,
-        spec.profile,
+        tenant.profiles[index]!,
       );
-    }
-    if (await services.invoicing.hasInvoices(db, company.companyId)) continue;
-    const documents: { id: string; lines: { id: string; itemId: string | null }[] }[] = [];
-    for (const d of spec.documents) {
-      const id = uuidv7(Date.parse(`${d.date}T11:00:00Z`));
-      if (d.type === 'credit') {
-        const credited = documents[d.of - 1]!;
-        const lineIds = d.items?.map(
-          (code) => credited.lines.find((l) => l.itemId === itemIds.get(code))!.id,
+      const warehouses = new Map<string, string>();
+      const stock = (tenant.warehouses as readonly WarehouseSpec[])[index];
+      for (const warehouse of stock?.warehouses ?? []) {
+        warehouses.set(
+          warehouse.code,
+          (await services.warehouse.ensureWarehouse(db, company, warehouse)).id,
         );
-        let draft = await services.invoicing.creditNote(
-          db,
-          company,
-          credited.id,
-          { id, ...(lineIds ? { lineIds } : {}) },
-          d.date,
-        );
-        if (d.quantity) {
-          draft = await services.invoicing.updateDraft(
-            db,
-            company,
-            id,
-            {
-              version: draft.version,
-              partyId: draft.partyId,
-              paymentTerms: draft.paymentTerms,
-              paymentMethod: draft.paymentMethod,
-              language: draft.language,
-              lines: draft.lines.map((l) => ({
-                description: l.description,
-                ...(l.creditedLineId
-                  ? { creditedLineId: l.creditedLineId, quantity: d.quantity }
-                  : {}),
-              })),
-            },
-            d.date,
-          );
-        }
-        const note = await services.invoicing.issue(db, company, id, draft.version, d.date);
-        documents.push({ id, lines: note.lines });
-        issued++;
-        continue;
       }
-      const vat = /^\d/.test(d.party) ? withCheckDigit(d.party) : d.party;
-      const partyId = (await services.registry.partyIdByVat(db, tenantId, vat))!;
-      const shipments = (await services.invoicing.toInvoice(db, company.companyId)).filter(
-        (s) =>
-          s.partyId === partyId &&
-          !s.draftId &&
-          (d.shipments as readonly string[] | undefined)?.includes(
-            s.documentDate.toISOString().slice(0, 10),
-          ),
-      );
-      const draft = await services.invoicing.createDraft(
+      const history = await writeHistory({
         db,
+        services,
         company,
-        {
-          id,
-          partyId,
-          fulfilmentIds: shipments.map((s) => s.fulfilmentId),
-          paymentTerms: d.terms,
-          paymentMethod: d.method,
-          notes: d.notes ?? null,
-          lines: [
-            ...(d.lines ?? []).map(([code, quantity, vatCode]) => ({
-              itemId: itemIds.get(code)!,
-              quantity,
-              unitPrice: tenant.items.find((i) => i.code === code)!.salePrice,
-              ...(vatCode ? { vatCode } : {}),
-            })),
-            ...(d.stampDuty ? [{ stampDutyCharge: true }] : []),
-          ],
-        },
-        d.date,
-      );
-      if (d.draft) continue;
-      const invoice = await services.invoicing.issue(db, company, id, draft.version, d.date);
-      documents.push({ id, lines: invoice.lines });
-      issued++;
-      for (const payment of d.pay ?? []) {
-        // From the first open instalment on, as a person would.
-        let left = Number(payment.amount) * 100;
-        const allocations = [];
-        for (const due of invoice.dueDates) {
-          if (left <= 0) break;
-          const take = Math.min(left, Math.round(Number(due.openAmount) * 100));
-          if (take > 0) allocations.push({ dueDateId: due.id, amount: (take / 100).toFixed(2) });
-          left -= take;
-        }
-        await services.invoicing.recordPayment(
-          db,
-          company,
-          {
-            id: uuidv7(Date.parse(`${payment.date}T12:00:00Z`)),
-            partyId,
-            paymentDate: payment.date,
-            amount: payment.amount,
-            method: d.method,
-            allocations,
-          },
-          payment.date,
-        );
+        story: spec.story as Story,
+        today,
+        items,
+        parties,
+        warehouses,
+      });
+      for (const level of stock?.reorderLevels ?? []) {
+        await services.warehouse.setReorderLevelIfMissing(db, company, {
+          warehouseId: warehouses.get(level.warehouse)!,
+          itemId: items.get(level.item)!.id,
+          reorderPoint: level.reorderPoint,
+          reorderQuantity: level.reorderQuantity,
+        });
       }
+      documents += history.documents;
+      orders += history.orders;
+      invoices += history.invoices;
+      for (const feature of history.features) shown.add(feature);
     }
+    summary.push({
+      slug: slug(tenant.slug),
+      created: true,
+      companies: tenant.companies.length,
+      members: tenant.members.length,
+      parties: tenant.parties.length,
+      items: tenant.items.length,
+      documents,
+      orders,
+      invoices,
+    });
   }
-  return issued;
+  const created = summary.some((t) => t.created);
+  return {
+    tenants: summary,
+    userIds: [...userIds],
+    today,
+    /** What the demo was meant to show and did not (empty when every tenant was there already). */
+    missing: created ? FEATURES.filter((f) => !shown.has(f)) : [],
+  };
 }
 
-/** A demo invoice: date, customer (VAT number), payment terms and method, what it invoices. */
-function invoice(
-  date: string,
-  party: string,
-  terms: string,
-  method: string,
-  extra: {
-    /** Items or services typed by hand: [code, quantity, VAT code if not the item's]. */
-    lines?: [code: string, quantity: string, vatCode?: string][];
-    /** Shipments of the customer, by the day they left. */
-    shipments?: string[];
-    stampDuty?: boolean;
-    notes?: string;
-    pay?: { date: string; amount: string }[];
-    draft?: boolean;
-  } = {},
-) {
-  return { type: 'invoice' as const, date, party, terms, method, ...extra };
-}
-
-/**
- * A demo credit note of the `of`-th document above (from 1): of the lines of these items, or of
- * everything; with `quantity`, of that much of each line.
- */
-function credit(date: string, of: number, items?: string[], quantity?: string) {
-  return { type: 'credit' as const, date, of, items, quantity };
-}
-
-/** A demo order: kind, date, party (VAT number, first 10 digits if Italian), lines. */
-function order(
-  kind: 'PURCHASE' | 'SALES',
-  date: string,
-  party: string,
-  lines: [code: string, quantity: string, unitPrice: string, discount?: string][],
-  extra: {
-    ref?: string;
-    requested?: string;
-    notes?: string;
-    draft?: boolean;
-    fulfil?: {
-      date: string;
-      ref?: string;
-      lines: [code: string, quantity: string][];
-      reverseOn?: string;
-    }[];
-    closeOn?: string;
-    cancelOn?: string;
-  } = {},
-) {
-  return { kind, date, party, lines, ...extra };
-}
-
-/** A demo stock document: reason, date, warehouse code, lines as [item code, quantity]. */
-function doc(
-  reason: CreateStockDocumentDto['reason'],
-  date: string,
-  warehouse: string,
-  lines: [string, string][],
-  extra: {
-    target?: string;
-    party?: string;
-    ref?: string;
-    refDate?: string;
-    notes?: string;
-    reverseOn?: string;
-  } = {},
-) {
-  return { reason, date, warehouse, lines, ...extra };
+interface WarehouseSpec {
+  warehouses: readonly { code: string; name: string }[];
+  reorderLevels: readonly {
+    warehouse: string;
+    item: string;
+    reorderPoint: string;
+    reorderQuantity: string;
+  }[];
 }
 
 function company(
+  key: string,
   legalName: string,
   vatFirst10: string,
   legalForm: string | null,
   role: 'customer' | 'supplier' | 'both',
   extra: Partial<PartyInput> = {},
-): PartyInput {
+): DemoParty {
   return {
+    key,
     kind: 'COMPANY',
     isCustomer: role !== 'supplier',
     isSupplier: role !== 'customer',

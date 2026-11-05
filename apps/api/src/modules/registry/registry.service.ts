@@ -67,19 +67,20 @@ export class RegistryService {
     private readonly items: ItemsRepository,
   ) {}
 
-  /** Adds the party unless the tenant already has the same subject. True when added. */
+  /** Adds the party unless the tenant already has the same subject: its id, and whether added. */
   async addPartyIfMissing(
     db: DbClient,
     tenantId: string,
     input: PartyInput & { archived?: boolean },
-  ): Promise<boolean> {
+  ): Promise<{ id: string; created: boolean }> {
     const data = normalizeParty(input);
-    if (await this.parties.findSame(db, tenantId, data)) return false;
+    const same = await this.parties.findSame(db, tenantId, data);
+    if (same) return { id: same.id, created: false };
     const party = await this.parties.create(db, tenantId, data);
     if (input.archived) {
       await this.parties.updateAtVersion(db, party.id, party.version, { archivedAt: new Date() });
     }
-    return true;
+    return { id: party.id, created: true };
   }
 
   /** Adds the item unless the tenant already has its code. True when added. */

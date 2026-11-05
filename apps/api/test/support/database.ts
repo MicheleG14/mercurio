@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { deleteTenantData } from '../../src/cli/demo-reset.js';
 import { PrismaClient } from '../../src/generated/prisma/client.js';
 
 /**
@@ -79,58 +80,23 @@ export async function deleteTenantsAndUsers(
   tenantIds: readonly string[],
   userIds: readonly string[],
 ): Promise<void> {
-  const tenantId = { in: [...tenantIds] };
   const userId = { in: [...userIds] };
-  // The audit tables refuse deletes (append-only trigger). Test data is the one thing that may go:
-  // in this transaction the owner turns triggers off for itself, which no API role can do.
+  // The tenants with the same list as reset-demo, then the people. The audit tables refuse
+  // deletes (append-only trigger): in this transaction the owner turns triggers off for itself,
+  // which no API role can do.
+  await admin.$transaction((tx) => deleteTenantData(tx, tenantIds), { timeout: 60_000 });
   await admin.$transaction([
     admin.$executeRaw`SET LOCAL session_replication_role = replica`,
-    admin.auditEvent.deleteMany({ where: { OR: [{ tenantId }, { actorUserId: userId }] } }),
+    admin.auditEvent.deleteMany({ where: { actorUserId: userId } }),
     admin.authEvent.deleteMany({ where: { userId } }),
   ]);
   await admin.session.deleteMany({ where: { userId } });
   await admin.recoveryCode.deleteMany({ where: { userId } });
   await admin.credential.deleteMany({ where: { userId } });
-  // Invoicing: what points to documents goes before them, credit notes before what they credit.
-  await admin.paymentAllocation.deleteMany({ where: { tenantId } });
-  await admin.creditAllocation.deleteMany({ where: { tenantId } });
-  await admin.payment.deleteMany({ where: { tenantId, reversesId: { not: null } } });
-  await admin.payment.deleteMany({ where: { tenantId } });
-  await admin.invoiceDueDate.deleteMany({ where: { tenantId } });
-  await admin.invoiceDraftLine.deleteMany({ where: { tenantId } });
-  await admin.invoiceLine.deleteMany({ where: { tenantId, creditedLineId: { not: null } } });
-  await admin.invoiceLine.deleteMany({ where: { tenantId } });
-  await admin.invoiceVatRow.deleteMany({ where: { tenantId } });
-  await admin.invoiceableLine.deleteMany({ where: { tenantId } });
-  await admin.invoiceableFulfilment.deleteMany({ where: { tenantId } });
-  await admin.invoiceDraft.deleteMany({ where: { tenantId } });
-  await admin.invoice.deleteMany({ where: { tenantId, creditedInvoiceId: { not: null } } });
-  await admin.invoice.deleteMany({ where: { tenantId } });
-  await admin.invoiceCounter.deleteMany({ where: { tenantId } });
-  // Orders first: their fulfilments point to stock documents.
-  await admin.orderFulfilmentLine.deleteMany({ where: { tenantId } });
-  await admin.orderFulfilment.deleteMany({ where: { tenantId } });
-  await admin.orderLine.deleteMany({ where: { tenantId } });
-  await admin.order.deleteMany({ where: { tenantId } });
-  await admin.orderCounter.deleteMany({ where: { tenantId } });
-  await admin.stockMovement.deleteMany({ where: { tenantId } });
-  await admin.stockReservation.deleteMany({ where: { tenantId } });
-  await admin.stockBalance.deleteMany({ where: { tenantId } });
-  await admin.reorderLevel.deleteMany({ where: { tenantId } });
-  await admin.stockDocumentCounter.deleteMany({ where: { tenantId } });
-  // Reversals point to the documents they reverse: they go first.
-  await admin.stockDocument.deleteMany({ where: { tenantId, reversesId: { not: null } } });
-  await admin.stockDocument.deleteMany({ where: { tenantId } });
-  await admin.warehouse.deleteMany({ where: { tenantId } });
-  await admin.party.deleteMany({ where: { tenantId } });
-  await admin.item.deleteMany({ where: { tenantId } });
-  await admin.membershipCompany.deleteMany({ where: { tenantId } });
-  await admin.membership.deleteMany({ where: { tenantId } });
-  await admin.tenantModule.deleteMany({ where: { tenantId } });
-  await admin.company.deleteMany({ where: { tenantId } });
-  await admin.activationToken.deleteMany({ where: { userId: { in: [...userIds] } } });
-  await admin.user.deleteMany({ where: { id: { in: [...userIds] } } });
-  await admin.tenant.deleteMany({ where: { id: tenantId } });
+  await admin.membershipCompany.deleteMany({ where: { membership: { userId } } });
+  await admin.membership.deleteMany({ where: { userId } });
+  await admin.activationToken.deleteMany({ where: { userId } });
+  await admin.user.deleteMany({ where: { id: userId } });
 }
 
 /** A UUID version 7 (B7), as a client makes one for a new document (B33). */
