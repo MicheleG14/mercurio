@@ -71,7 +71,8 @@ export function PaymentFormPage() {
   const [amountText, setAmountText] = useState('');
   const [method, setMethod] = useState('MP05');
   const [reference, setReference] = useState('');
-  const [allocations, setAllocations] = useState<Map<string, string>>(new Map());
+  // What the person changed by hand; until then the proposal follows the amount and the due dates.
+  const [edited, setAllocations] = useState<Map<string, string> | null>(null);
 
   const open = useDueDates({ page: 1, status: 'open', partyId, pageSize: 100 }, Boolean(partyId));
   const rows = (open.data?.items ?? []).filter((row) =>
@@ -79,23 +80,18 @@ export function PaymentFormPage() {
   );
   const partyName = customer?.name ?? open.data?.items[0]?.partyName ?? '';
   const amount = parseDecimalInput(amountText, language, AMOUNT);
+  const allocations =
+    edited ??
+    new Map(
+      [...propose(rows, amount ? cents(amount) : 0)].map(([dueDateId, value]) => [
+        dueDateId,
+        decimalToInput(fromCents(value), language),
+      ]),
+    );
   const allocated = [...allocations.values()].reduce((sum, text) => {
     const value = parseDecimalInput(text, language, AMOUNT);
     return sum + (value ? cents(value) : 0);
   }, 0);
-
-  const proposeFor = (text: string) => {
-    const value = parseDecimalInput(text, language, AMOUNT);
-    const proposal = propose(rows, value ? cents(value) : 0);
-    setAllocations(
-      new Map(
-        [...proposal].map(([dueDateId, value]) => [
-          dueDateId,
-          decimalToInput(fromCents(value), language),
-        ]),
-      ),
-    );
-  };
 
   if (!pay) return <Navigate to="/invoicing/payments" replace />;
 
@@ -140,7 +136,7 @@ export function PaymentFormPage() {
               value={kind}
               onChange={(event) => {
                 setKind(event.target.value as 'RECEIPT' | 'REFUND');
-                setAllocations(new Map());
+                setAllocations(null);
               }}
             >
               <NativeSelectOption value="RECEIPT">{t('payments.kind.RECEIPT')}</NativeSelectOption>
@@ -158,7 +154,7 @@ export function PaymentFormPage() {
               onChange={(option) => {
                 setCustomer(option);
                 setPartyId(option?.id ?? '');
-                setAllocations(new Map());
+                setAllocations(null);
               }}
               queryKey={customers.queryKey}
               search={customers.search}
@@ -187,7 +183,7 @@ export function PaymentFormPage() {
               value={amountText}
               onChange={(event) => {
                 setAmountText(event.target.value);
-                proposeFor(event.target.value);
+                setAllocations(null);
               }}
             />
           )}
@@ -245,9 +241,7 @@ export function PaymentFormPage() {
                   className="w-32"
                   value={allocations.get(row.dueDateId) ?? ''}
                   onChange={(event) =>
-                    setAllocations((current) =>
-                      new Map(current).set(row.dueDateId, event.target.value),
-                    )
+                    setAllocations(new Map(allocations).set(row.dueDateId, event.target.value))
                   }
                 />
               </li>
