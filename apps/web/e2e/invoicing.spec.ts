@@ -168,5 +168,6 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/mercurio/invoicing/due-dates?status=all');
   await expect(page.getByRole('heading', { name: 'Scadenziario' })).toBeVisible();
+  await expect(page.getByText(/^FT 1\/\d{4}$/).first()).toBeVisible();
   await page.screenshot({ path: 'screens/phone-invoicing-schedule.png', fullPage: true });
 });
