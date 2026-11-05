@@ -17,6 +17,7 @@ import {
 } from 'class-validator';
 import { OrderKind, OrderStatus } from '../../generated/prisma/client.js';
 import { PageQuery, queryBoolean } from '../../shared/pagination.js';
+import { TransportInputDto } from '../warehouse/index.js';
 
 /** UUID version 7 (B7), chosen by the client for what must not be created twice (B33). */
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -189,6 +190,16 @@ export class CreateFulfilmentDto {
   @IsString()
   @MaxLength(1000)
   notes?: string | null;
+
+  @ApiPropertyOptional({
+    type: TransportInputDto,
+    nullable: true,
+    description: 'Sales orders: how the goods travel, printed on the delivery note',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TransportInputDto)
+  transport?: TransportInputDto | null;
 
   @ApiProperty({ type: [FulfilmentLineInputDto], minItems: 1, maxItems: MAX_LINES })
   @IsArray()

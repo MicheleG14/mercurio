@@ -6,7 +6,7 @@ import {
   TenantDatabase,
   type TenantTransaction,
 } from '../../prisma/index.js';
-import { fromDecimal, QUANTITY } from '../../shared/decimal.js';
+import { fromDecimal, isDecimalString, QUANTITY } from '../../shared/decimal.js';
 import { DomainException, FieldErrors, optionalText } from '../../shared/errors/index.js';
 import { type Page, parseSort, skipAndTake } from '../../shared/pagination.js';
 import { escapeLike } from '../../shared/text.js';
@@ -29,6 +29,7 @@ import type {
   StockDocumentsQuery,
   StockDocumentSummaryDto,
   StockLineDto,
+  TransportDto,
 } from './stock-documents.dto.js';
 import { type DocumentRow, StockDocumentsRepository } from './stock-documents.repository.js';
 import type { Origin, PostOptions, ReverseOptions } from './origins.js';
@@ -152,6 +153,7 @@ export class StockDocumentsService {
     }
     const notes = optionalText(dto.notes);
     if (!notes && NOTES_REQUIRED.includes(dto.reason)) errors.add('notes', 'REQUIRED');
+    const transport = checkTransport(dto, errors);
 
     const items = await this.registry.findItemRefs(
       tx,
@@ -190,6 +192,7 @@ export class StockDocumentsService {
       partyDocumentRef,
       partyDocumentDate: partyDocumentDate ? toDbDate(partyDocumentDate) : null,
       notes,
+      transport: transport ?? Prisma.DbNull,
       ...originColumns(options.origin),
       movements,
       consumed,
@@ -616,6 +619,7 @@ export class StockDocumentsService {
     return Object.assign(summary(document, party?.name ?? null), {
       partyDocumentDate: document.partyDocumentDate ? fromDbDate(document.partyDocumentDate) : null,
       notes: document.notes,
+      transport: (document.transport as TransportDto | null) ?? null,
       createdByName: user?.name ?? null,
       reversedReason: document.reverses?.reason ?? null,
       lines,
@@ -746,4 +750,35 @@ function sameDecimal(stored: Prisma.Decimal | null, sent: string | undefined): b
   } catch {
     return false;
   }
+}
+
+/**
+ * How the goods of a sale travel (the delivery note, phase 5): free text checked for shape only,
+ * a carrier named when the carrier carries them, the weight a decimal of kilograms. Null when
+ * nothing is given.
+ */
+function checkTransport(
+  dto: CreateStockDocumentDto,
+  errors: FieldErrors,
+): (Prisma.InputJsonObject & TransportDto) | null {
+  const input = dto.transport;
+  if (!input) return null;
+  if (dto.reason !== 'SALE_ISSUE') {
+    errors.add('transport', 'NOT_ALLOWED');
+    return null;
+  }
+  const weight = optionalText(input.weightKg);
+  if (weight && !isDecimalString(weight, QUANTITY))
+    errors.add('transport.weightKg', 'QUANTITY_INVALID');
+  const carrier = optionalText(input.carrier);
+  if (input.by === 'CARRIER' && !carrier) errors.add('transport.carrier', 'REQUIRED');
+  const transport = {
+    reason: optionalText(input.reason),
+    by: input.by ?? null,
+    carrier,
+    packages: input.packages ?? null,
+    appearance: optionalText(input.appearance),
+    weightKg: weight ? new Prisma.Decimal(weight).toFixed(3) : null,
+  };
+  return Object.values(transport).some((value) => value !== null) ? transport : null;
 }

@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiProduces,
   ApiCreatedResponse,
   ApiHeader,
   ApiNoContentResponse,
@@ -27,6 +28,7 @@ import { RequiresCompany } from '../auth/index.js';
 import { RequiresPermission } from '../identity/index.js';
 import { RequiresModule } from '../tenancy/index.js';
 import { InvoiceDraftsService } from './invoice-drafts.service.js';
+import { InvoicePdfService, type PdfFile } from './pdf/invoice-pdf.service.js';
 import { InvoiceIssueService } from './invoice-issue.service.js';
 import { InvoiceQueriesService } from './invoice-queries.service.js';
 import {
@@ -57,6 +59,18 @@ import {
   VersionQuery,
 } from './invoicing.dto.js';
 
+/** Sends a printed document as a download. */
+function sendPdf(res: Response, file: PdfFile) {
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
+  res.send(file.bytes);
+}
+
+const PDF_RESPONSE = ApiOkResponse({
+  description: 'The document in PDF',
+  content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
+});
+
 const COMPANY_HEADER = ApiHeader({
   name: 'X-Company-Id',
   required: true,
@@ -74,7 +88,17 @@ export class InvoicesController {
   constructor(
     private readonly queries: InvoiceQueriesService,
     private readonly drafts: InvoiceDraftsService,
+    private readonly pdf: InvoicePdfService,
   ) {}
+
+  @Get(':id/pdf')
+  @RequiresPermission('invoicing:read')
+  @ApiOperation({ summary: 'The issued document in PDF, in its own language' })
+  @ApiProduces('application/pdf')
+  @PDF_RESPONSE
+  async print(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response): Promise<void> {
+    sendPdf(res, await this.pdf.invoice(id));
+  }
 
   @Get()
   @RequiresPermission('invoicing:read')
@@ -121,7 +145,17 @@ export class InvoiceDraftsController {
     private readonly queries: InvoiceQueriesService,
     private readonly drafts: InvoiceDraftsService,
     private readonly issuing: InvoiceIssueService,
+    private readonly pdf: InvoicePdfService,
   ) {}
+
+  @Get(':id/pdf')
+  @RequiresPermission('invoicing:read')
+  @ApiOperation({ summary: 'A preview of the draft in PDF, marked as a draft' })
+  @ApiProduces('application/pdf')
+  @PDF_RESPONSE
+  async print(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response): Promise<void> {
+    sendPdf(res, await this.pdf.draft(id));
+  }
 
   @Get()
   @RequiresPermission('invoicing:read')

@@ -651,6 +651,76 @@ describe('orders (e2e)', () => {
     });
   });
 
+  describe('delivery note', () => {
+    it('keeps how the goods travel on the shipment and prints its delivery note', async () => {
+      const item = await itemWith('3');
+      const order = await confirmed('SALES', [{ itemId: item, quantity: '2', unitPrice: '4' }]);
+      const line = [{ orderLineId: order.lines[0].id, quantity: '1' }];
+      const noCarrier = await fulfil(order.id, line, { transport: { by: 'CARRIER' } }).expect(400);
+      expect(noCarrier.body.errors).toEqual([
+        expect.objectContaining({ field: 'transport.carrier', code: 'REQUIRED' }),
+      ]);
+      const id = uuidv7();
+      await fulfil(order.id, line, {
+        id,
+        transport: {
+          by: 'CARRIER',
+          carrier: 'Trasporti Veloci Srl',
+          packages: 2,
+          weightKg: '12.5',
+        },
+      }).expect(201);
+      const document = (await as('admin').get(`/stock-documents/${id}`).expect(200)).body;
+      expect(document.transport).toEqual({
+        reason: null,
+        by: 'CARRIER',
+        carrier: 'Trasporti Veloci Srl',
+        packages: 2,
+        appearance: null,
+        weightKg: '12.500',
+      });
+
+      const pdf = await as('READ_ONLY')
+        .get(`/stock-documents/${id}/delivery-note.pdf`)
+        .buffer(true)
+        .parse((res, done) => {
+          const chunks: Buffer[] = [];
+          res.on('data', (chunk: Buffer) => chunks.push(chunk));
+          res.on('end', () => done(null, Buffer.concat(chunks)));
+        })
+        .expect(200);
+      expect(pdf.headers['content-type']).toBe('application/pdf');
+      expect((pdf.body as Buffer).subarray(0, 5).toString()).toBe('%PDF-');
+
+      const receipt = await as('admin')
+        .post('/stock-documents', {
+          id: uuidv7(),
+          reason: 'OPENING',
+          warehouseId: ids.warehouse,
+          transport: { packages: 1 },
+          lines: [{ itemId: item, quantity: '1' }],
+        })
+        .expect(400);
+      expect(receipt.body.errors).toEqual([
+        expect.objectContaining({ field: 'transport', code: 'NOT_ALLOWED' }),
+      ]);
+      const opening = (
+        await as('admin')
+          .post('/stock-documents', {
+            id: uuidv7(),
+            reason: 'OPENING',
+            warehouseId: ids.warehouse,
+            lines: [{ itemId: item, quantity: '1' }],
+          })
+          .expect(201)
+      ).body;
+      const notSale = await as('admin')
+        .get(`/stock-documents/${opening.id}/delivery-note.pdf`)
+        .expect(409);
+      expect(notSale.body.code).toBe('NOT_A_SALE');
+    });
+  });
+
   describe('concurrency', () => {
     it('never ships more than ordered, with ten fulfilments at once', async () => {
       const item = await itemWith('20');

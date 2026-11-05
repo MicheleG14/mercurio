@@ -94,6 +94,7 @@ export class FulfilmentsService {
           partyDocumentRef: dto.partyDocumentRef ?? null,
           partyDocumentDate: dto.partyDocumentDate ?? null,
           notes: dto.notes ?? null,
+          transport: dto.transport ?? null,
           lines: moving.map((m) => ({
             itemId: linesById.get(m.orderLineId)!.itemId,
             quantity: m.quantity.toString(),
