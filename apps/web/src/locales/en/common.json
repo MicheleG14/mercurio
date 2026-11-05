@@ -94,5 +94,9 @@
     "error": "The search failed.",
     "noMatch": "No results for “{{text}}”.",
     "empty": "Nothing to choose."
+  },
+  "charts": {
+    "showTable": "Show as a table",
+    "showChart": "Show the chart"
   }
 }

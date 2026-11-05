@@ -28,7 +28,6 @@ describe('overview statistics (e2e)', () => {
   const tenDaysAgo = addDays(today, -10);
   const yearOf = (date: string) => Number(date.slice(0, 4));
   const monthOf = (date: string) => Number(date.slice(5, 7));
-  let counter = 0;
 
   const as = (who: keyof typeof token, company: string | null = world.companies.a) => {
     const set = (r: request.Test) => {

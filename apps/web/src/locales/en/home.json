@@ -41,5 +41,65 @@
     "warehouse": "Stock computed from movements, receipts, issues, transfers and reorder levels.",
     "orders": "Sales and purchase orders, reservations, receiving and shipping in parts.",
     "invoicing": "Numbered invoices and credit notes, PDF, payment schedule and payments."
+  },
+  "charts": {
+    "title": "Trends",
+    "year": "Year",
+    "month": "Month",
+    "count": "Due dates",
+    "empty": "No documents in {{year}}.",
+    "invoiced": {
+      "title": "Invoiced and collected in {{year}}",
+      "description": "Invoices less credit notes, VAT included, and payments less refunds and reversals. Click a month to see its invoices.",
+      "total": "Invoiced",
+      "taxable": "Taxable",
+      "collected": "Collected"
+    },
+    "aging": {
+      "title": "To collect, by delay",
+      "description": "Today, {{total}} on unpaid invoices. Click a bucket to open the payment schedule.",
+      "empty": "No invoices to collect.",
+      "bucket": "Delay",
+      "amount": "To collect",
+      "dueDates_one": "{{count}} due date",
+      "dueDates_other": "{{count}} due dates",
+      "buckets": {
+        "NOT_DUE": "Not due",
+        "DAYS_1_30": "1-30 days",
+        "DAYS_31_60": "31-60 days",
+        "DAYS_61_90": "61-90 days",
+        "OVER_90": "Over 90 days"
+      }
+    },
+    "customers": {
+      "title": "Top customers in {{year}}",
+      "description": "By taxable invoiced, less credit notes.",
+      "customer": "Customer",
+      "taxable": "Taxable",
+      "open": "To collect",
+      "openNote": "{{amount}} to collect"
+    },
+    "orders": {
+      "title": "Ordered and shipped in {{year}}",
+      "description": "Taxable of the confirmed sales orders and of the goods shipped.",
+      "ordered": "Ordered",
+      "shipped": "Shipped"
+    },
+    "backlog": {
+      "title": "To ship",
+      "description": "Today, what is left of the open sales orders.",
+      "total": "Total to ship",
+      "amount": "To ship",
+      "empty": "No sales orders to ship."
+    },
+    "stock": {
+      "title": "Stock documents in {{year}}",
+      "description": "By type, reversed documents left out. Click a month to see its documents.",
+      "receipt": "Receipts",
+      "issue": "Issues",
+      "other": "Counts and transfers",
+      "adjustment": "Counts",
+      "transfer": "Transfers"
+    }
   }
 }
