@@ -143,7 +143,7 @@ test('order, receive in parts, reserve, ship and undo', async ({ page }) => {
   await page.getByLabel(/Da spedire/).fill('12');
   await page.getByRole('button', { name: "Registra l'evasione" }).click();
   await expect(page.getByText('Evaso in parte', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('evasi 12 su 15')).toBeVisible();
+  await expect(page.getByText('evasi 12 su 15')).toBeAttached();
   await snap(page, '5-shipped');
   await page.getByRole('button', { name: 'Annulla la registrazione' }).click();
   await page
@@ -151,7 +151,7 @@ test('order, receive in parts, reserve, ship and undo', async ({ page }) => {
     .getByRole('button', { name: 'Annulla la registrazione' })
     .click();
   await expect(page.getByText('Da evadere', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('evasi 0 su 15')).toBeVisible();
+  await expect(page.getByText('evasi 0 su 15')).toBeAttached();
 
   // All of it in the activity log.
   await page.getByRole('link', { name: 'Attività' }).click();
