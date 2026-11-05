@@ -25,10 +25,13 @@ import type {
 import { InvoicingEvents } from './invoicing-events.js';
 import { type InvoiceableRow, InvoicingRepository } from './invoicing.repository.js';
 
+/** "2026-10-12" → "12/10/2026": how a line of text prints a date, in both languages. */
+const printedDate = (date: string) => date.split('-').reverse().join('/');
+
 /** The line that heads the lines of a shipment: required on a deferred invoice (art. 21 c. 4). */
 function shipmentHeading(shipment: InvoiceableRow): string {
   const reference = shipment.partyReference ? ` (${shipment.partyReference})` : '';
-  return `DDT ${shipment.documentReference} ${fromDbDate(shipment.documentDate)} – ${shipment.orderReference}${reference}`;
+  return `DDT ${shipment.documentReference} ${printedDate(fromDbDate(shipment.documentDate))} – ${shipment.orderReference}${reference}`;
 }
 
 /** The lines a shipment brings to a draft: its heading, then what was shipped. */
@@ -276,8 +279,8 @@ export class InvoiceDraftsService {
         {
           description:
             invoice.language === 'en'
-              ? `Credit note for invoice ${invoice.number}/${invoice.year} of ${fromDbDate(invoice.issueDate)}`
-              : `A storno della fattura n. ${invoice.number}/${invoice.year} del ${fromDbDate(invoice.issueDate)}`,
+              ? `Credit note for invoice ${invoice.number}/${invoice.year} of ${printedDate(fromDbDate(invoice.issueDate))}`
+              : `A storno della fattura n. ${invoice.number}/${invoice.year} del ${printedDate(fromDbDate(invoice.issueDate))}`,
         },
         ...inputs,
       ],
