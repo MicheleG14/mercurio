@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { DbClient } from '../../prisma/index.js';
 import { fromDecimal, PRICE, toDecimal } from '../../shared/decimal.js';
 import { FieldErrors } from '../../shared/errors/index.js';
+import { defaultLanguageFor, type DocumentLanguage, isDocumentLanguage } from './catalogs.js';
 import { type ItemInput, normalizeItem, normalizeItemCode } from './item-rules.js';
 import { ItemsRepository } from './items.repository.js';
 import { PartiesRepository } from './parties.repository.js';
@@ -21,6 +22,30 @@ export interface ItemRef {
 }
 
 /** What other modules may know of a party (the columns of the view registry_party_refs). */
+/** What an invoice copies of its customer when it is issued (phase 5). */
+export interface BillingParty {
+  id: string;
+  kind: string;
+  name: string;
+  firstName: string | null;
+  lastName: string | null;
+  isCustomer: boolean;
+  archived: boolean;
+  vatNumber: string | null;
+  taxCode: string | null;
+  country: string;
+  address: string | null;
+  postalCode: string | null;
+  city: string | null;
+  province: string | null;
+  pecEmail: string | null;
+  sdiCode: string | null;
+  paymentTerms: string | null;
+  paymentMethod: string | null;
+  /** Chosen, or the default of the country. */
+  documentLanguage: DocumentLanguage;
+}
+
 export interface PartyRef {
   id: string;
   name: string;
@@ -103,6 +128,36 @@ export class RegistryService {
       isSupplier: party.isSupplier,
       archived: party.archivedAt !== null,
     }));
+  }
+
+  /** A party of the current tenant with what an invoice prints of it, or null. */
+  async findBillingParty(db: DbClient, id: string): Promise<BillingParty | null> {
+    const [party] = await this.parties.findMany(db, [id]);
+    if (!party) return null;
+    return {
+      id: party.id,
+      kind: party.kind,
+      name: party.name,
+      firstName: party.firstName,
+      lastName: party.lastName,
+      isCustomer: party.isCustomer,
+      archived: party.archivedAt !== null,
+      vatNumber: party.vatNumber,
+      taxCode: party.taxCode,
+      country: party.country,
+      address: party.address,
+      postalCode: party.postalCode,
+      city: party.city,
+      province: party.province,
+      pecEmail: party.pecEmail,
+      sdiCode: party.sdiCode,
+      paymentTerms: party.paymentTerms,
+      paymentMethod: party.paymentMethod,
+      documentLanguage:
+        party.documentLanguage && isDocumentLanguage(party.documentLanguage)
+          ? party.documentLanguage
+          : defaultLanguageFor(party.country),
+    };
   }
 
   /** Ids of the tenant's items with these codes (any case), by code as given. */

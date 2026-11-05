@@ -66,8 +66,37 @@ export class Money {
     return Money.round(this.value.times(rate).dividedBy(100));
   }
 
+  /**
+   * This amount in `parts` instalments of whole cents: equal parts rounded down, and what is left
+   * on the last one, so they always add up (docs/adr/0030).
+   *
+   * @example
+   * Money.of('100.00').split(3).map(String); // ["33.33", "33.33", "33.34"]
+   */
+  split(parts: number): Money[] {
+    if (!Number.isInteger(parts) || parts < 1) throw new RangeError(`Cannot split in ${parts}`);
+    const part = new Money(
+      this.value.dividedBy(parts).toDecimalPlaces(AMOUNT.scale, Prisma.Decimal.ROUND_DOWN),
+    );
+    const rest = this.minus(Money.sum(Array.from({ length: parts - 1 }, () => part)));
+    return [...Array.from({ length: parts - 1 }, () => part), rest];
+  }
+
   isZero(): boolean {
     return this.value.isZero();
+  }
+
+  isNegative(): boolean {
+    return this.value.isNegative() && !this.value.isZero();
+  }
+
+  greaterThan(other: Money): boolean {
+    return this.value.greaterThan(other.value);
+  }
+
+  /** The smaller of two amounts. */
+  static min(a: Money, b: Money): Money {
+    return a.value.lessThanOrEqualTo(b.value) ? a : b;
   }
 
   equals(other: Money): boolean {

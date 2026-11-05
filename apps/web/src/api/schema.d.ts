@@ -926,6 +926,165 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Issued invoices and credit notes, newest first */
+        get: operations["InvoicesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InvoicesController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoices/{id}/credit-note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** A draft credit note: what is left of the chosen lines of the invoice, or of all */
+        post: operations["InvoicesController_creditNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoice-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InvoiceDraftsController_list"];
+        put?: never;
+        /**
+         * Create a draft invoice, by hand or from shipments of one customer
+         * @description The same id again answers 200 with the draft (B33).
+         */
+        post: operations["InvoiceDraftsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoice-drafts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InvoiceDraftsController_get"];
+        /** Save a draft, header and lines */
+        put: operations["InvoiceDraftsController_update"];
+        post?: never;
+        /** Delete a draft; its shipments are to invoice again */
+        delete: operations["InvoiceDraftsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoice-drafts/{id}/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue a draft: number, due dates; from now on it never changes
+         * @description Issuing it again answers 200 with the document already issued (B33).
+         */
+        post: operations["InvoiceDraftsController_issue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoicing/to-invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Shipments of sales orders not yet invoiced, oldest first */
+        get: operations["InvoicingController_toInvoice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoicing/parties-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Active customers for an invoice */
+        get: operations["InvoicingController_searchParties"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invoicing/items-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Active items and services for a line of an invoice */
+        get: operations["InvoicingController_searchItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2018,6 +2177,286 @@ export interface components {
             notes?: string | null;
             lines: components["schemas"]["FulfilmentLineInputDto"][];
         };
+        /** @enum {string} */
+        InvoiceKind: "INVOICE" | "CREDIT_NOTE";
+        InvoiceSummaryDto: {
+            id: string;
+            kind: components["schemas"]["InvoiceKind"];
+            /** @example FT 12/2026 */
+            reference: string;
+            issueDate: string;
+            partyId: string;
+            partyName: string;
+            total: string;
+            openAmount: string;
+            /** @enum {string} */
+            paymentStatus: "UNPAID" | "PARTIAL" | "PAID" | "CREDITED" | "SETTLED" | "REFUND_DUE" | "REFUNDED";
+            overdue: boolean;
+            nextDueDate: string | null;
+        };
+        InvoicePageDto: {
+            items: components["schemas"]["InvoiceSummaryDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        DocumentLineDto: {
+            id: string;
+            lineNo: number;
+            itemId: string | null;
+            itemCode: string | null;
+            description: string;
+            unit: string | null;
+            /** @example 5.000 */
+            quantity: string | null;
+            /** @example 12.5000 */
+            unitPrice: string | null;
+            /** @example 0.00 */
+            discountPercent: string;
+            vatCode: string | null;
+            /** @example 22.00 */
+            vatRate: string | null;
+            vatNature: string | null;
+            /** @example 62.50 */
+            lineAmount: string | null;
+            fulfilmentId: string | null;
+            orderLineId: string | null;
+            creditedLineId: string | null;
+            stampDutyCharge: boolean;
+        };
+        DueDateDto: {
+            id: string;
+            seq: number;
+            /** @example 2026-12-31 */
+            dueDate: string;
+            /** @example 61.00 */
+            amount: string;
+            /** @example 0.00 */
+            settledAmount: string;
+            /** @example 61.00 */
+            openAmount: string;
+        };
+        DocumentRefDto: {
+            id: string;
+            kind: components["schemas"]["InvoiceKind"];
+            /** @example FT 12/2026 */
+            reference: string;
+            /** @example 2026-11-05 */
+            issueDate: string;
+            /** @example 122.00 */
+            total: string;
+        };
+        CreditableLineDto: {
+            lineId: string;
+            quantity: string | null;
+            amount: string;
+        };
+        ShipmentRefDto: {
+            fulfilmentId: string;
+            orderId: string;
+            /** @example OC-2026/0012 */
+            orderReference: string;
+            partyReference: string | null;
+            /** @example SC-2026/0031 */
+            documentReference: string;
+            /** @example 2026-10-12 */
+            documentDate: string;
+        };
+        InvoiceDto: {
+            id: string;
+            kind: components["schemas"]["InvoiceKind"];
+            /** @example FT 12/2026 */
+            reference: string;
+            series: string;
+            year: number;
+            number: number;
+            /** @example 2026-11-05 */
+            issueDate: string;
+            partyId: string;
+            /** @description The seller as printed, copied when issued */
+            seller: Record<string, never>;
+            /** @description The customer as printed, copied when issued */
+            customer: Record<string, never>;
+            /** @example it */
+            language: string;
+            paymentTerms: string;
+            paymentMethod: string;
+            iban: string | null;
+            notes: string | null;
+            lines: components["schemas"]["DocumentLineDto"][];
+            vatSummary: components["schemas"]["VatRowDto"][];
+            taxableTotal: string;
+            vatTotal: string;
+            /** @example 0.00 */
+            stampDuty: string;
+            total: string;
+            dueDates: components["schemas"]["DueDateDto"][];
+            /** @example 0.00 */
+            settledAmount: string;
+            /** @example 122.00 */
+            openAmount: string;
+            /** @enum {string} */
+            paymentStatus: "UNPAID" | "PARTIAL" | "PAID" | "CREDITED" | "SETTLED" | "REFUND_DUE" | "REFUNDED";
+            overdue: boolean;
+            creditedInvoice: components["schemas"]["DocumentRefDto"] | null;
+            creditNotes: components["schemas"]["DocumentRefDto"][];
+            creditable: components["schemas"]["CreditableLineDto"][];
+            /**
+             * @description What credit notes may still give back
+             * @example 122.00
+             */
+            creditableTotal: string;
+            shipments: components["schemas"]["ShipmentRefDto"][];
+            issuedAt: string;
+        };
+        CreateCreditNoteDto: {
+            /** @description Chosen by the client (UUID v7) */
+            id: string;
+            /** @description Lines of the invoice to credit, what is left of each; all when absent */
+            lineIds?: string[];
+        };
+        DueDatePreviewDto: {
+            seq: number;
+            /** @example 2026-12-31 */
+            dueDate: string;
+            /** @example 61.00 */
+            amount: string;
+        };
+        InvoiceDraftDto: {
+            id: string;
+            kind: components["schemas"]["InvoiceKind"];
+            partyId: string | null;
+            partyName: string | null;
+            creditedInvoice: components["schemas"]["DocumentRefDto"] | null;
+            language: string | null;
+            paymentTerms: string | null;
+            paymentMethod: string | null;
+            notes: string | null;
+            lines: components["schemas"]["DocumentLineDto"][];
+            vatSummary: components["schemas"]["VatRowDto"][];
+            taxableTotal: string;
+            vatTotal: string;
+            total: string;
+            /** @description Its exempt operations need the 2 € stamp duty */
+            stampDutyRequired: boolean;
+            /** @description The due dates if it were issued today with these terms */
+            dueDatesPreview: components["schemas"]["DueDatePreviewDto"][];
+            shipments: components["schemas"]["ShipmentRefDto"][];
+            /** @description Last day to issue it as a deferred invoice (15th of the month after) */
+            deferredDeadline: string | null;
+            version: number;
+            createdAt: string;
+            updatedAt: string;
+        };
+        InvoiceDraftSummaryDto: {
+            id: string;
+            kind: components["schemas"]["InvoiceKind"];
+            partyName: string | null;
+            total: string;
+            version: number;
+            updatedAt: string;
+        };
+        InvoiceDraftPageDto: {
+            items: components["schemas"]["InvoiceDraftSummaryDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        DraftLineInputDto: {
+            itemId?: string | null;
+            /** @description The item's when absent */
+            description?: string;
+            /** @example 5 */
+            quantity?: string | null;
+            /** @example 12.5 */
+            unitPrice?: string | null;
+            /** @example 10 */
+            discountPercent?: string;
+            /** @example 22 */
+            vatCode?: string | null;
+            fulfilmentId?: string | null;
+            orderLineId?: string | null;
+            /** @description On a credit note: the line of the credited invoice it corrects */
+            creditedLineId?: string | null;
+            /** @description The stamp duty charged to the customer */
+            stampDutyCharge?: boolean;
+        };
+        CreateDraftDto: {
+            partyId?: string | null;
+            /** @enum {string|null} */
+            language?: "it" | "en" | null;
+            /** @example 30FM */
+            paymentTerms?: string | null;
+            /** @example MP05 */
+            paymentMethod?: string | null;
+            notes?: string | null;
+            /** @description Chosen by the client (UUID v7): the issued invoice keeps it */
+            id: string;
+            /** @description Shipments of one customer to invoice: their lines become the lines of the draft */
+            fulfilmentIds?: string[];
+            lines?: components["schemas"]["DraftLineInputDto"][];
+        };
+        UpdateDraftDto: {
+            partyId?: string | null;
+            /** @enum {string|null} */
+            language?: "it" | "en" | null;
+            /** @example 30FM */
+            paymentTerms?: string | null;
+            /** @example MP05 */
+            paymentMethod?: string | null;
+            notes?: string | null;
+            /** @description The version read (B29) */
+            version: number;
+            lines: components["schemas"]["DraftLineInputDto"][];
+        };
+        IssueDto: {
+            /** @description The version of the draft read (B29) */
+            version: number;
+            /**
+             * @description Default today (Italian time)
+             * @example 2026-11-05
+             */
+            issueDate?: string;
+        };
+        ToInvoiceDto: {
+            fulfilmentId: string;
+            orderId: string;
+            /** @example OC-2026/0012 */
+            orderReference: string;
+            partyReference: string | null;
+            /** @example SC-2026/0031 */
+            documentReference: string;
+            /** @example 2026-10-12 */
+            documentDate: string;
+            partyId: string;
+            partyName: string;
+            /**
+             * @description Taxable amount of its lines
+             * @example 62.50
+             */
+            taxableAmount: string;
+            /** @description The draft that has it */
+            draftId: string | null;
+        };
+        ToInvoicePageDto: {
+            items: components["schemas"]["ToInvoiceDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        CustomerOptionDto: {
+            id: string;
+            name: string;
+            vatNumber: string | null;
+        };
+        InvoiceItemOptionDto: {
+            id: string;
+            code: string;
+            description: string;
+            unit: string;
+            salePrice: string | null;
+            vatCode: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -2064,7 +2503,7 @@ export interface operations {
                 sort?: string;
                 /** @description Text to search for */
                 q?: string;
-                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "COMPANY_UPDATED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED" | "WAREHOUSE_CREATED" | "WAREHOUSE_UPDATED" | "WAREHOUSE_ARCHIVED" | "WAREHOUSE_RESTORED" | "STOCK_DOCUMENT_POSTED" | "STOCK_DOCUMENT_REVERSED" | "REORDER_LEVEL_SET" | "REORDER_LEVEL_REMOVED" | "ORDER_CREATED" | "ORDER_UPDATED" | "ORDER_DELETED" | "ORDER_CONFIRMED" | "ORDER_RESERVED" | "ORDER_CLOSED" | "ORDER_CANCELLED" | "ORDER_FULFILLED" | "ORDER_FULFILMENT_REVERSED";
+                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "COMPANY_UPDATED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED" | "WAREHOUSE_CREATED" | "WAREHOUSE_UPDATED" | "WAREHOUSE_ARCHIVED" | "WAREHOUSE_RESTORED" | "STOCK_DOCUMENT_POSTED" | "STOCK_DOCUMENT_REVERSED" | "REORDER_LEVEL_SET" | "REORDER_LEVEL_REMOVED" | "ORDER_CREATED" | "ORDER_UPDATED" | "ORDER_DELETED" | "ORDER_CONFIRMED" | "ORDER_RESERVED" | "ORDER_CLOSED" | "ORDER_CANCELLED" | "ORDER_FULFILLED" | "ORDER_FULFILMENT_REVERSED" | "INVOICE_DRAFT_CREATED" | "INVOICE_DRAFT_UPDATED" | "INVOICE_DRAFT_DELETED" | "INVOICE_ISSUED" | "CREDIT_NOTE_ISSUED" | "PAYMENT_RECORDED" | "PAYMENT_REVERSED";
                 /** @description From this instant (ISO 8601), inclusive */
                 from?: string;
                 /** @description Until this instant (ISO 8601), exclusive */
@@ -3727,6 +4166,354 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    InvoicesController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                kind?: "INVOICE" | "CREDIT_NOTE";
+                partyId?: string;
+                from?: string;
+                to?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoicePageDto"];
+                };
+            };
+        };
+    };
+    InvoicesController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDto"];
+                };
+            };
+        };
+    };
+    InvoicesController_creditNote: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCreditNoteDto"];
+            };
+        };
+        responses: {
+            /** @description Already created with this id */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDraftDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDraftDto"];
+                };
+            };
+        };
+    };
+    InvoiceDraftsController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDraftPageDto"];
+                };
+            };
+        };
+    };
+    InvoiceDraftsController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDraftDto"];
+            };
+        };
+        responses: {
+            /** @description Already created with this id */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDraftDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDraftDto"];
+                };
+            };
+        };
+    };
+    InvoiceDraftsController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDraftDto"];
+                };
+            };
+        };
+    };
+    InvoiceDraftsController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDraftDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDraftDto"];
+                };
+            };
+        };
+    };
+    InvoiceDraftsController_remove: {
+        parameters: {
+            query: {
+                version: number;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InvoiceDraftsController_issue: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IssueDto"];
+            };
+        };
+        responses: {
+            /** @description Already issued */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDto"];
+                };
+            };
+        };
+    };
+    InvoicingController_toInvoice: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+                partyId?: string;
+                /** @description Shipped on or before this day */
+                to?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ToInvoicePageDto"];
+                };
+            };
+        };
+    };
+    InvoicingController_searchParties: {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOptionDto"][];
+                };
+            };
+        };
+    };
+    InvoicingController_searchItems: {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header: {
+                /** @description The company to work on, one the person can reach */
+                "X-Company-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceItemOptionDto"][];
                 };
             };
         };
