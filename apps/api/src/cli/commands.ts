@@ -11,7 +11,15 @@ import { WarehouseService } from '../modules/warehouse/index.js';
 import { APP_CONFIG, type AppConfig } from '../config/app-config.js';
 import { PrismaService } from '../prisma/index.js';
 import { DomainException } from '../shared/errors/index.js';
-import { DEMO_PASSWORD, DEMO_TOTP_SECRET, seedDemo } from './seed-demo.js';
+import { isCalendarDate } from '../shared/dates.js';
+import { keptMembers, resetDemo } from './demo-reset.js';
+import {
+  DEMO_PASSWORD,
+  DEMO_SLUGS,
+  DEMO_TOTP_SECRET,
+  type SeedSummary,
+  seedDemo,
+} from './seed-demo.js';
 
 /** Where a command writes: human-readable lines, and one audit event per completed command. */
 export interface CliIo {
@@ -47,7 +55,9 @@ export interface Command {
 const text = { type: 'string' } as const;
 
 /** The demo seed is one transaction: everything or nothing, however long it takes. */
-export const SEED_TRANSACTION = { timeout: 120_000 } as const;
+export const SEED_TRANSACTION = { timeout: 300_000 } as const;
+/** Deleting the demo and writing it again: one transaction, so a failure keeps the old data. */
+const RESET_TRANSACTION = { timeout: 600_000 } as const;
 
 /** "a, b,c" → ["a", "b", "c"] */
 function list(value: string | undefined): string[] {
@@ -55,6 +65,76 @@ function list(value: string | undefined): string[] {
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+/** The demo goes into production only on purpose. */
+function assertDemoAllowed(config: AppConfig, v: Values): void {
+  if (config.isProduction && v['allow-production'] !== 'true') {
+    throw new DomainException('DEMO_IN_PRODUCTION', HttpStatus.CONFLICT, {
+      detail: 'add --allow-production to write demo data in a production database on purpose',
+    });
+  }
+}
+
+/** --today: the last day of the demo's history, YYYY-MM-DD (default today). */
+function demoToday(v: Values): string | undefined {
+  const today = v.today;
+  if (today !== undefined && !isCalendarDate(today)) {
+    throw new DomainException('VALIDATION_FAILED', HttpStatus.BAD_REQUEST, {
+      detail: '--today must be a date, YYYY-MM-DD',
+    });
+  }
+  return today;
+}
+
+function demoServices(s: Services) {
+  const { tenancy, identity, registry, warehouse, orders, invoicing } = s;
+  return { tenancy, identity, registry, warehouse, orders, invoicing };
+}
+
+/** Outside production the demo people can sign in; in production they activate with a code. */
+async function demoCredentials(
+  s: Services,
+  tx: Parameters<AuthService['setDemoCredentials']>[0],
+  userIds: readonly string[],
+) {
+  if (s.config.isProduction) return;
+  for (const userId of userIds) {
+    await s.auth.setDemoCredentials(tx, userId, {
+      password: DEMO_PASSWORD,
+      totpSecret: DEMO_TOTP_SECRET,
+    });
+  }
+}
+
+function printDemo(
+  io: CliIo,
+  production: boolean,
+  result: { tenants: SeedSummary[]; userIds: string[]; today: string; missing: readonly string[] },
+) {
+  for (const tenant of result.tenants) {
+    if (!tenant.created) {
+      io.out(
+        `Demo tenant ${tenant.slug}: already present, left as it is (reset-demo starts again)`,
+      );
+      continue;
+    }
+    io.out(
+      `Demo tenant ${tenant.slug}: ${tenant.companies} companies, ${tenant.members} people, ` +
+        `${tenant.parties} parties, ${tenant.items} items; history up to ${result.today}: ` +
+        `${tenant.documents} stock documents, ${tenant.orders} orders, ${tenant.invoices} invoices and credit notes`,
+    );
+  }
+  if (result.missing.length > 0) {
+    io.out(`Not shown by this history: ${result.missing.join(', ')}`);
+  }
+  if (result.userIds.length === 0) return;
+  if (production) {
+    io.out('Fictitious data. No credentials were created: people activate with a code.');
+  } else {
+    io.out(`Fictitious data. Every demo person signs in with the password ${DEMO_PASSWORD}`);
+    io.out(`and the authenticator secret ${DEMO_TOTP_SECRET} (add it to any authenticator app).`);
+  }
 }
 
 function printActivation(io: CliIo, activation: { code: string; expiresAt: Date }, email: string) {
@@ -291,71 +371,72 @@ export const COMMANDS: Record<string, Command> = {
 
   'seed-demo': {
     summary:
-      'Create the fictitious demo tenants, or add what they miss (refused in production without --allow-production)',
-    options: { 'allow-production': { type: 'boolean' } },
+      'Create the fictitious demo tenants that are missing, with twelve months of history up to --today (refused in production without --allow-production)',
+    options: { 'allow-production': { type: 'boolean' }, today: text },
     required: [],
-    async run(
-      { config, prisma, tenancy, identity, auth, registry, warehouse, orders, invoicing },
-      v,
-      io,
-    ) {
-      if (config.isProduction && v['allow-production'] !== 'true') {
-        throw new DomainException('DEMO_IN_PRODUCTION', HttpStatus.CONFLICT, {
-          detail: 'add --allow-production to seed a production database on purpose',
-        });
-      }
-      const { tenants: seeded, userIds } = await prisma.$transaction(async (tx) => {
-        const result = await seedDemo(tx, {
-          tenancy,
-          identity,
-          registry,
-          warehouse,
-          orders,
-          invoicing,
-        });
-        // Outside production the demo people can sign in; in production they activate with a code.
-        if (!config.isProduction) {
-          for (const userId of result.userIds) {
-            await auth.setDemoCredentials(tx, userId, {
-              password: DEMO_PASSWORD,
-              totpSecret: DEMO_TOTP_SECRET,
-            });
-          }
-        }
-        return result;
-        // The whole demo in one transaction takes longer than Prisma's default 5 seconds.
+    async run(context, v, io) {
+      assertDemoAllowed(context.config, v);
+      const result = await context.prisma.$transaction(async (tx) => {
+        const seeded = await seedDemo(tx, demoServices(context), { today: demoToday(v) });
+        await demoCredentials(context, tx, seeded.userIds);
+        return seeded;
       }, SEED_TRANSACTION);
-      for (const tenant of seeded) {
-        const people = tenant.created
-          ? `created with ${tenant.companies} companies and ${tenant.members} members`
-          : 'already present, companies and people unchanged';
-        io.out(`Demo tenant ${tenant.slug}: ${people}`);
-        io.out(`  registry: ${tenant.parties} parties and ${tenant.items} items added`);
-        io.out(
-          `  warehouse: ${tenant.warehouses} warehouses and ${tenant.documents} stock documents added`,
-        );
-        io.out(`  orders: ${tenant.orders} orders added`);
-        io.out(`  invoicing: ${tenant.invoices} invoices and credit notes issued`);
-      }
-      if (userIds.length === 0) {
-        io.out('No new demo people.');
-      } else if (config.isProduction) {
-        io.out('Fictitious data. No credentials were created: people activate with a code.');
-      } else {
-        io.out(`Fictitious data. Every demo person signs in with the password ${DEMO_PASSWORD}`);
-        io.out(
-          `and the authenticator secret ${DEMO_TOTP_SECRET} (add it to any authenticator app).`,
-        );
-      }
+      printDemo(io, context.config.isProduction, result);
       io.audit({
         command: 'seed-demo',
-        tenants: seeded.map((t) => t.slug),
-        people: userIds.length,
-        parties: seeded.reduce((sum, t) => sum + t.parties, 0),
-        items: seeded.reduce((sum, t) => sum + t.items, 0),
-        stockDocuments: seeded.reduce((sum, t) => sum + t.documents, 0),
-        orders: seeded.reduce((sum, t) => sum + t.orders, 0),
-        invoices: seeded.reduce((sum, t) => sum + t.invoices, 0),
+        today: result.today,
+        tenants: result.tenants.filter((t) => t.created).map((t) => t.slug),
+        documents: result.tenants.reduce((sum, t) => sum + t.documents, 0),
+        orders: result.tenants.reduce((sum, t) => sum + t.orders, 0),
+        invoices: result.tenants.reduce((sum, t) => sum + t.invoices, 0),
+      });
+    },
+  },
+
+  'reset-demo': {
+    summary:
+      'Delete the demo tenants and create them again with a fresh history up to --today; people outside the demo who belonged to them are put back (refused in production without --allow-production; --dry-run only lists)',
+    options: {
+      'allow-production': { type: 'boolean' },
+      'dry-run': { type: 'boolean' },
+      today: text,
+    },
+    required: [],
+    async run(context, v, io) {
+      assertDemoAllowed(context.config, v);
+      const kept = await keptMembers(context.prisma);
+      const tenants = await context.prisma.tenant.findMany({
+        where: { slug: { in: [...DEMO_SLUGS] } },
+        select: { slug: true },
+      });
+      io.out(
+        `Demo tenants to delete: ${tenants.map((t) => t.slug).join(', ') || 'none'} (all their data)`,
+      );
+      io.out(
+        kept.length === 0
+          ? 'People outside the demo to put back: none'
+          : `People outside the demo to put back: ${kept
+              .map((k) => `${k.email} (${k.role} in ${k.slug})`)
+              .join(', ')}`,
+      );
+      if (v['dry-run'] === 'true') {
+        io.out('Dry run: nothing changed.');
+        return;
+      }
+      const result = await context.prisma.$transaction(async (tx) => {
+        const reset = await resetDemo(tx, demoServices(context), { today: demoToday(v) });
+        await demoCredentials(context, tx, reset.userIds);
+        return reset;
+      }, RESET_TRANSACTION);
+      printDemo(io, context.config.isProduction, result);
+      io.audit({
+        command: 'reset-demo',
+        today: result.today,
+        deleted: result.deleted,
+        kept: result.kept.map((k) => `${k.email}@${k.slug}`),
+        documents: result.tenants.reduce((sum, t) => sum + t.documents, 0),
+        orders: result.tenants.reduce((sum, t) => sum + t.orders, 0),
+        invoices: result.tenants.reduce((sum, t) => sum + t.invoices, 0),
       });
     },
   },

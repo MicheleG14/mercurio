@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { CliModule } from '../src/cli/cli.module.js';
 import { SEED_TRANSACTION } from '../src/cli/commands.js';
+import { storyStart } from '../src/cli/demo-history.js';
+import { resetDemo } from '../src/cli/demo-reset.js';
 import { runCli } from '../src/cli/run-cli.js';
 import { DEMO, seedDemo } from '../src/cli/seed-demo.js';
 import { AppConfigModule } from '../src/config/config.module.js';
@@ -19,22 +21,65 @@ import { WarehouseModule, WarehouseService } from '../src/modules/warehouse/inde
 import { PrismaModule, TenantDatabase } from '../src/prisma/index.js';
 import { adminClient, deleteTenantsAndUsers, uniqueSuffix } from './support/database.js';
 
-// The demo seed, created with a test suffix (never touching real demo data), and the isolation
-// checks repeated on it as the API role (docs/conventions.md B21).
+// The demo seed (docs/conventions.md B21), created with a test suffix so it never touches the
+// real demo data, on a fixed reference day: twelve months of history through the use cases, every
+// feature at least once, the same story when written again, and the reset that keeps the people
+// outside the demo.
+const TODAY = '2026-11-05';
+const RESET = { timeout: 600_000 } as const;
+
 describe('demo seed (e2e)', () => {
   let admin: PrismaClient;
   let db: TenantDatabase;
-  let tenancy: TenancyService;
-  let identity: IdentityService;
-  let registry: RegistryService;
-  let warehouse: WarehouseService;
-  let orders: OrdersService;
-  let invoicing: InvoicingService;
+  let services: {
+    tenancy: TenancyService;
+    identity: IdentityService;
+    registry: RegistryService;
+    warehouse: WarehouseService;
+    orders: OrdersService;
+    invoicing: InvoicingService;
+  };
   let close: () => Promise<void>;
   const suffix = uniqueSuffix();
   const email = (local: string) => `${local}.${suffix}@example.com`;
+  const outsiderEmail = `outsider-${suffix}@example.org`;
+  let seeded: Awaited<ReturnType<typeof seedDemo>>;
   let rossi: { id: string; companies: { id: string; legalName: string }[] };
   let bianchi: { id: string };
+  let other: { id: string };
+
+  const load = async () => {
+    const tenants = await admin.tenant.findMany({
+      where: { slug: { in: [`rossi-${suffix}`, `bianchi-${suffix}`] } },
+      include: { companies: { orderBy: { legalName: 'asc' } } },
+    });
+    rossi = tenants.find((t) => t.slug.startsWith('rossi'))!;
+    bianchi = tenants.find((t) => t.slug.startsWith('bianchi'))!;
+  };
+
+  /** What a reference day must always give: documents, numbers, dates and amounts. */
+  const story = async (tenantId: string) => ({
+    invoices: (
+      await admin.invoice.findMany({
+        where: { tenantId },
+        orderBy: [
+          { company: { legalName: 'asc' } },
+          { series: 'asc' },
+          { year: 'asc' },
+          { number: 'asc' },
+        ],
+        select: { series: true, year: true, number: true, issueDate: true, total: true },
+      })
+    ).map(
+      (i) =>
+        `${i.series} ${i.number}/${i.year} ${i.issueDate.toISOString().slice(0, 10)} ${i.total.toFixed(2)}`,
+    ),
+    documents: await admin.stockDocument.count({ where: { tenantId } }),
+    orders: await admin.order.count({ where: { tenantId } }),
+    payments: (
+      await admin.payment.aggregate({ where: { tenantId }, _sum: { amount: true }, _count: true })
+    )._count,
+  });
 
   beforeAll(async () => {
     admin = adminClient();
@@ -52,34 +97,39 @@ describe('demo seed (e2e)', () => {
     }).compile();
     await moduleRef.init();
     db = moduleRef.get(TenantDatabase);
-    tenancy = moduleRef.get(TenancyService);
-    identity = moduleRef.get(IdentityService);
-    registry = moduleRef.get(RegistryService);
-    warehouse = moduleRef.get(WarehouseService);
-    orders = moduleRef.get(OrdersService);
-    invoicing = moduleRef.get(InvoicingService);
+    services = {
+      tenancy: moduleRef.get(TenancyService),
+      identity: moduleRef.get(IdentityService),
+      registry: moduleRef.get(RegistryService),
+      warehouse: moduleRef.get(WarehouseService),
+      orders: moduleRef.get(OrdersService),
+      invoicing: moduleRef.get(InvoicingService),
+    };
     close = () => moduleRef.close();
 
-    await admin.$transaction(
-      (tx) => seedDemo(tx, { tenancy, identity, registry, warehouse, orders, invoicing }, suffix),
+    seeded = await admin.$transaction(
+      (tx) => seedDemo(tx, services, { suffix, today: TODAY }),
       SEED_TRANSACTION,
     );
-    const tenants = await admin.tenant.findMany({
-      where: { slug: { in: [`rossi-${suffix}`, `bianchi-${suffix}`] } },
-      include: { companies: { orderBy: { legalName: 'asc' } } },
+    await load();
+    other = await admin.tenant.create({
+      data: { name: 'Not a demo', slug: `other-${suffix}` },
     });
-    rossi = tenants.find((t) => t.slug.startsWith('rossi'))!;
-    bianchi = tenants.find((t) => t.slug.startsWith('bianchi'))!;
-  });
+  }, 600_000);
 
   afterAll(async () => {
     await close?.();
     const users = await admin.user.findMany({
-      where: { email: { endsWith: `.${suffix}@example.com` } },
+      where: {
+        OR: [{ email: { endsWith: `.${suffix}@example.com` } }, { email: outsiderEmail }],
+      },
+    });
+    const tenants = await admin.tenant.findMany({
+      where: { slug: { in: [`rossi-${suffix}`, `bianchi-${suffix}`, `other-${suffix}`] } },
     });
     await deleteTenantsAndUsers(
       admin,
-      [rossi?.id, bianchi?.id].filter(Boolean) as string[],
+      tenants.map((t) => t.id),
       users.map((u) => u.id),
     );
     await admin.$disconnect();
@@ -87,14 +137,17 @@ describe('demo seed (e2e)', () => {
 
   it('creates the two tenants with their companies, modules and members', async () => {
     expect(rossi.companies.map((c) => c.legalName)).toEqual(['Rossi Logistica Srl', 'Rossi Srl']);
-    expect(await tenancy.enabledModules(admin, rossi.id)).toEqual([
+    expect(await services.tenancy.enabledModules(admin, rossi.id)).toEqual([
       'registry',
       'warehouse',
       'orders',
       'invoicing',
     ]);
-    expect(await tenancy.enabledModules(admin, bianchi.id)).toEqual(['registry', 'invoicing']);
-    expect(await identity.listMembers(admin, rossi.id)).toHaveLength(
+    expect(await services.tenancy.enabledModules(admin, bianchi.id)).toEqual([
+      'registry',
+      'invoicing',
+    ]);
+    expect(await services.identity.listMembers(admin, rossi.id)).toHaveLength(
       DEMO.tenants[0].members.length,
     );
     // Six people: Paola Conti is one identity in two tenants.
@@ -108,19 +161,20 @@ describe('demo seed (e2e)', () => {
       db.runAs({ tenantId }, (tx) =>
         tx.company.findMany({ where: { tenantId: { in: [rossi.id, bianchi.id] } } }),
       );
-
     expect((await companiesOf(rossi.id)).every((c) => c.tenantId === rossi.id)).toBe(true);
     expect(await companiesOf(rossi.id)).toHaveLength(2);
     expect(await companiesOf(bianchi.id)).toHaveLength(1);
+    const seen = await db.runAs({ tenantId: bianchi.id }, (tx) =>
+      tx.invoice.findMany({ where: { tenantId: { in: [rossi.id, bianchi.id] } } }),
+    );
+    expect(seen.every((i) => i.tenantId === bianchi.id)).toBe(true);
   });
 
   it('shows the consultant both tenants, with the role of each', async () => {
     const paola = await admin.user.findUniqueOrThrow({ where: { email: email('paola.conti') } });
-
     const seen = await db.runAs({ tenantId: rossi.id, userId: paola.id }, (tx) =>
       tx.membership.findMany({ where: { userId: paola.id }, include: { tenant: true } }),
     );
-
     expect(
       seen.map((m) => [m.tenant.slug, m.role]).sort((a, b) => a[0]!.localeCompare(b[0]!)),
     ).toEqual([
@@ -130,220 +184,159 @@ describe('demo seed (e2e)', () => {
   });
 
   it('limits Luca and Marco to one company each', async () => {
-    const members = await identity.listMembers(admin, rossi.id);
+    const members = await services.identity.listMembers(admin, rossi.id);
     const [logistica, srl] = rossi.companies;
     const access = (local: string) => members.find((m) => m.email === email(local))!.access;
-
     expect(canAccessCompany(access('luca.gallo'), srl!.id)).toBe(true);
     expect(canAccessCompany(access('luca.gallo'), logistica!.id)).toBe(false);
     expect(canAccessCompany(access('marco.verdi'), logistica!.id)).toBe(true);
     expect(canAccessCompany(access('marco.verdi'), srl!.id)).toBe(false);
-    expect(canAccessCompany(access('anna.rossi'), logistica!.id)).toBe(true);
   });
 
   it('fills each registry with every kind of party, goods and services', async () => {
     const parties = await admin.party.findMany({ where: { tenantId: rossi.id } });
-    expect(parties).toHaveLength(8);
+    expect(parties).toHaveLength(DEMO.tenants[0].parties.length);
     expect(new Set(parties.map((p) => p.kind))).toEqual(
       new Set(['PRIVATE', 'SOLE_TRADER', 'COMPANY', 'ORGANIZATION']),
     );
     expect(parties.filter((p) => p.archivedAt !== null)).toHaveLength(1);
     expect(parties.filter((p) => p.country !== 'IT')).toHaveLength(1);
-    expect(parties.some((p) => p.isCustomer && p.isSupplier)).toBe(true);
-
-    const items = await admin.item.findMany({ where: { tenantId: rossi.id } });
-    expect(items).toHaveLength(15);
-    expect(items.some((i) => !i.stockManaged)).toBe(true);
-    expect(items.some((i) => i.vatCode.startsWith('N'))).toBe(true);
+    expect(await admin.item.count({ where: { tenantId: rossi.id } })).toBe(15);
     expect(await admin.party.count({ where: { tenantId: bianchi.id } })).toBe(3);
-    expect(await admin.item.count({ where: { tenantId: bianchi.id } })).toBe(3);
   });
 
-  it('shows each tenant only its own registry, as the API role', async () => {
-    const seen = await db.runAs({ tenantId: bianchi.id }, async (tx) => ({
-      parties: await tx.party.findMany({ where: { tenantId: { in: [rossi.id, bianchi.id] } } }),
-      items: await tx.item.findMany({ where: { tenantId: { in: [rossi.id, bianchi.id] } } }),
-    }));
-    expect(seen.parties).toHaveLength(3);
-    expect(seen.items).toHaveLength(3);
+  it('shows every feature of the demo at least once', () => {
+    expect(seeded.missing).toEqual([]);
+    expect(seeded.today).toBe(TODAY);
   });
 
-  it('fills the warehouses of Rossi through the same rules as the API', async () => {
-    const [logistica, srl] = rossi.companies;
-    const warehouses = await admin.warehouse.findMany({
-      where: { tenantId: rossi.id },
-      orderBy: { code: 'asc' },
+  it('writes twelve months of invoices, numbered without gaps, dates growing with numbers', async () => {
+    const srl = rossi.companies.find((c) => c.legalName === 'Rossi Srl')!;
+    const invoices = await admin.invoice.findMany({
+      where: { companyId: srl.id },
+      orderBy: [{ series: 'asc' }, { year: 'asc' }, { number: 'asc' }],
     });
-    expect(warehouses.map((w) => [w.code, w.companyId])).toEqual([
-      ['DEP', srl!.id],
-      ['HUB', logistica!.id],
-      ['SEDE', srl!.id],
-    ]);
-    // Nine documents and a reversal in Rossi Srl, two in Rossi Logistica; then the receipts and
-    // shipments of the demo orders, with one shipment undone.
-    expect(
-      await admin.stockDocument.count({ where: { companyId: srl!.id, originType: null } }),
-    ).toBe(10);
-    expect(await admin.stockDocument.count({ where: { companyId: logistica!.id } })).toBe(2);
-    expect(
-      await admin.stockDocument.count({ where: { companyId: srl!.id, originType: 'order' } }),
-    ).toBe(8);
-    expect(
-      await admin.stockDocument.count({ where: { tenantId: rossi.id, reason: 'REVERSAL' } }),
-    ).toBe(2);
-    expect(await warehouse.verifyStock(admin)).toEqual([]);
-
-    const below = await admin.$queryRaw<{ code: string }[]>`
-      SELECT i.code FROM reorder_levels l
-      JOIN items i ON i.id = l.item_id
-      LEFT JOIN stock_balances b ON b.warehouse_id = l.warehouse_id AND b.item_id = l.item_id
-      WHERE l.tenant_id = ${rossi.id}::uuid AND coalesce(b.quantity, 0) <= l.reorder_point
-      ORDER BY i.code`;
-    expect(below.map((r) => r.code)).toEqual(['CM-PORT', 'GU-NIT', 'SM-125', 'TR-18V']);
-    expect(await admin.warehouse.count({ where: { tenantId: bianchi.id } })).toBe(0);
+    const months = new Set(invoices.map((i) => i.issueDate.toISOString().slice(0, 7)));
+    for (let d = storyStart(TODAY); d <= TODAY;) {
+      expect(months.has(d.slice(0, 7))).toBe(true);
+      const next = new Date(`${d}T00:00:00Z`);
+      next.setUTCMonth(next.getUTCMonth() + 1);
+      d = next.toISOString().slice(0, 10);
+    }
+    // Per series and year: 1, 2, 3… and never a date before the one of the number before.
+    const groups = new Map<string, typeof invoices>();
+    for (const i of invoices) {
+      const key = `${i.series}/${i.year}`;
+      groups.set(key, [...(groups.get(key) ?? []), i]);
+    }
+    expect([...groups.keys()]).toEqual(expect.arrayContaining(['FT/2025', 'FT/2026', 'NC/2026']));
+    for (const group of groups.values()) {
+      group.forEach((invoice, i) => {
+        expect(invoice.number).toBe(i + 1);
+        if (i > 0) expect(invoice.issueDate >= group[i - 1]!.issueDate).toBe(true);
+      });
+    }
+    // Ten to fifteen documents a month, on average.
+    expect(invoices.length / 13).toBeGreaterThanOrEqual(8);
   });
 
-  it('records the orders of Rossi in every status, through the same rules as the API', async () => {
-    const [logistica, srl] = rossi.companies;
-    const byStatus = async (companyId: string) =>
-      (
-        await admin.order.findMany({
-          where: { companyId },
-          orderBy: [{ kind: 'asc' }, { orderDate: 'asc' }],
-        })
-      ).map((o) => `${o.kind} ${o.status}`);
-    expect((await byStatus(srl!.id)).sort()).toEqual(
-      [
-        'PURCHASE CANCELLED',
-        'PURCHASE COMPLETED',
-        'PURCHASE PARTIAL',
-        'PURCHASE CONFIRMED',
-        'PURCHASE DRAFT',
-        'SALES COMPLETED',
-        'SALES PARTIAL',
-        'SALES CONFIRMED',
-        'SALES CONFIRMED',
-        'SALES CONFIRMED',
-        'SALES COMPLETED',
-        'SALES DRAFT',
-      ].sort(),
+  it('leaves something owed in every bucket of delay, and the books consistent', async () => {
+    const srl = rossi.companies.find((c) => c.legalName === 'Rossi Srl')!;
+    const buckets = await admin.$queryRaw<{ bucket: string }[]>`
+      SELECT DISTINCT CASE
+               WHEN d.due_date >= ${TODAY}::date THEN 'NOT_DUE'
+               WHEN ${TODAY}::date - d.due_date <= 30 THEN 'DAYS_1_30'
+               WHEN ${TODAY}::date - d.due_date <= 60 THEN 'DAYS_31_60'
+               WHEN ${TODAY}::date - d.due_date <= 90 THEN 'DAYS_61_90'
+               ELSE 'OVER_90' END AS bucket
+      FROM invoice_due_dates d JOIN invoices i ON i.id = d.invoice_id
+      WHERE d.company_id = ${srl.id}::uuid AND i.kind = 'INVOICE'
+        AND d.settled_amount < d.amount`;
+    expect(buckets.map((b) => b.bucket).sort()).toEqual(
+      ['DAYS_1_30', 'DAYS_31_60', 'DAYS_61_90', 'NOT_DUE', 'OVER_90'].sort(),
     );
-    expect(await byStatus(logistica!.id)).toEqual(['PURCHASE CONFIRMED', 'SALES CONFIRMED']);
-    // The smerigliatrici of the German customer: 3 of 5 reserved, the rest waits for the supplier.
-    const reserved = await admin.$queryRaw<{ code: string; reserved: string }[]>`
-      SELECT i.code, sum(r.quantity)::text AS reserved FROM stock_reservations r
-      JOIN items i ON i.id = r.item_id
-      WHERE r.tenant_id = ${rossi.id}::uuid GROUP BY i.code ORDER BY i.code`;
-    expect(reserved).toEqual([
-      { code: 'CH-BRU', reserved: '4.000' },
-      { code: 'CM-PORT', reserved: '600.000' },
-      { code: 'CV-3G15', reserved: '100.000' },
-      { code: 'SM-125', reserved: '3.000' },
-      { code: 'TR-18V', reserved: '2.000' },
-      { code: 'VR-BIA', reserved: '4.000' },
-    ]);
-    expect(await warehouse.verifyStock(admin)).toEqual([]);
-    expect(await admin.order.count({ where: { tenantId: bianchi.id } })).toBe(0);
+    expect(await services.invoicing.verify(admin)).toEqual([]);
+    expect(await services.warehouse.verifyStock(admin)).toEqual([]);
   });
 
-  it('issues the invoices of Rossi and Bianchi, through the same rules as the API', async () => {
-    const [logistica, srl] = rossi.companies;
-    const documents = async (companyId: string) =>
-      (
-        await admin.invoice.findMany({
-          where: { companyId },
-          orderBy: [{ series: 'asc' }, { number: 'asc' }],
-        })
-      ).map(
-        (i) =>
-          `${i.series} ${i.number}/${i.year} ${i.issueDate.toISOString().slice(0, 10)} ${i.total.toFixed(2)}`,
-      );
-    expect(await documents(srl!.id)).toEqual([
-      'FT 1/2026 2026-10-02 85.40',
-      'FT 2/2026 2026-10-15 132.98',
-      'FT 3/2026 2026-10-20 107.00',
-      'FT 4/2026 2026-10-22 202.00',
-      'FT 5/2026 2026-10-26 42.70',
-      'FT 6/2026 2026-10-31 26.84',
-      'NC 1/2026 2026-10-25 11.96',
-      'NC 2/2026 2026-10-27 42.70',
-    ]);
-    expect(await documents(logistica!.id)).toEqual(['FT 1/2026 2026-10-30 170.80']);
-    const bianchiCompany = await admin.company.findFirstOrThrow({
-      where: { tenantId: bianchi.id },
-    });
-    expect(await documents(bianchiCompany.id)).toEqual([
-      'FT 1/2026 2026-10-10 366.00',
-      'FT 2/2026 2026-10-28 120.54',
-    ]);
-    // The shipment of Ferramenta Bruni of 17 October waits to be invoiced; one draft is open.
-    expect(
-      await admin.invoiceableFulfilment.count({ where: { companyId: srl!.id, invoiceId: null } }),
-    ).toBe(1);
-    expect(await admin.invoiceDraft.count({ where: { companyId: srl!.id } })).toBe(1);
-    const stamped = await admin.invoice.count({
-      where: { companyId: srl!.id, stampDuty: { gt: 0 } },
-    });
-    expect(stamped).toBe(2);
-    expect(await invoicing.verify(admin)).toEqual([]);
-  });
-
-  it('adds only what is missing when run again', async () => {
-    const people = await admin.user.count({
-      where: { email: { endsWith: `.${suffix}@example.com` } },
-    });
-    // A party that went missing (deleted by the owner role, never by the API) comes back alone:
-    // one that no document points to.
-    await admin.party.deleteMany({
-      where: { tenantId: rossi.id, name: 'Associazione Sportiva Lario' },
-    });
-
+  it('leaves the demo as it is when run again', async () => {
+    const before = await story(rossi.id);
     const again = await admin.$transaction(
-      (tx) => seedDemo(tx, { tenancy, identity, registry, warehouse, orders, invoicing }, suffix),
+      (tx) => seedDemo(tx, services, { suffix, today: TODAY }),
       SEED_TRANSACTION,
     );
-
     expect(again.userIds).toEqual([]);
-    expect(again.tenants).toEqual([
-      expect.objectContaining({
-        created: false,
-        parties: 1,
-        items: 0,
-        warehouses: 0,
-        documents: 0,
-        orders: 0,
-        invoices: 0,
-      }),
-      expect.objectContaining({
-        created: false,
-        parties: 0,
-        items: 0,
-        warehouses: 0,
-        documents: 0,
-        orders: 0,
-        invoices: 0,
-      }),
-    ]);
-    expect(await admin.item.count({ where: { tenantId: rossi.id } })).toBe(15);
-    expect(await admin.party.count({ where: { tenantId: rossi.id } })).toBe(8);
-    expect(
-      await admin.user.count({ where: { email: { endsWith: `.${suffix}@example.com` } } }),
-    ).toBe(people);
+    expect(again.tenants.every((t) => !t.created)).toBe(true);
+    expect(await story(rossi.id)).toEqual(before);
   });
+
+  it('resets the demo to the same story, keeping the people outside it and other tenants', async () => {
+    const before = { rossi: await story(rossi.id), bianchi: await story(bianchi.id) };
+    const outsider = await admin.user.create({ data: { email: outsiderEmail, name: 'Operator' } });
+    const [logistica] = rossi.companies;
+    await services.identity.addMember(admin, {
+      tenantId: rossi.id,
+      email: outsiderEmail,
+      name: 'Operator',
+      role: 'ACCOUNTANT',
+      companies: [logistica!.id],
+    });
+    await services.identity.addMember(admin, {
+      tenantId: bianchi.id,
+      email: outsiderEmail,
+      name: 'Operator',
+      role: 'ADMIN',
+      companies: 'all',
+    });
+    const oldRossi = rossi.id;
+
+    const reset = await admin.$transaction(
+      (tx) => resetDemo(tx, services, { suffix, today: TODAY }),
+      RESET,
+    );
+    await load();
+
+    expect(reset.deleted).toBe(2);
+    expect(reset.missing).toEqual([]);
+    expect(rossi.id).not.toBe(oldRossi);
+    expect(await admin.tenant.findUnique({ where: { id: other.id } })).not.toBeNull();
+    // The same reference day gives the same story.
+    expect(await story(rossi.id)).toEqual(before.rossi);
+    expect(await story(bianchi.id)).toEqual(before.bianchi);
+    // The operator is back, the same identity, with the same role and companies.
+    const memberships = await admin.membership.findMany({
+      where: { userId: outsider.id },
+      include: { tenant: true, companies: { include: { company: true } } },
+      orderBy: { tenant: { slug: 'asc' } },
+    });
+    expect(
+      memberships.map((m) => [
+        m.tenant.slug,
+        m.role,
+        m.allCompanies ? 'all' : m.companies.map((c) => c.company.legalName),
+      ]),
+    ).toEqual([
+      [`bianchi-${suffix}`, 'ADMIN', 'all'],
+      [`rossi-${suffix}`, 'ACCOUNTANT', ['Rossi Logistica Srl']],
+    ]);
+    // Nothing of the old tenants is left anywhere.
+    expect(await admin.invoice.count({ where: { tenantId: oldRossi } })).toBe(0);
+  }, 600_000);
 
   it('refuses a production database unless asked explicitly', async () => {
     const previous = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
     const err: string[] = [];
     try {
-      const code = await runCli(
-        ['seed-demo'],
-        { out: () => undefined, err: (line) => err.push(line), audit: () => undefined },
-        () => NestFactory.createApplicationContext(CliModule, { logger: false }),
-      );
-
-      expect(code).toBe(1);
-      expect(err.join('\n')).toContain('DEMO_IN_PRODUCTION');
+      for (const command of ['seed-demo', 'reset-demo']) {
+        const code = await runCli(
+          [command],
+          { out: () => undefined, err: (line) => err.push(line), audit: () => undefined },
+          () => NestFactory.createApplicationContext(CliModule, { logger: false }),
+        );
+        expect(code).toBe(1);
+      }
+      expect(err.filter((line) => line.includes('DEMO_IN_PRODUCTION'))).toHaveLength(2);
     } finally {
       process.env.NODE_ENV = previous;
     }

@@ -7,7 +7,22 @@ a release.
 
 ## [Unreleased]
 
+### Added
+
+- Charts on the overview: invoiced and collected by month, what customers owe by days overdue, the
+  top customers of the year, sales ordered and shipped, what is left to ship, stock documents by
+  type; each with the permission of its page and the same figures as a table
+  (`GET /invoicing/stats`, `/invoicing/aging`, `/orders/stats`, `/stock/stats`).
+- A period ("from", "to") on the invoice list and on the payment schedule.
+- The demo seed writes twelve months of history up to a reference day (`--today`, default today),
+  through the same rules as the API, and shows every feature at least once. `reset-demo` deletes
+  the demo tenants and writes them again, putting back the people outside the demo who belonged
+  to them (`--dry-run` lists first).
+
 ### Changed
+
+- **The demo seed no longer adds to existing demo tenants**: a new history can only start from
+  its first day. Run `reset-demo` to replace the old demo (production: `--allow-production`).
 
 - `docker-compose.prod.yml` refuses to start without `MERCURIO_DEPLOYMENT`, set only in
   `.env.production`, so that a command typed in a checkout cannot act on the production containers.
