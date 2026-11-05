@@ -147,16 +147,26 @@ export class PaymentsRepository {
           }
         : {}),
     };
-    return {
-      rows: await db.payment.findMany({
-        where,
-        include: { allocations: true, reversedBy: { select: { id: true } } },
-        orderBy: [{ paymentDate: 'desc' }, { createdAt: 'desc' }],
-        skip,
-        take,
-      }),
-      total: await db.payment.count({ where }),
-    };
+    // Payments first, then their allocations and reversals: an `include` of two relations
+    // makes Prisma run them side by side on the transaction's single connection (B39).
+    const payments = await db.payment.findMany({
+      where,
+      orderBy: [{ paymentDate: 'desc' }, { createdAt: 'desc' }],
+      skip,
+      take,
+    });
+    const ids = payments.map((p) => p.id);
+    const allocations = await db.paymentAllocation.findMany({ where: { paymentId: { in: ids } } });
+    const reversals = await db.payment.findMany({
+      where: { reversesId: { in: ids } },
+      select: { id: true, reversesId: true },
+    });
+    const rows = payments.map((payment) => ({
+      ...payment,
+      allocations: allocations.filter((a) => a.paymentId === payment.id),
+      reversedBy: reversals.find((r) => r.reversesId === payment.id) ?? null,
+    }));
+    return { rows, total: await db.payment.count({ where }) };
   }
 
   /** For the overview: what customers owe, what is late, what falls due in the next 30 days. */

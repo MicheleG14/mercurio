@@ -250,15 +250,19 @@ export class InvoicingRepository {
 
   // ---- Issued documents ---------------------------------------------------------------------
 
-  findInvoice(db: DbClient, companyId: string, id: string): Promise<InvoiceRow | null> {
-    return db.invoice.findFirst({
-      where: { id, companyId },
-      include: {
-        lines: { orderBy: { lineNo: 'asc' } },
-        vatRows: { orderBy: { vatCode: 'asc' } },
-        dueDates: { orderBy: { seq: 'asc' } },
-      },
-    });
+  /**
+   * The document with its lines, VAT rows and due dates, one relation at a time: an `include`
+   * of several relations makes Prisma run their queries side by side on the transaction's
+   * single connection (B39).
+   */
+  async findInvoice(db: DbClient, companyId: string, id: string): Promise<InvoiceRow | null> {
+    const invoice = await db.invoice.findFirst({ where: { id, companyId } });
+    if (!invoice) return null;
+    const where = { invoiceId: invoice.id };
+    const lines = await db.invoiceLine.findMany({ where, orderBy: { lineNo: 'asc' } });
+    const vatRows = await db.invoiceVatRow.findMany({ where, orderBy: { vatCode: 'asc' } });
+    const dueDates = await db.invoiceDueDate.findMany({ where, orderBy: { seq: 'asc' } });
+    return { ...invoice, lines, vatRows, dueDates };
   }
 
   findAnyInvoice(db: DbClient, id: string) {
