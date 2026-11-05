@@ -8891,10 +8891,12 @@
           },
           "seller": {
             "type": "object",
+            "additionalProperties": true,
             "description": "The seller as printed, copied when issued"
           },
           "customer": {
             "type": "object",
+            "additionalProperties": true,
             "description": "The customer as printed, copied when issued"
           },
           "language": {
