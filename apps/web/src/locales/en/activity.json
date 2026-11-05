@@ -40,14 +40,26 @@
     "ORDER_CLOSED": "Rest of an order closed",
     "ORDER_CANCELLED": "Order cancelled",
     "ORDER_FULFILLED": "Order received or shipped",
-    "ORDER_FULFILMENT_REVERSED": "Receipt or shipment undone"
+    "ORDER_FULFILMENT_REVERSED": "Receipt or shipment undone",
+    "COMPANY_UPDATED": "Company data changed",
+    "INVOICE_DRAFT_CREATED": "Draft invoice created",
+    "INVOICE_DRAFT_UPDATED": "Draft invoice changed",
+    "INVOICE_DRAFT_DELETED": "Draft invoice deleted",
+    "INVOICE_ISSUED": "Invoice issued",
+    "CREDIT_NOTE_ISSUED": "Credit note issued",
+    "PAYMENT_RECORDED": "Payment recorded",
+    "PAYMENT_REVERSED": "Payment undone"
   },
   "subjectType": {
     "party": "Party",
     "item": "Item",
     "warehouse": "Warehouse",
     "stock_document": "Stock document",
-    "order": "Order"
+    "order": "Order",
+    "company": "Company",
+    "invoice": "Invoice",
+    "invoice_draft": "Draft invoice",
+    "payment": "Payment"
   },
   "fields": "Fields: {{fields}}"
 }

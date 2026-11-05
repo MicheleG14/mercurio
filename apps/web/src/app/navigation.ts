@@ -1,6 +1,11 @@
 import {
   ActivityIcon,
   ArrowLeftRightIcon,
+  BanknoteIcon,
+  Building2Icon,
+  CalendarClockIcon,
+  FilePlusIcon,
+  FileTextIcon,
   BoxesIcon,
   ClipboardListIcon,
   HouseIcon,
@@ -30,17 +35,24 @@ export interface NavItem {
     | 'warehouses'
     | 'salesOrders'
     | 'purchaseOrders'
+    | 'invoices'
+    | 'toInvoice'
+    | 'dueDates'
+    | 'payments'
+    | 'company'
     | 'activity';
   icon: LucideIcon;
   /** Shown only with this permission. The API still checks it on every call (F18). */
   permission?: string;
   /** Shown only when the tenant has enabled this module. */
   module?: string;
+  /** Shown only when the tenant has enabled all these modules. */
+  modules?: string[];
 }
 
 export interface NavGroup {
   /** Key under `nav.group.` in the common translations; none for the top items. */
-  label?: 'registry' | 'warehouse' | 'orders' | 'administration';
+  label?: 'registry' | 'warehouse' | 'orders' | 'invoicing' | 'administration';
   items: NavItem[];
 }
 
@@ -118,8 +130,50 @@ export const NAVIGATION: NavGroup[] = [
     ],
   },
   {
+    label: 'invoicing',
+    items: [
+      {
+        to: '/invoicing/invoices',
+        label: 'invoices',
+        icon: FileTextIcon,
+        permission: 'invoicing:read',
+        module: 'invoicing',
+      },
+      {
+        to: '/invoicing/to-invoice',
+        label: 'toInvoice',
+        icon: FilePlusIcon,
+        permission: 'invoicing:read',
+        // Shipments come from orders: without them there is nothing to invoice from here.
+        modules: ['invoicing', 'orders'],
+      },
+      {
+        to: '/invoicing/due-dates',
+        label: 'dueDates',
+        icon: CalendarClockIcon,
+        permission: 'invoicing:read',
+        module: 'invoicing',
+      },
+      {
+        to: '/invoicing/payments',
+        label: 'payments',
+        icon: BanknoteIcon,
+        permission: 'invoicing:read',
+        module: 'invoicing',
+      },
+    ],
+  },
+  {
     label: 'administration',
-    items: [{ to: '/activity', label: 'activity', icon: ActivityIcon, permission: 'audit:read' }],
+    items: [
+      {
+        to: '/settings/company',
+        label: 'company',
+        icon: Building2Icon,
+        permission: 'companies:manage',
+      },
+      { to: '/activity', label: 'activity', icon: ActivityIcon, permission: 'audit:read' },
+    ],
   },
 ];
 
@@ -132,7 +186,8 @@ export function visibleNavigation(
     items: group.items.filter(
       (item) =>
         (!item.permission || me?.permissions.includes(item.permission)) &&
-        (!item.module || me?.modules.includes(item.module)),
+        (!item.module || me?.modules.includes(item.module)) &&
+        (item.modules ?? []).every((key) => me?.modules.includes(key)),
     ),
   })).filter((group) => group.items.length > 0);
 }

@@ -145,7 +145,8 @@
     "close": "Chiudi residuo",
     "cancel": "Annulla l'ordine",
     "duplicate": "Duplica",
-    "reverse": "Annulla la registrazione"
+    "reverse": "Annulla la registrazione",
+    "invoice": "Fattura"
   },
   "confirm": {
     "delete": {
@@ -192,6 +193,21 @@
       "SALES": "Registra l'evasione",
       "PURCHASE": "Registra la ricezione"
     },
-    "posting": "Registrazione…"
+    "posting": "Registrazione…",
+    "transport": {
+      "title": "Trasporto (per il DDT)",
+      "reason": "Causale del trasporto",
+      "reasonDefault": "Vendita",
+      "by": "Trasporto a cura del",
+      "byValues": {
+        "SENDER": "Mittente",
+        "RECIPIENT": "Destinatario",
+        "CARRIER": "Vettore"
+      },
+      "carrier": "Vettore",
+      "packages": "Colli",
+      "appearance": "Aspetto dei beni",
+      "weight": "Peso (kg)"
+    }
   }
 }

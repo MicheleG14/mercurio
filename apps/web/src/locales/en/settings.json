@@ -1,0 +1,36 @@
+{
+  "company": {
+    "title": "Company data",
+    "description": "What invoices print of the current company. The legal name and VAT number are set when the company is created.",
+    "missing": "To issue invoices, it lacks: {{fields}}.",
+    "complete": "Ready to issue invoices",
+    "save": "Save",
+    "fields": {
+      "address": "Registered office address",
+      "postalCode": "Postal code",
+      "city": "City",
+      "province": "Province",
+      "reaOffice": "REA office (province)",
+      "reaNumber": "REA number",
+      "shareCapital": "Share capital (€)",
+      "iban": "IBAN for bank transfers",
+      "email": "Email",
+      "pecEmail": "PEC",
+      "phone": "Phone",
+      "taxRegime": "Tax regime",
+      "soleShareholder": "Shareholders",
+      "inLiquidation": "In liquidation",
+      "chargeStampDuty": "Charge customers the stamp duty of exempt invoices"
+    },
+    "shareholders": {
+      "none": "Not stated",
+      "sole": "Sole shareholder",
+      "several": "Several shareholders"
+    },
+    "regimes": {
+      "RF01": "Ordinary",
+      "RF02": "Minimum taxpayers",
+      "RF19": "Flat-rate"
+    }
+  }
+}

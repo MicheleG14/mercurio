@@ -11,8 +11,11 @@ export function useQuantity() {
 /** What the person may do with orders: the API checks it again on every call (F18). */
 export function useOrderRights() {
   const permissions = useMe().data?.permissions ?? [];
+  const modules = useMe().data?.modules ?? [];
   return {
     write: permissions.includes('orders:write'),
     fulfil: permissions.includes('orders:fulfil'),
+    // A shipment can be invoiced from here when the tenant invoices with Mercurio.
+    invoice: modules.includes('invoicing') && permissions.includes('invoicing:write'),
   };
 }

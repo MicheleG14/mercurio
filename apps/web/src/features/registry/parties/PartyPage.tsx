@@ -393,6 +393,59 @@ function PartyForm({ party }: { party?: Party }) {
             </FormField>
           </FormSection>
 
+          <FormSection title={t('parties.section.invoicing')}>
+            <FormField
+              label={t('parties.field.paymentTerms')}
+              error={msg(errors.paymentTerms?.message)}
+            >
+              {(p) => (
+                <NativeSelect className="w-full" {...p} {...form.register('paymentTerms')}>
+                  <NativeSelectOption value="">—</NativeSelectOption>
+                  {reference?.paymentTerms.map((terms) => (
+                    <NativeSelectOption key={terms.code} value={terms.code}>
+                      {terms.code === 'RD'
+                        ? t('parties.paymentTerms.RD')
+                        : t(`parties.paymentTerms.${terms.code.endsWith('FM') ? 'FM' : 'DF'}`, {
+                            days: terms.code.slice(0, -2),
+                          })}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              )}
+            </FormField>
+            <FormField
+              label={t('parties.field.paymentMethod')}
+              error={msg(errors.paymentMethod?.message)}
+            >
+              {(p) => (
+                <NativeSelect className="w-full" {...p} {...form.register('paymentMethod')}>
+                  <NativeSelectOption value="">—</NativeSelectOption>
+                  {reference?.paymentMethods.map((method) => (
+                    <NativeSelectOption key={method} value={method}>
+                      {t(`parties.paymentMethods.${method as 'MP05'}`)}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              )}
+            </FormField>
+            <FormField
+              label={t('parties.field.documentLanguage')}
+              error={msg(errors.documentLanguage?.message)}
+              hint={t('parties.hint.documentLanguage')}
+            >
+              {(p) => (
+                <NativeSelect className="w-full" {...p} {...form.register('documentLanguage')}>
+                  <NativeSelectOption value="">—</NativeSelectOption>
+                  {reference?.documentLanguages.map((code) => (
+                    <NativeSelectOption key={code} value={code}>
+                      {t(`parties.languages.${code as 'it'}`)}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              )}
+            </FormField>
+          </FormSection>
+
           <FormSection title={t('parties.section.notes')}>
             <div className="sm:col-span-2">
               <FormField label={t('parties.field.notes')} error={msg(errors.notes?.message)}>

@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { ApiError } from '@/lib/api';
@@ -16,7 +17,7 @@ import { decimalToInput, parseDecimalInput, quantityLimits } from '@/lib/decimal
 import { businessToday } from '@/lib/format';
 import { uuidv7 } from '@/lib/uuid';
 import { useOrderRights, useQuantity } from './hooks';
-import { type Order, useFulfil, useOrder } from './queries';
+import { type FulfilmentBody, type Order, useFulfil, useOrder } from './queries';
 
 /** `/orders/:id/fulfil`: receiving a purchase order or shipping a sales order, all or part. */
 export function FulfilPage() {
@@ -61,6 +62,15 @@ function FulfilForm({ order }: { order: Order }) {
   const [ref, setRef] = useState('');
   const [refDate, setRefDate] = useState('');
   const [notes, setNotes] = useState('');
+  // How the goods of a sale travel: printed on the delivery note. All optional.
+  const [transport, setTransport] = useState({
+    reason: '',
+    by: '',
+    carrier: '',
+    packages: '',
+    appearance: '',
+    weightKg: '',
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const setAll = (pick: (line: (typeof open)[number]) => string) =>
@@ -87,6 +97,7 @@ function FulfilForm({ order }: { order: Order }) {
         partyDocumentRef: ref.trim() || null,
         partyDocumentDate: refDate || null,
         notes: notes.trim() || null,
+        ...(sales ? { transport: transportBody(transport, language) } : {}),
         lines,
       },
       {
@@ -249,6 +260,94 @@ function FulfilForm({ order }: { order: Order }) {
               </FormField>
             </>
           )}
+          {sales && (
+            <details className="sm:col-span-2">
+              <summary className="cursor-pointer text-sm font-medium">
+                {t('fulfil.transport.title')}
+              </summary>
+              <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                <FormField label={t('fulfil.transport.reason')}>
+                  {(p) => (
+                    <Input
+                      {...p}
+                      placeholder={t('fulfil.transport.reasonDefault')}
+                      value={transport.reason}
+                      onChange={(e) => setTransport({ ...transport, reason: e.target.value })}
+                    />
+                  )}
+                </FormField>
+                <FormField label={t('fulfil.transport.by')}>
+                  {(p) => (
+                    <NativeSelect
+                      className="w-full"
+                      {...p}
+                      value={transport.by}
+                      onChange={(e) => setTransport({ ...transport, by: e.target.value })}
+                    >
+                      <NativeSelectOption value="">—</NativeSelectOption>
+                      {(['SENDER', 'RECIPIENT', 'CARRIER'] as const).map((by) => (
+                        <NativeSelectOption key={by} value={by}>
+                          {t(`fulfil.transport.byValues.${by}`)}
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
+                  )}
+                </FormField>
+                <FormField
+                  label={t('fulfil.transport.carrier')}
+                  error={
+                    errors['transport.carrier']
+                      ? tError(errors['transport.carrier'] as never)
+                      : undefined
+                  }
+                >
+                  {(p) => (
+                    <Input
+                      {...p}
+                      value={transport.carrier}
+                      onChange={(e) => setTransport({ ...transport, carrier: e.target.value })}
+                    />
+                  )}
+                </FormField>
+                <FormField label={t('fulfil.transport.packages')}>
+                  {(p) => (
+                    <Input
+                      type="number"
+                      min={1}
+                      {...p}
+                      value={transport.packages}
+                      onChange={(e) => setTransport({ ...transport, packages: e.target.value })}
+                    />
+                  )}
+                </FormField>
+                <FormField label={t('fulfil.transport.appearance')}>
+                  {(p) => (
+                    <Input
+                      {...p}
+                      value={transport.appearance}
+                      onChange={(e) => setTransport({ ...transport, appearance: e.target.value })}
+                    />
+                  )}
+                </FormField>
+                <FormField
+                  label={t('fulfil.transport.weight')}
+                  error={
+                    errors['transport.weightKg']
+                      ? tError(errors['transport.weightKg'] as never)
+                      : undefined
+                  }
+                >
+                  {(p) => (
+                    <DecimalInput
+                      {...p}
+                      value={transport.weightKg}
+                      onChange={(e) => setTransport({ ...transport, weightKg: e.target.value })}
+                    />
+                  )}
+                </FormField>
+              </div>
+            </details>
+          )}
           <div className="sm:col-span-2">
             <FormField label={t('form.fields.notes')}>
               {(p) => (
@@ -285,4 +384,21 @@ function FulfilForm({ order }: { order: Order }) {
       </form>
     </div>
   );
+}
+
+/** The transport of the form as the API takes it: null when nothing was filled in. */
+function transportBody(
+  transport: Record<'reason' | 'by' | 'carrier' | 'packages' | 'appearance' | 'weightKg', string>,
+  language: string,
+): FulfilmentBody['transport'] {
+  const packages = Number.parseInt(transport.packages, 10);
+  const body = {
+    reason: transport.reason.trim() || null,
+    by: (transport.by || null) as 'SENDER' | 'RECIPIENT' | 'CARRIER' | null,
+    carrier: transport.carrier.trim() || null,
+    packages: Number.isInteger(packages) && packages > 0 ? packages : null,
+    appearance: transport.appearance.trim() || null,
+    weightKg: parseDecimalInput(transport.weightKg, language, quantityLimits(3)) ?? null,
+  };
+  return Object.values(body).some((value) => value !== null) ? body : null;
 }

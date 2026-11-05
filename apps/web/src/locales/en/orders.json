@@ -145,7 +145,8 @@
     "close": "Close the rest",
     "cancel": "Cancel the order",
     "duplicate": "Duplicate",
-    "reverse": "Undo the record"
+    "reverse": "Undo the record",
+    "invoice": "Invoice"
   },
   "confirm": {
     "delete": {
@@ -192,6 +193,21 @@
       "SALES": "Record the shipment",
       "PURCHASE": "Record the receipt"
     },
-    "posting": "Recording…"
+    "posting": "Recording…",
+    "transport": {
+      "title": "Transport (for the delivery note)",
+      "reason": "Reason for transport",
+      "reasonDefault": "Sale",
+      "by": "Transport by",
+      "byValues": {
+        "SENDER": "Sender",
+        "RECIPIENT": "Recipient",
+        "CARRIER": "Carrier"
+      },
+      "carrier": "Carrier",
+      "packages": "Packages",
+      "appearance": "Appearance of goods",
+      "weight": "Weight (kg)"
+    }
   }
 }

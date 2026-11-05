@@ -40,7 +40,8 @@
       "registry": "Registry",
       "administration": "Administration",
       "warehouse": "Warehouse",
-      "orders": "Orders"
+      "orders": "Orders",
+      "invoicing": "Invoicing"
     },
     "open": "Open the menu",
     "toggle": "Collapse or expand the menu",
@@ -49,7 +50,12 @@
     "belowReorder": "Below reorder",
     "warehouses": "Warehouses",
     "salesOrders": "Sales orders",
-    "purchaseOrders": "Purchase orders"
+    "purchaseOrders": "Purchase orders",
+    "invoices": "Invoices",
+    "toInvoice": "To invoice",
+    "dueDates": "Payment schedule",
+    "payments": "Payments",
+    "company": "Company data"
   },
   "actions": {
     "continue": "Continue",

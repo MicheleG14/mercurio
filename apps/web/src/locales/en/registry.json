@@ -73,7 +73,8 @@
       "tax": "Tax details",
       "address": "Registered office",
       "contacts": "Contacts and e-invoicing",
-      "notes": "Notes"
+      "notes": "Notes",
+      "invoicing": "Invoicing"
     },
     "field": {
       "kind": "Kind",
@@ -96,13 +97,17 @@
       "phone": "Phone",
       "pecEmail": "PEC (certified email)",
       "sdiCode": "SdI recipient code",
-      "notes": "Notes"
+      "notes": "Notes",
+      "paymentTerms": "Payment terms",
+      "paymentMethod": "Payment method",
+      "documentLanguage": "Language of documents"
     },
     "hint": {
       "foreignIdentifier": "Foreign country: enter the tax identifier as it appears on documents.",
       "sdiCode": "7 characters, assigned by the Italian exchange system (SdI). 0000000 if invoices go to the PEC.",
       "province": "Two-letter code, for example MI.",
-      "taxCodeCompany": "11 digits, usually the same as the VAT number."
+      "taxCodeCompany": "11 digits, usually the same as the VAT number.",
+      "documentLanguage": "Empty: Italian for Italy, English abroad."
     },
     "lookup": {
       "active": "“{{name}}” already has this identifier.",
@@ -110,7 +115,23 @@
       "open": "Open it",
       "openToRestore": "Open it to restore"
     },
-    "existing": "Open the existing party"
+    "existing": "Open the existing party",
+    "paymentTerms": {
+      "RD": "Payment on receipt",
+      "DF": "{{days}} days from invoice date",
+      "FM": "{{days}} days end of month"
+    },
+    "paymentMethods": {
+      "MP01": "Cash",
+      "MP02": "Cheque",
+      "MP05": "Bank transfer",
+      "MP08": "Payment card",
+      "MP12": "RIBA"
+    },
+    "languages": {
+      "it": "Italian",
+      "en": "English"
+    }
   },
   "items": {
     "title": "Items",

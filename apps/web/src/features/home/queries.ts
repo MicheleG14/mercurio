@@ -27,3 +27,16 @@ export function useOrdersSummary(enabled: boolean) {
     enabled: enabled && Boolean(company),
   });
 }
+
+/** The invoicing counters of the overview, through the API as above; keyed like invoicing's own. */
+export function useInvoicingSummary(enabled: boolean) {
+  const company = useCompanyId();
+  return useQuery({
+    queryKey: ['invoicing', company, 'summary'],
+    queryFn: () =>
+      unwrap(
+        api.GET('/invoicing/summary', { params: { header: { 'X-Company-Id': company ?? '' } } }),
+      ),
+    enabled: enabled && Boolean(company),
+  });
+}

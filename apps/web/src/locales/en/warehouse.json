@@ -176,7 +176,8 @@
     "reversedBy": "Reversed by {{reference}}",
     "origin": "Recorded by order {{reference}}: undo it there.",
     "reverses": "Reversal of {{reference}}",
-    "reversedReason": "Reason reversed"
+    "reversedReason": "Reason reversed",
+    "deliveryNote": "Print delivery note"
   },
   "warehouses": {
     "title": "Warehouses",

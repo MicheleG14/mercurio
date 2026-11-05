@@ -1,0 +1,36 @@
+{
+  "company": {
+    "title": "Dati azienda",
+    "description": "Ciò che le fatture stampano dell'azienda corrente. Ragione sociale e partita IVA si impostano quando l'azienda viene creata.",
+    "missing": "Per emettere fatture mancano: {{fields}}.",
+    "complete": "Pronta per emettere fatture",
+    "save": "Salva",
+    "fields": {
+      "address": "Indirizzo della sede",
+      "postalCode": "CAP",
+      "city": "Comune",
+      "province": "Provincia",
+      "reaOffice": "Ufficio REA (provincia)",
+      "reaNumber": "Numero REA",
+      "shareCapital": "Capitale sociale (€)",
+      "iban": "IBAN per i bonifici",
+      "email": "Email",
+      "pecEmail": "PEC",
+      "phone": "Telefono",
+      "taxRegime": "Regime fiscale",
+      "soleShareholder": "Soci",
+      "inLiquidation": "In liquidazione",
+      "chargeStampDuty": "Addebitare ai clienti il bollo delle fatture esenti"
+    },
+    "shareholders": {
+      "none": "Non indicato",
+      "sole": "Socio unico",
+      "several": "Più soci"
+    },
+    "regimes": {
+      "RF01": "Ordinario",
+      "RF02": "Contribuenti minimi",
+      "RF19": "Forfettario"
+    }
+  }
+}

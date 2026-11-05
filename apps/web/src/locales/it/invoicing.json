@@ -1,0 +1,240 @@
+{
+  "kind": {
+    "INVOICE": "Fattura",
+    "CREDIT_NOTE": "Nota di credito"
+  },
+  "paymentStatus": {
+    "UNPAID": "Da incassare",
+    "PARTIAL": "Incassata in parte",
+    "PAID": "Saldata",
+    "CREDITED": "Stornata",
+    "SETTLED": "Compensata",
+    "REFUND_DUE": "Da rimborsare",
+    "REFUNDED": "Rimborsata"
+  },
+  "overdue": "Scaduta",
+  "draft": "Bozza",
+  "terms": {
+    "RD": "Rimessa diretta",
+    "DF": "{{days}} gg data fattura",
+    "FM": "{{days}} gg fine mese"
+  },
+  "methods": {
+    "MP01": "Contanti",
+    "MP02": "Assegno",
+    "MP05": "Bonifico",
+    "MP08": "Carta di pagamento",
+    "MP12": "RIBA"
+  },
+  "languages": {
+    "it": "Italiano",
+    "en": "Inglese"
+  },
+  "totals": {
+    "taxable": "Imponibile",
+    "vatRow": "IVA {{code}} su",
+    "vat": "IVA",
+    "total": "Totale documento",
+    "stampDuty": "Bollo assolto in modo virtuale"
+  },
+  "list": {
+    "title": "Fatture",
+    "description": "Fatture e note di credito emesse, con quanto resta da incassare.",
+    "new": "Nuova fattura",
+    "search": "Cerca per numero o cliente",
+    "filter": {
+      "kind": "Tipo",
+      "all": "Tutti"
+    },
+    "drafts": "Bozze",
+    "draftsEmpty": "Nessuna bozza.",
+    "noCustomer": "Cliente non scelto",
+    "empty": "Nessun documento emesso.",
+    "columns": {
+      "number": "Numero",
+      "date": "Data",
+      "customer": "Cliente",
+      "total": "Totale",
+      "open": "Da incassare",
+      "status": "Stato",
+      "due": "Prossima scadenza",
+      "updated": "Modificata"
+    }
+  },
+  "toInvoice": {
+    "title": "Da fatturare",
+    "description": "Merce spedita ai clienti e non ancora fatturata. Scegli le spedizioni di un cliente e crea una fattura: immediata con una spedizione, differita con più spedizioni del mese.",
+    "empty": "Niente da fatturare.",
+    "create": "Crea fattura",
+    "choose": "Scegli",
+    "inDraft": "In una bozza",
+    "openDraft": "Apri la bozza",
+    "selected_one": "{{count}} spedizione scelta",
+    "selected_other": "{{count}} spedizioni scelte",
+    "oneCustomer": "Si fattura un cliente alla volta: scegli spedizioni dello stesso cliente.",
+    "columns": {
+      "document": "DDT",
+      "date": "Data",
+      "order": "Ordine",
+      "taxable": "Imponibile"
+    }
+  },
+  "editor": {
+    "newTitle": "Nuova fattura",
+    "editTitle": "Bozza di fattura",
+    "creditTitle": "Bozza di nota di credito",
+    "description": "La bozza si può cambiare quanto serve. Emessa, la fattura prende il numero e non cambia più: si corregge solo con una nota di credito.",
+    "credits": "A storno di {{reference}} del {{date}}",
+    "section": {
+      "header": "Cliente e pagamento",
+      "lines": "Righe",
+      "notes": "Note"
+    },
+    "fields": {
+      "customer": "Cliente",
+      "paymentTerms": "Condizioni di pagamento",
+      "paymentMethod": "Modalità di pagamento",
+      "language": "Lingua del documento",
+      "fromCustomer": "Del cliente",
+      "notes": "Note"
+    },
+    "searchCustomer": "Cerca un cliente",
+    "lines": {
+      "line": "Riga {{n}}",
+      "item": "Articolo o servizio",
+      "searchItem": "Cerca per codice o descrizione",
+      "description": "Descrizione",
+      "quantity": "Quantità",
+      "unitPrice": "Prezzo",
+      "discount": "Sconto %",
+      "vat": "IVA",
+      "add": "Aggiungi riga",
+      "addText": "Aggiungi testo",
+      "remove": "Togli la riga {{n}}",
+      "shipped": "Spedito con {{document}}: quantità fissa",
+      "credited": "Storno di una riga della fattura",
+      "text": "Solo testo",
+      "stampDuty": "Rivalsa imposta di bollo"
+    },
+    "stampDuty": {
+      "required": "Le operazioni esenti superano 77,47 €: la fattura porta il bollo da 2 €.",
+      "charge": "Addebita il bollo al cliente",
+      "charged": "Il bollo è addebitato al cliente."
+    },
+    "deferred": "Fattura differita: va emessa entro il {{date}}.",
+    "dueDates": "Scadenze se emessa oggi",
+    "save": "Salva bozza",
+    "saving": "Salvataggio…",
+    "preview": "Anteprima PDF",
+    "issue": "Emetti",
+    "delete": "Elimina bozza",
+    "deleteTitle": "Eliminare la bozza?",
+    "deleteDescription": "Le spedizioni che conteneva tornano da fatturare.",
+    "issueDialog": {
+      "title": "Emettere {{kind}}?",
+      "description": "Intestata da {{company}} a {{customer}}, totale {{total}}. Dopo l'emissione il documento ha un numero e non si può più cambiare.",
+      "date": "Data del documento",
+      "confirm": "Emetti"
+    },
+    "unsaved": "Salva la bozza prima di emetterla."
+  },
+  "detail": {
+    "number": "{{kind}} {{reference}}",
+    "issued": "Emessa il {{date}}",
+    "seller": "Cedente",
+    "customer": "Cliente",
+    "lines": "Righe",
+    "dueDates": "Scadenze",
+    "dueColumns": {
+      "date": "Scadenza",
+      "amount": "Importo",
+      "settled": "Incassato",
+      "open": "Da incassare"
+    },
+    "creditNotes": "Note di credito",
+    "creditedInvoice": "A storno di",
+    "shipments": "Spedizioni fatturate",
+    "pdf": "Scarica PDF",
+    "creditNote": "Nota di credito",
+    "creditAll": "Storna tutto",
+    "creditLines": "Storna le righe scelte",
+    "creditDialog": {
+      "title": "Nota di credito",
+      "description": "Si prepara una bozza con quanto resta da stornare delle righe scelte: prezzi e quantità si possono ridurre prima di emetterla. Il reso della merce si registra a parte in magazzino."
+    },
+    "recordPayment": "Registra incasso",
+    "recordRefund": "Registra rimborso",
+    "payment": "Pagamento: {{terms}}, {{method}}",
+    "nothingToCredit": "Niente da stornare."
+  },
+  "dueDates": {
+    "title": "Scadenziario",
+    "description": "Le scadenze delle fatture e i rimborsi delle note di credito, in ordine di data.",
+    "filter": {
+      "status": "Scadenze",
+      "open": "Aperte",
+      "overdue": "Scadute",
+      "paid": "Saldate",
+      "all": "Tutte"
+    },
+    "openTotal": "Da incassare",
+    "overdueTotal": "Di cui scaduto",
+    "empty": "Nessuna scadenza.",
+    "pay": "Incassa",
+    "columns": {
+      "date": "Scadenza",
+      "document": "Documento",
+      "customer": "Cliente",
+      "amount": "Importo",
+      "open": "Da incassare"
+    }
+  },
+  "payments": {
+    "title": "Incassi",
+    "description": "Pagamenti ricevuti dai clienti e rimborsi delle note di credito.",
+    "new": "Registra incasso",
+    "empty": "Nessun incasso registrato.",
+    "reverse": "Annulla l'incasso",
+    "reverseTitle": "Annullare l'incasso?",
+    "reverseDescription": "Le scadenze che saldava tornano aperte. L'incasso resta nell'elenco, con il suo annullamento.",
+    "reversed": "Annullato",
+    "reversal": "Annullamento",
+    "kind": {
+      "RECEIPT": "Incasso",
+      "REFUND": "Rimborso"
+    },
+    "columns": {
+      "date": "Data",
+      "customer": "Cliente",
+      "amount": "Importo",
+      "method": "Modalità",
+      "documents": "Documenti"
+    },
+    "form": {
+      "title": "Registra incasso",
+      "description": "Il sistema propone di saldare le scadenze aperte del cliente dalla più vecchia: correggi gli importi se il cliente ha pagato altro.",
+      "kind": "Tipo",
+      "customer": "Cliente",
+      "date": "Data",
+      "amount": "Importo",
+      "method": "Modalità",
+      "reference": "Riferimento (CRO, assegno)",
+      "allocations": "Scadenze saldate",
+      "allocated": "Ripartito {{allocated}} su {{amount}}",
+      "noOpen": "Il cliente non ha scadenze aperte di questo tipo.",
+      "save": "Registra"
+    }
+  },
+  "home": {
+    "title": "Fatturazione",
+    "toInvoice": "Da fatturare",
+    "drafts": "Bozze",
+    "overdue": "Scaduto",
+    "dueSoon": "In scadenza (30 giorni)",
+    "invoicedThisMonth": "Fatturato del mese",
+    "open": "Apri le fatture"
+  },
+  "errors": {
+    "companyIncomplete": "Mancano dati dell'azienda per emettere. Completali in Dati azienda."
+  }
+}
