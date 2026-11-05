@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { CompanyContext, TenantTransaction } from '../../prisma/index.js';
+import type { CompanyContext, DbClient, TenantTransaction } from '../../prisma/index.js';
 import { InvoiceDraftsService } from './invoice-drafts.service.js';
 import { InvoiceIssueService } from './invoice-issue.service.js';
 import type {
@@ -10,6 +10,8 @@ import type {
   UpdateDraftDto,
 } from './invoicing.dto.js';
 import { InvoicingRepository } from './invoicing.repository.js';
+import type { CreatePaymentDto, PaymentDto } from './payments.dto.js';
+import { PaymentsService } from './payments.service.js';
 
 /**
  * Public service of the invoicing module (B3) for code outside a request: the demo seed. Every
@@ -22,7 +24,22 @@ export class InvoicingService {
     private readonly drafts: InvoiceDraftsService,
     private readonly issuing: InvoiceIssueService,
     private readonly repository: InvoicingRepository,
+    private readonly payments: PaymentsService,
   ) {}
+
+  async recordPayment(
+    tx: TenantTransaction,
+    company: CompanyContext,
+    dto: CreatePaymentDto,
+    today?: string,
+  ): Promise<PaymentDto> {
+    return (await this.payments.recordIn(tx, company, dto, today)).payment;
+  }
+
+  /** Due dates whose settled amount differs from its payments and credit notes (B11). */
+  verify(db: DbClient) {
+    return this.payments.verify(db);
+  }
 
   async createDraft(
     tx: TenantTransaction,

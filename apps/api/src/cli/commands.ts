@@ -3,6 +3,7 @@ import type { ParseArgsOptionsConfig } from 'node:util';
 import { AuditService } from '../modules/audit/index.js';
 import { AuthService } from '../modules/auth/index.js';
 import { IdentityService } from '../modules/identity/index.js';
+import { InvoicingService } from '../modules/invoicing/index.js';
 import { RegistryService } from '../modules/registry/index.js';
 import { MODULE_KEYS, TenancyService } from '../modules/tenancy/index.js';
 import { OrdersService } from '../modules/orders/index.js';
@@ -33,6 +34,7 @@ interface Services {
   registry: RegistryService;
   warehouse: WarehouseService;
   orders: OrdersService;
+  invoicing: InvoicingService;
 }
 
 export interface Command {
@@ -380,6 +382,30 @@ export const COMMANDS: Record<string, Command> = {
     },
   },
 
+  'verify-invoicing': {
+    summary:
+      'Check that every due date is settled exactly by its payments and credit notes (reports, never fixes)',
+    options: {},
+    required: [],
+    async run({ prisma, invoicing }, _v, io) {
+      const differences = await invoicing.verify(prisma);
+      if (differences.length === 0) {
+        io.out(
+          'Invoicing is consistent: every due date is settled by its payments and credit notes.',
+        );
+        return;
+      }
+      for (const d of differences) {
+        io.err(
+          `tenant ${d.tenantId} due date ${d.dueDateId}: settled ${d.settled.toString()}, allocated ${d.allocated.toString()}`,
+        );
+      }
+      throw new DomainException('INVOICING_INCONSISTENT', HttpStatus.CONFLICT, {
+        detail: `${differences.length} due date(s) differ from their payments and credit notes`,
+      });
+    },
+  },
+
   'list-tenants': {
     summary: 'List tenants with their companies, modules and members',
     options: {},
@@ -417,5 +443,6 @@ export function resolveServices(app: INestApplicationContext): Services {
     registry: app.get(RegistryService),
     warehouse: app.get(WarehouseService),
     orders: app.get(OrdersService),
+    invoicing: app.get(InvoicingService),
   };
 }

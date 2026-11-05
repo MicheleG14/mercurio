@@ -538,6 +538,146 @@ describe('invoicing (e2e)', () => {
       expect(notes).toBe(2);
     });
   });
+
+  describe('payments', () => {
+    const invoiced = async (total: '122.00' | '61.00', terms = '30-60DF') => {
+      const draft = (
+        await manual(
+          [
+            {
+              description: 'Servizio',
+              quantity: '1',
+              unitPrice: total === '122.00' ? '100' : '50',
+              vatCode: '22',
+            },
+          ],
+          { paymentTerms: terms },
+        )
+      ).body;
+      return (await issue(draft).expect(201)).body;
+    };
+    const pay = (dueDates: { id: string; amount: string }[], extra: object = {}) =>
+      as('ACCOUNTANT').post('/payments', {
+        id: uuidv7(),
+        partyId: ids.customer,
+        amount: dueDates
+          .reduce((sum, d) => sum + Math.round(Number(d.amount) * 100), 0)
+          .toString()
+          .replace(/(\d\d)$/, '.$1'),
+        method: 'MP05',
+        allocations: dueDates.map((d) => ({ dueDateId: d.id, amount: d.amount })),
+        ...extra,
+      });
+
+    it('settles due dates in part, and opens them again when undone', async () => {
+      const invoice = await invoiced('122.00');
+      const [first, second] = invoice.dueDates;
+      const body = {
+        id: uuidv7(),
+        partyId: ids.customer,
+        amount: '80.00',
+        method: 'MP05',
+        reference: 'CRO 123',
+        allocations: [
+          { dueDateId: first.id, amount: '61.00' },
+          { dueDateId: second.id, amount: '19.00' },
+        ],
+      };
+      const payment = (await as('ACCOUNTANT').post('/payments', body).expect(201)).body;
+      expect(payment.allocations.map((a: { reference: string }) => a.reference)).toEqual([
+        invoice.reference,
+        invoice.reference,
+      ]);
+      await as('ACCOUNTANT').post('/payments', body).expect(200);
+      const partial = (await as('ACCOUNTANT').get(`/invoices/${invoice.id}`)).body;
+      expect(partial).toMatchObject({ paymentStatus: 'PARTIAL', openAmount: '42.00' });
+
+      const over = await pay([{ id: second.id, amount: '42.01' }]).expect(400);
+      expect(over.body.errors[0]).toMatchObject({ code: 'ALLOCATION_OVER_DUE' });
+      const mismatch = await pay([{ id: second.id, amount: '1.00' }], { amount: '2.00' }).expect(
+        400,
+      );
+      expect(mismatch.body.errors[0]).toMatchObject({ code: 'ALLOCATION_MISMATCH' });
+      const other = await pay([{ id: second.id, amount: '1.00' }], { partyId: ids.bare }).expect(
+        400,
+      );
+      expect(other.body.errors[0]).toMatchObject({ code: 'DUE_DATE_NOT_FOUND' });
+
+      const undone = (await as('ACCOUNTANT').post(`/payments/${payment.id}/reverse`).expect(200))
+        .body;
+      expect(undone.reversedById).toEqual(expect.any(String));
+      const again = await as('ACCOUNTANT').post(`/payments/${payment.id}/reverse`).expect(409);
+      expect(again.body.code).toBe('PAYMENT_ALREADY_REVERSED');
+      const open = (await as('ACCOUNTANT').get(`/invoices/${invoice.id}`)).body;
+      expect(open).toMatchObject({ paymentStatus: 'UNPAID', openAmount: '122.00' });
+
+      await pay([
+        { id: first.id, amount: '61.00' },
+        { id: second.id, amount: '61.00' },
+      ]).expect(201);
+      expect((await as('ACCOUNTANT').get(`/invoices/${invoice.id}`)).body.paymentStatus).toBe(
+        'PAID',
+      );
+    });
+
+    it('never settles a due date twice when two payments arrive at the same time', async () => {
+      const invoice = await invoiced('61.00', 'RD');
+      const [due] = invoice.dueDates;
+      const results = await Promise.all([
+        pay([{ id: due.id, amount: '61.00' }]),
+        pay([{ id: due.id, amount: '61.00' }]),
+      ]);
+      expect(results.map((r) => r.status).sort((a, b) => a - b)).toEqual([201, 400]);
+    });
+
+    it('owes the customer what a credit note gives back beyond what was open, until refunded', async () => {
+      const invoice = await invoiced('61.00', 'RD');
+      await pay([{ id: invoice.dueDates[0].id, amount: '61.00' }]).expect(201);
+      const draft = (
+        await as('ACCOUNTANT')
+          .post(`/invoices/${invoice.id}/credit-note`, { id: uuidv7() })
+          .expect(201)
+      ).body;
+      const note = (await issue(draft).expect(201)).body;
+      expect(note).toMatchObject({ paymentStatus: 'REFUND_DUE', openAmount: '61.00' });
+      const wrongKind = await pay([{ id: note.dueDates[0].id, amount: '61.00' }]).expect(400);
+      expect(wrongKind.body.errors[0]).toMatchObject({ code: 'DUE_DATE_WRONG_KIND' });
+      await pay([{ id: note.dueDates[0].id, amount: '61.00' }], { kind: 'REFUND' }).expect(201);
+      expect((await as('ACCOUNTANT').get(`/invoices/${note.id}`)).body.paymentStatus).toBe(
+        'REFUNDED',
+      );
+    });
+
+    it('lists the payment schedule with its totals, and the overview', async () => {
+      const page = (
+        await as('READ_ONLY')
+          .get(`/invoicing/due-dates?status=open&partyId=${ids.customer}&pageSize=100`)
+          .expect(200)
+      ).body;
+      expect(page.items.every((d: { openAmount: string }) => d.openAmount !== '0.00')).toBe(true);
+      const sum = page.items.reduce(
+        (total: number, d: { kind: string; openAmount: string }) =>
+          total + (d.kind === 'CREDIT_NOTE' ? -1 : 1) * Math.round(Number(d.openAmount) * 100),
+        0,
+      );
+      expect(Math.round(Number(page.openTotal) * 100)).toBe(sum);
+      const summary = (await as('READ_ONLY').get('/invoicing/summary').expect(200)).body;
+      expect(summary).toMatchObject({ toInvoice: expect.any(Number), drafts: expect.any(Number) });
+      expect(Number(summary.invoicedThisMonth)).toBeGreaterThan(0);
+      await as('READ_ONLY').post('/payments', {}).expect(403);
+    });
+
+    it('leaves every due date settled by exactly its payments and credit notes', async () => {
+      const differences = await admin.$queryRaw<unknown[]>`
+        SELECT d.id FROM invoice_due_dates d
+        WHERE d.tenant_id = ${world.tenants.a}::uuid
+          AND d.settled_amount <> coalesce((SELECT sum(amount) FROM payment_allocations
+                                            WHERE due_date_id = d.id), 0)
+                                 + coalesce((SELECT sum(amount) FROM credit_allocations
+                                            WHERE due_date_id = d.id), 0)`;
+      expect(differences).toEqual([]);
+    });
+  });
 });
 
 /** A line of a draft as the API returned it, sent back as it is. */

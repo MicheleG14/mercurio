@@ -30,6 +30,16 @@ import { InvoiceDraftsService } from './invoice-drafts.service.js';
 import { InvoiceIssueService } from './invoice-issue.service.js';
 import { InvoiceQueriesService } from './invoice-queries.service.js';
 import {
+  CreatePaymentDto,
+  DueDatesQuery,
+  InvoicingSummaryDto,
+  PaymentDto,
+  PaymentPageDto,
+  PaymentsQuery,
+  SchedulePageDto,
+} from './payments.dto.js';
+import { PaymentsService } from './payments.service.js';
+import {
   CreateCreditNoteDto,
   CreateDraftDto,
   CustomerOptionDto,
@@ -191,7 +201,28 @@ export class InvoiceDraftsController {
 @RequiresCompany()
 @Controller('invoicing')
 export class InvoicingController {
-  constructor(private readonly queries: InvoiceQueriesService) {}
+  constructor(
+    private readonly queries: InvoiceQueriesService,
+    private readonly payments: PaymentsService,
+  ) {}
+
+  @Get('summary')
+  @RequiresPermission('invoicing:read')
+  @ApiOperation({ summary: 'For the overview: to invoice, drafts, overdue, due soon, this month' })
+  @ApiOkResponse({ type: InvoicingSummaryDto })
+  summary(): Promise<InvoicingSummaryDto> {
+    return this.payments.summary();
+  }
+
+  @Get('due-dates')
+  @RequiresPermission('invoicing:read')
+  @ApiOperation({
+    summary: 'The payment schedule: due dates by date, with open and overdue totals',
+  })
+  @ApiOkResponse({ type: SchedulePageDto })
+  dueDates(@Query() query: DueDatesQuery): Promise<SchedulePageDto> {
+    return this.payments.schedule(query);
+  }
 
   @Get('to-invoice')
   @RequiresPermission('invoicing:read')
@@ -215,5 +246,56 @@ export class InvoicingController {
   @ApiOkResponse({ type: [InvoiceItemOptionDto] })
   searchItems(@Query() query: SearchQuery): Promise<InvoiceItemOptionDto[]> {
     return this.queries.searchItems(query.q);
+  }
+}
+
+/** Payments from customers and refunds to them: recorded, and undone by a reversal (B32). */
+@ApiTags('invoicing')
+@ApiBearerAuth()
+@COMPANY_HEADER
+@RequiresModule('invoicing')
+@RequiresCompany()
+@Controller('payments')
+export class PaymentsController {
+  constructor(private readonly payments: PaymentsService) {}
+
+  @Get()
+  @RequiresPermission('invoicing:read')
+  @ApiOkResponse({ type: PaymentPageDto })
+  list(@Query() query: PaymentsQuery): Promise<PaymentPageDto> {
+    return this.payments.list(query);
+  }
+
+  @Post()
+  @RequiresPermission('payments:write')
+  @ApiOperation({
+    summary: 'Record a payment and how it settles due dates of its customer',
+    description: 'The same id again answers 200 with the payment (B33).',
+  })
+  @ApiCreatedResponse({ type: PaymentDto })
+  @ApiOkResponse({ type: PaymentDto, description: 'Already recorded with this id' })
+  async create(
+    @Body() body: CreatePaymentDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<PaymentDto> {
+    const { payment, created } = await this.payments.record(body);
+    res.status(created ? HttpStatus.CREATED : HttpStatus.OK);
+    return payment;
+  }
+
+  @Get(':id')
+  @RequiresPermission('invoicing:read')
+  @ApiOkResponse({ type: PaymentDto })
+  get(@Param('id', ParseUUIDPipe) id: string): Promise<PaymentDto> {
+    return this.payments.get(id);
+  }
+
+  @Post(':id/reverse')
+  @HttpCode(HttpStatus.OK)
+  @RequiresPermission('payments:write')
+  @ApiOperation({ summary: 'Undo a payment: its due dates are open again' })
+  @ApiOkResponse({ type: PaymentDto })
+  reverse(@Param('id', ParseUUIDPipe) id: string): Promise<PaymentDto> {
+    return this.payments.reverse(id);
   }
 }
