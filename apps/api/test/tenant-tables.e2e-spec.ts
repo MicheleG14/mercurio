@@ -146,13 +146,16 @@ describe('tenant tables (guard)', () => {
     expect(byTable('recovery_codes')).toEqual(['used_at']);
     expect(byTable('sessions')).toEqual(['last_used_at', 'revoked_at', 'selected_tenant_id']);
     // Registry rows: never the id or the tenant, and never an item's code (it is never reused,
-    // so it never changes either). No DELETE at all: they are archived (B31).
+    // so it never changes either) nor whether it is stock managed (fixed at creation). No DELETE
+    // at all: they are archived (B31).
     const identity = ['created_at', 'id', 'tenant_id'];
     expect(byTable('parties')).toEqual(
       partyColumns.filter((column) => !identity.includes(column)).sort(),
     );
     expect(byTable('items')).toEqual(
-      itemColumns.filter((column) => ![...identity, 'code'].includes(column)).sort(),
+      itemColumns
+        .filter((column) => ![...identity, 'code', 'stock_managed'].includes(column))
+        .sort(),
     );
     // Warehouse: a balance changes only in quantity and what is reserved, a reservation only in
     // quantity, a warehouse never in code or company, a counter only in its last number.
