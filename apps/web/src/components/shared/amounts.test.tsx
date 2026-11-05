@@ -16,6 +16,7 @@ describe('amounts', () => {
 
   it('says the progress in words for screen readers, with the bar only for the eye', () => {
     render(<ProgressCell done="3" total="5" ratio={0.6} label="spediti 3 su 5" />);
-    expect(screen.getByLabelText('spediti 3 su 5')).toHaveTextContent('3 / 5');
+    expect(screen.getByText('spediti 3 su 5')).toHaveClass('sr-only');
+    expect(screen.getByText('3 / 5')).toHaveAttribute('aria-hidden', 'true');
   });
 });

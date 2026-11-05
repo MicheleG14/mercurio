@@ -21,7 +21,10 @@ export function ProgressCell({
 }) {
   const percent = Math.round(Math.min(Math.max(ratio, 0), 1) * 100);
   return (
-    <span className={cn('inline-flex min-w-20 flex-col gap-1', className)} aria-label={label}>
+    // The words for screen readers are a text of their own: an aria-label on a plain span is not
+    // allowed (axe: aria-prohibited-attr), and screen readers may skip it.
+    <span className={cn('inline-flex min-w-20 flex-col gap-1', className)}>
+      <span className="sr-only">{label}</span>
       <span className="tabular-nums" aria-hidden="true">
         {done} / {total}
       </span>
