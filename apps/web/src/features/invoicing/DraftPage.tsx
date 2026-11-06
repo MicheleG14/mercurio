@@ -276,7 +276,7 @@ function DraftForm({ draft }: { draft: InvoiceDraft }) {
           legend={t('editor.section.lines')}
           error={msg(errors.lines?.message)}
           keys={lines.fields.map((line) => line.id)}
-          columns="md:grid-cols-[minmax(12rem,1fr)_6rem_7rem_5rem_9rem]"
+          columns="md:grid-cols-[minmax(12rem,1fr)_6rem_7rem_5rem_9rem_7rem]"
           minLines={0}
           renderLine={(index) => <LineFields index={index} form={form} draft={saved} />}
           renderAside={(index) => <LineAside index={index} form={form} />}
@@ -451,22 +451,20 @@ function LineFields({ index, form, draft }: { index: number; form: Form; draft: 
   const label = (field: string) => `${t('editor.lines.line', { n })} · ${field}`;
   if (!line) return null;
 
-  const description = (
+  // What kind of line it is goes under the description, as its hint: above it, it would push the
+  // field below the others of the row.
+  const description = (hint?: string) => (
     <FormField
       label={label(t('editor.lines.description'))}
       error={msg(lineErrors?.description?.message)}
+      hint={hint}
     >
       {(p) => <Input autoComplete="off" {...p} {...form.register(`lines.${index}.description`)} />}
     </FormField>
   );
 
   if (line.kind === 'text') {
-    return (
-      <div className="md:col-span-5">
-        <span className="text-muted-foreground text-xs">{t('editor.lines.text')}</span>
-        {description}
-      </div>
-    );
+    return <div className="md:col-span-5">{description(t('editor.lines.text'))}</div>;
   }
   if (line.kind === 'stamp') {
     return <p className="py-2 text-sm md:col-span-5">{t('editor.lines.stampDuty')} · N1</p>;
@@ -479,14 +477,11 @@ function LineFields({ index, form, draft }: { index: number; form: Form; draft: 
     <>
       <div className="flex flex-col gap-1">
         {fixed ? (
-          <>
-            <span className="text-muted-foreground text-xs">
-              {line.kind === 'shipped'
-                ? t('editor.lines.shipped', { document: shipment?.documentReference ?? '' })
-                : t('editor.lines.credited')}
-            </span>
-            {description}
-          </>
+          description(
+            line.kind === 'shipped'
+              ? t('editor.lines.shipped', { document: shipment?.documentReference ?? '' })
+              : t('editor.lines.credited'),
+          )
         ) : (
           <>
             <Controller
@@ -524,7 +519,7 @@ function LineFields({ index, form, draft }: { index: number; form: Form; draft: 
                 </FormField>
               )}
             />
-            {description}
+            {description()}
           </>
         )}
       </div>
