@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { LogOutIcon, MenuIcon, UserIcon, XIcon } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { matchPath, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { BrandMark } from '@/components/shared/BrandMark';
 import { LanguageToggle } from '@/components/shared/LanguageToggle';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
@@ -31,7 +31,7 @@ import { useRoleLabel } from '@/lib/auth/role';
 import { useBreakpoint } from '@/lib/breakpoint';
 import { useAppVersion } from '@/lib/health';
 import { unsavedChanges } from '@/lib/unsaved-changes';
-import { visibleNavigation } from './navigation';
+import { activeItemPath, visibleNavigation } from './navigation';
 
 const SIDEBAR_STORAGE_KEY = 'mercurio.sidebar';
 
@@ -112,6 +112,8 @@ function SidebarBody({ panel = false }: { panel?: boolean }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { open, setOpenMobile } = useSidebar();
+  const groups = visibleNavigation(me);
+  const active = activeItemPath(groups, pathname);
   const closePanel = () => panel && setOpenMobile(false);
   const version = useAppVersion().data;
 
@@ -147,7 +149,7 @@ function SidebarBody({ panel = false }: { panel?: boolean }) {
 
       <SidebarContent>
         <nav aria-label={t('nav.menu')}>
-          {visibleNavigation(me).map((group) => (
+          {groups.map((group) => (
             <SidebarGroup key={group.label ?? 'top'}>
               {group.label && (
                 <SidebarGroupLabel>{t(`nav.group.${group.label}`)}</SidebarGroupLabel>
@@ -158,12 +160,16 @@ function SidebarBody({ panel = false }: { panel?: boolean }) {
                   return (
                     <SidebarMenuItem key={item.to}>
                       <SidebarMenuButton
-                        isActive={Boolean(
-                          matchPath({ path: item.to, end: item.to === '/' }, pathname),
-                        )}
+                        isActive={item.to === active}
                         tooltip={label}
                         size={panel ? 'lg' : 'default'}
-                        render={<NavLink to={item.to} end={item.to === '/'} onClick={closePanel} />}
+                        render={
+                          <Link
+                            to={item.to}
+                            aria-current={item.to === active ? 'page' : undefined}
+                            onClick={closePanel}
+                          />
+                        }
                       >
                         <item.icon />
                         <span>{label}</span>
