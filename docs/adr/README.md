@@ -67,3 +67,5 @@ Each option and why it was not chosen.
 | [0033](0033-fatturapa-files.md) | FatturaPA files: made from the issued document, never transmitted | Accepted |
 | [0034](0034-demo-history-and-reset.md) | The demo: a history through the use cases, and a reset | Accepted |
 | [0035](0035-production-compose-guard.md) | The production Compose file works only in the deployment folder | Accepted |
+| [0036](0036-custom-roles-per-tenant.md) | Custom roles per tenant, built-in roles in code | Accepted |
+| [0037](0037-tenant-administration-of-people.md) | Tenant administrators manage people and companies from the interface | Accepted |

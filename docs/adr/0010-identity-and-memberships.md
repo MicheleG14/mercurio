@@ -1,6 +1,6 @@
 # 0010. One identity per person, memberships in tenants, no self-service sign-up
 
-- Status: Accepted
+- Status: Accepted; updated by [0037](0037-tenant-administration-of-people.md)
 - Date: 2026-10-20
 
 ## Context
