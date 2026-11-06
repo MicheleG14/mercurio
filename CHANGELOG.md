@@ -5,6 +5,39 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [1.1.0] - 2026-11-06
+
+Phase 7: each customer organises itself from the browser.
+
+### Added
+
+- **People**: an administrator adds colleagues with a role and the companies they reach, hands over
+  their one-time activation code (shown once, with a message to copy; no email is sent), changes
+  role and companies, removes them and issues a new code to whoever has not activated yet.
+- **Custom roles**: besides the four built-in roles, which are read only and can be duplicated, a
+  customer defines its own roles permission by permission, grouped by module; ticking a permission
+  ticks what it needs. Permissions of modules not enabled wait for the module.
+- **Companies**: further companies of the group are added from the interface, then their invoice
+  data completed.
+- The activity log records changes to people, roles and activation codes.
+- Demo: the role "Commerciale" and a person waiting for activation in Gruppo Rossi.
+
+### Changed
+
+- The menu entry "Company data" became "Companies", the list of the group's companies.
+- `/auth/me` and the tenant choice describe a role as `{ kind, key, id, name }` instead of a key.
+- `remove-user` refuses to remove the last administrator of a tenant.
+
+### Security
+
+- Managing people and roles stays with the built-in administrator: a custom role can never hold
+  it, checked by the code and by the database.
+- From the interface an activation code is issued only for an account that has never been
+  activated and belongs to no other customer, checked by the database itself: an administrator
+  cannot take over the account of someone who works for other customers too.
+- Nobody changes or removes themselves, and a customer is never left without an administrator,
+  even with two changes at once.
+
 ## [1.0.2] - 2026-11-06
 
 ### Fixed
@@ -335,6 +368,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[1.1.0]: https://github.com/MicheleG14/mercurio/releases/tag/v1.1.0
 [1.0.2]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.2
 [1.0.1]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.1
 [1.0.0]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.0
