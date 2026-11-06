@@ -282,7 +282,6 @@ function TenantContext({ onLeave, inline = false }: { onLeave?: () => void; inli
       {me.tenants.length > 1 && (
         <Button
           variant="link"
-          size="sm"
           onClick={() =>
             unsavedChanges.requestLeave(() => {
               onLeave?.();
