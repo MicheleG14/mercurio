@@ -1,6 +1,6 @@
 {
   "name": "@mercurio/api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Mercurio backend (NestJS)",
   "author": "Michele Ginolfi",
   "private": true,

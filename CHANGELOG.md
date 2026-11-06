@@ -5,6 +5,16 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [1.0.1] - 2026-11-06
+
+### Fixed
+
+- Table cells are centred vertically, so a figure sits on the line of its row's buttons and badges.
+- On the invoice draft, the fields of a line start at the same height: the kind of the line
+  (text, shipped, credited) is the hint under the description instead of a label above it, and a
+  select is as tall as an input.
+- The link to change company in the menu is the size of the text around it.
+
 ## [1.0.0] - 2026-11-05
 
 Phase 6: polish, and the end of the planned scope. Charts on the overview, invoices as FatturaPA
@@ -310,6 +320,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[1.0.1]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.1
 [1.0.0]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.0
 [0.8.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.8.0
 [0.7.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.7.0
