@@ -276,7 +276,7 @@ function DraftForm({ draft }: { draft: InvoiceDraft }) {
           legend={t('editor.section.lines')}
           error={msg(errors.lines?.message)}
           keys={lines.fields.map((line) => line.id)}
-          columns="md:grid-cols-[minmax(12rem,1fr)_6rem_7rem_5rem_9rem_7rem]"
+          columns="md:grid-cols-[minmax(12rem,1fr)_6rem_7rem_5rem_9rem_10rem]"
           minLines={0}
           renderLine={(index) => <LineFields index={index} form={form} draft={saved} />}
           renderAside={(index) => <LineAside index={index} form={form} />}
@@ -568,6 +568,9 @@ function LineAside({ index, form }: { index: number; form: Form }) {
   if (!line) return null;
   const amount = previewAmount(line, i18n.language);
   return amount === null ? null : (
-    <MoneyAmount value={amount} className="text-foreground text-sm font-medium md:text-right" />
+    <MoneyAmount
+      value={amount}
+      className="text-foreground text-sm font-medium whitespace-nowrap md:text-right"
+    />
   );
 }
