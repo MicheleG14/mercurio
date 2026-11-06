@@ -30,11 +30,17 @@ interface ActivationCodeDialogProps {
 export function ActivationCodeDialog({ open, name, code, onClose }: ActivationCodeDialogProps) {
   const { t, i18n } = useTranslation('members');
   const [copied, setCopied] = useState(false);
-  const date = code ? formatInstantDate(code.expiresAt, i18n.language) : '';
-  const url = code
-    ? `${window.location.origin}${import.meta.env.BASE_URL}activate#${encodeURIComponent(code.code)}`
+  // The last code shown stays while the dialog fades out, so it never empties before closing.
+  const [last, setLast] = useState<{ name: string; code: ActivationCode } | null>(null);
+  if (code && (last?.code !== code || last.name !== name)) setLast({ name, code });
+  const shown = code ? { name, code } : last;
+  const date = shown ? formatInstantDate(shown.code.expiresAt, i18n.language) : '';
+  const url = shown
+    ? `${window.location.origin}${import.meta.env.BASE_URL}activate#${encodeURIComponent(shown.code.code)}`
     : '';
-  const message = code ? t('members.code.message', { name, url, date, code: code.code }) : '';
+  const message = shown
+    ? t('members.code.message', { name: shown.name, url, date, code: shown.code.code })
+    : '';
 
   return (
     <AlertDialog
@@ -48,14 +54,16 @@ export function ActivationCodeDialog({ open, name, code, onClose }: ActivationCo
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t('members.code.title', { name })}</AlertDialogTitle>
+          <AlertDialogTitle>
+            {t('members.code.title', { name: shown?.name ?? '' })}
+          </AlertDialogTitle>
           <AlertDialogDescription>{t('members.code.description', { date })}</AlertDialogDescription>
         </AlertDialogHeader>
         <code
           data-testid="activation-code"
           className="bg-muted block rounded-md px-3 py-2 font-mono text-sm break-all select-all"
         >
-          {code?.code}
+          {shown?.code.code}
         </code>
         <Button
           type="button"

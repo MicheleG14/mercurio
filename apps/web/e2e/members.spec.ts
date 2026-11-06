@@ -61,6 +61,7 @@ test('a company, a role, a colleague who enters with only what the role allows',
   const code = (await dialog.getByTestId('activation-code').innerText()).trim();
   await page.screenshot({ path: 'screens/desktop-members-code.png', fullPage: true });
   await dialog.getByRole('button', { name: 'Chiudi' }).click();
+  await expect(dialog).toBeHidden();
   const row = page.getByRole('row').filter({ hasText: 'Sara Vendite' });
   await expect(row.getByText('In attesa di attivazione')).toBeVisible();
   await page.screenshot({ path: 'screens/desktop-members-list.png', fullPage: true });

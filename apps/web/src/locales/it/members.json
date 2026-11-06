@@ -129,6 +129,8 @@
       "audit": {
         "read": "Vedere il registro attività"
       }
-    }
+    },
+    "builtinTitle": "Ruoli predefiniti",
+    "customTitle": "Ruoli del cliente"
   }
 }
