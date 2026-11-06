@@ -43,7 +43,10 @@ test('invoice two shipments, print, collect in part, credit the rest', async ({ 
   await activateAndEnter(page, state.invoicingDesktop.code);
 
   // Without its registered office the company cannot issue: fill it in.
-  await page.getByRole('link', { name: 'Dati azienda', exact: true }).click();
+  // From the companies of the group (phase 7) to the invoice data of the only one.
+  await page.getByRole('link', { name: 'Aziende', exact: true }).click();
+  await page.getByRole('button', { name: 'Dati per le fatture' }).click();
+  await expect(page.getByRole('heading', { name: 'Dati azienda' })).toBeVisible();
   await expect(page.getByText(/Per emettere fatture mancano/)).toBeVisible();
   await page.getByLabel('Indirizzo della sede', { exact: true }).fill('Via Roma 1');
   await page.getByLabel('CAP', { exact: true }).fill('20121');

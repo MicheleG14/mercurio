@@ -34,8 +34,8 @@ test('a company, a role, a colleague who enters with only what the role allows',
   // A second company: the selector of the current company appears.
   await page.getByRole('link', { name: 'Aziende' }).click();
   await page.getByRole('button', { name: 'Aggiungi azienda' }).click();
-  await page.getByLabel('Ragione sociale').fill(`Logistica ${run} Srl`);
-  await page.getByLabel('Partita IVA').fill(newVat());
+  await page.getByLabel('Ragione sociale', { exact: true }).fill(`Logistica ${run} Srl`);
+  await page.getByLabel('Partita IVA', { exact: true }).fill(newVat());
   await page.getByRole('button', { name: 'Aggiungi azienda' }).last().click();
   await expect(page.getByRole('heading', { name: 'Dati azienda' })).toBeVisible();
   await page.screenshot({ path: 'screens/desktop-members-company.png', fullPage: true });
@@ -43,7 +43,7 @@ test('a company, a role, a colleague who enters with only what the role allows',
   // A role of the customer: writing customers brings reading them along.
   await page.getByRole('link', { name: 'Ruoli' }).click();
   await page.getByRole('button', { name: 'Nuovo ruolo' }).click();
-  await page.getByLabel('Nome').fill(`Commerciale ${run}`);
+  await page.getByLabel('Nome', { exact: true }).fill(`Commerciale ${run}`);
   await page.getByRole('checkbox', { name: /Creare e modificare clienti e fornitori/ }).click();
   await expect(page.getByRole('checkbox', { name: /Vedere clienti e fornitori/ })).toBeChecked();
   await page.screenshot({ path: 'screens/desktop-members-role.png', fullPage: true });
@@ -53,9 +53,9 @@ test('a company, a role, a colleague who enters with only what the role allows',
   // A colleague with that role: the code is shown once.
   await page.getByRole('link', { name: 'Persone' }).click();
   await page.getByRole('button', { name: 'Aggiungi persona' }).click();
-  await page.getByLabel('Email').fill(`sales-${run}@example.com`);
-  await page.getByLabel('Nome e cognome').fill('Sara Vendite');
-  await page.getByLabel('Ruolo').selectOption({ label: `Commerciale ${run}` });
+  await page.getByLabel('Email', { exact: true }).fill(`sales-${run}@example.com`);
+  await page.getByLabel('Nome e cognome', { exact: true }).fill('Sara Vendite');
+  await page.getByLabel('Ruolo', { exact: true }).selectOption({ label: `Commerciale ${run}` });
   await page.getByRole('button', { name: 'Aggiungi persona' }).last().click();
   const dialog = page.getByRole('alertdialog');
   const code = (await dialog.getByTestId('activation-code').innerText()).trim();
