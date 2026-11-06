@@ -134,7 +134,16 @@
     "ALLOCATION_OVER_DUE": "More than is open on the due date.",
     "DUE_DATE_NOT_FOUND": "Due date not found for this customer.",
     "DUE_DATE_WRONG_KIND": "A payment settles invoices, a refund credit notes.",
-    "BEFORE_DOCUMENT": "Before the date of the document."
+    "BEFORE_DOCUMENT": "Before the date of the document.",
+    "ROLE_NAME_RESERVED": "That is the name of a built-in role: choose another.",
+    "ROLE_NAME_TAKEN": "A role with this name already exists.",
+    "PERMISSION_UNKNOWN": "Unknown permission.",
+    "PERMISSION_RESERVED": "Managing people and roles stays with the Administrator.",
+    "ROLE_PERMISSIONS_INCOMPLETE": "Some permissions the chosen ones need are missing.",
+    "ROLE_CHOICE_INVALID": "Choose a role.",
+    "ROLE_NOT_FOUND": "The role no longer exists.",
+    "MEMBERSHIP_EXISTS": "This person already works on this customer.",
+    "MEMBERSHIP_NEEDS_COMPANIES": "Choose at least one company."
   },
   "COMPANY_DATA_INCOMPLETE": "The company lacks data to issue the invoice: complete it in Company data.",
   "CUSTOMER_DATA_INCOMPLETE": "The customer lacks data to issue the invoice (address, tax identifier, SdI code or PEC): complete its record.",
@@ -150,5 +159,18 @@
   "PAYMENT_NOT_FOUND": "Payment not found.",
   "NOT_A_SALE": "Delivery notes print for sales only.",
   "COMPANY_NOT_FOUND": "Company not found.",
-  "XML_DATA_INCOMPLETE": "The FatturaPA file needs data that is missing: complete the customer or the company data."
+  "XML_DATA_INCOMPLETE": "The FatturaPA file needs data that is missing: complete the customer or the company data.",
+  "MEMBERSHIP_EXISTS": "This person already works on this customer.",
+  "MEMBERSHIP_NOT_FOUND": "This person no longer works on this customer: reload the page.",
+  "MEMBERSHIP_NEEDS_COMPANIES": "Choose at least one company.",
+  "MEMBER_SELF_CHANGE": "Another administrator changes your role and companies.",
+  "LAST_ADMIN": "The customer would be left without administrators: appoint another administrator first.",
+  "ACTIVATION_NOT_ALLOWED": "The code for this person is not issued from here: they already have an account, or work for other customers too. They can sign in with their own credentials; recovering access takes whoever runs Mercurio.",
+  "USER_DISABLED": "This account is disabled: ask whoever runs Mercurio.",
+  "INVALID_ROLE": "Invalid role.",
+  "ROLE_NOT_FOUND": "The role no longer exists: reload the page.",
+  "ROLE_NAME_TAKEN": "A role with this name already exists.",
+  "ROLE_IN_USE": "Someone still holds this role: give them another role before archiving it.",
+  "COMPANY_ID_REUSED": "This company was recorded with different data: reload the page.",
+  "COMPANY_VAT_TAKEN": "A company with this VAT number already exists."
 }

@@ -1,0 +1,134 @@
+{
+  "members": {
+    "title": "Persone",
+    "description": "Chi lavora su {{tenant}}, con il ruolo e le aziende che raggiunge.",
+    "add": "Aggiungi persona",
+    "search": "Cerca per nome o email",
+    "empty": "Nessuna persona trovata",
+    "columns": {
+      "name": "Persona",
+      "role": "Ruolo",
+      "companies": "Aziende",
+      "status": "Stato",
+      "lastSeen": "Ultimo accesso"
+    },
+    "status": {
+      "ACTIVE": "Attiva",
+      "PENDING_ACTIVATION": "In attesa di attivazione"
+    },
+    "allCompanies": "Tutte",
+    "never": "Mai",
+    "self": "Sei tu",
+    "selfHint": "Il tuo ruolo e le tue aziende li cambia un altro amministratore.",
+    "edit": "Modifica",
+    "remove": "Rimuovi",
+    "newCode": "Nuovo codice",
+    "form": {
+      "newTitle": "Nuova persona",
+      "editTitle": "Ruolo e aziende di {{name}}",
+      "email": "Email",
+      "name": "Nome e cognome",
+      "nameHint": "Se la persona ha già un account Mercurio resta il nome del suo account.",
+      "role": "Ruolo",
+      "companies": "Aziende",
+      "allCompanies": "Tutte le aziende, anche quelle aggiunte in futuro",
+      "someCompanies": "Solo le aziende scelte",
+      "builtinGroup": "Ruoli predefiniti",
+      "customGroup": "Ruoli del cliente"
+    },
+    "removeTitle": "Rimuovere {{name}}?",
+    "removeDescription": "Non potrà più entrare in questo cliente, già dalla prossima richiesta. La sua storia resta nel registro attività, e puoi aggiungerla di nuovo quando vuoi.",
+    "existing": "{{email}} ha già un account Mercurio: entrerà con le sue credenziali e troverà {{tenant}} tra i clienti.",
+    "code": {
+      "title": "Codice di attivazione per {{name}}",
+      "description": "Viene mostrato solo ora e scade il {{date}}. Consegnalo alla persona in modo riservato: con il codice sceglie la password e configura l'autenticazione a due fattori.",
+      "message": "Ciao {{name}}, per entrare in Mercurio apri questo indirizzo entro il {{date}}:\n\n{{url}}\n\nSe la pagina chiede il codice, è questo: {{code}}",
+      "copy": "Copia messaggio",
+      "copied": "Messaggio copiato",
+      "close": "Chiudi",
+      "closeHint": "Chiusa la finestra il codice non si rivede: se si perde, genera un nuovo codice."
+    }
+  },
+  "roles": {
+    "title": "Ruoli",
+    "description": "Cosa può fare chi ha ogni ruolo. I ruoli predefiniti valgono per tutti i clienti; i ruoli del cliente li definisci tu.",
+    "new": "Nuovo ruolo",
+    "builtin": "Predefinito",
+    "custom": "Del cliente",
+    "duplicate": "Duplica",
+    "view": "Vedi i permessi",
+    "edit": "Modifica",
+    "archive": "Archivia",
+    "close": "Chiudi",
+    "members_one": "{{count}} persona",
+    "members_other": "{{count}} persone",
+    "permissions_one": "{{count}} permesso",
+    "permissions_other": "{{count}} permessi",
+    "empty": "Nessun ruolo del cliente: duplica un ruolo predefinito per crearne uno.",
+    "builtinReadonly": "I ruoli predefiniti non si modificano: duplicalo per crearne una versione del cliente.",
+    "copyOf": "{{name}} (copia)",
+    "newTitle": "Nuovo ruolo",
+    "editTitle": "Ruolo {{name}}",
+    "name": "Nome",
+    "roleDescription": "Descrizione",
+    "permissions": "Permessi",
+    "moduleOff": "Modulo non attivo: il permesso varrà quando sarà attivato",
+    "requiredBy": "Serve a: {{list}}",
+    "reserved": "Solo per l'Amministratore",
+    "futureNote": "I permessi dei moduli che arriveranno in futuro non vengono aggiunti da soli a questo ruolo.",
+    "inUse_one": "Lo ha {{count}} persona: assegnale un altro ruolo prima di archiviarlo.",
+    "inUse_other": "Lo hanno {{count}} persone: assegna loro un altro ruolo prima di archiviarlo.",
+    "archiveTitle": "Archiviare il ruolo {{name}}?",
+    "archiveDescription": "Non si potrà più assegnare. Il nome torna libero per un ruolo nuovo.",
+    "groups": {
+      "registry": "Anagrafiche",
+      "warehouse": "Magazzino",
+      "orders": "Ordini",
+      "invoicing": "Fatturazione",
+      "administration": "Amministrazione"
+    },
+    "permission": {
+      "parties": {
+        "read": "Vedere clienti e fornitori",
+        "write": "Creare e modificare clienti e fornitori"
+      },
+      "items": {
+        "read": "Vedere gli articoli",
+        "write": "Creare e modificare gli articoli"
+      },
+      "stock": {
+        "read": "Vedere giacenze e movimenti",
+        "write": "Registrare movimenti di magazzino"
+      },
+      "warehouses": {
+        "manage": "Creare e archiviare magazzini"
+      },
+      "orders": {
+        "read": "Vedere gli ordini",
+        "write": "Creare e confermare ordini",
+        "fulfil": "Evadere gli ordini (muovere la merce)"
+      },
+      "invoicing": {
+        "read": "Vedere fatture e scadenze",
+        "write": "Preparare bozze di fattura",
+        "issue": "Emettere fatture e note di credito"
+      },
+      "payments": {
+        "write": "Registrare gli incassi"
+      },
+      "companies": {
+        "manage": "Gestire le aziende e i loro dati"
+      },
+      "members": {
+        "read": "Vedere persone e ruoli",
+        "manage": "Aggiungere e gestire le persone"
+      },
+      "roles": {
+        "manage": "Creare e modificare i ruoli"
+      },
+      "audit": {
+        "read": "Vedere il registro attività"
+      }
+    }
+  }
+}

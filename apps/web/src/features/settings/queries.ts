@@ -36,3 +36,29 @@ export function useTaxRegimes() {
     staleTime: Infinity,
   });
 }
+
+export type CreateCompanyBody = components['schemas']['CreateCompanyDto'];
+
+/** The companies the person reaches (phase 7): no company header, they are about the tenant. */
+export function useCompanies() {
+  return useQuery({
+    queryKey: ['settings', 'companies'],
+    queryFn: () => unwrap(api.GET('/companies')),
+  });
+}
+
+/**
+ * Adds a company of the group. The person's companies (in the auth context) change with it, so
+ * they are refreshed before the caller switches to the new company.
+ */
+export function useAddCompany() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateCompanyBody) => unwrap(api.POST('/companies', { body })),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['settings', 'companies'] }),
+        queryClient.invalidateQueries({ queryKey: ['auth', 'me'] }),
+      ]),
+  });
+}

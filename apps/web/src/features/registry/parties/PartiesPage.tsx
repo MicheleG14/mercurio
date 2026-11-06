@@ -11,7 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { useMe } from '@/lib/auth/me';
 import { useListParams } from '@/lib/list-params';
-import { countryName } from '../countries';
+import { countryName } from '@/lib/countries';
 import { useParties } from '../queries';
 import { ArchivedBadge } from '../record';
 

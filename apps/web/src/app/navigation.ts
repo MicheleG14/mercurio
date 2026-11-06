@@ -10,8 +10,10 @@ import {
   ClipboardListIcon,
   HouseIcon,
   PackageIcon,
+  ShieldCheckIcon,
   TriangleAlertIcon,
   TruckIcon,
+  UserCogIcon,
   UsersIcon,
   WarehouseIcon,
   type LucideIcon,
@@ -40,6 +42,9 @@ export interface NavItem {
     | 'dueDates'
     | 'payments'
     | 'company'
+    | 'companies'
+    | 'members'
+    | 'roles'
     | 'activity';
   icon: LucideIcon;
   /** Shown only with this permission. The API still checks it on every call (F18). */
@@ -167,11 +172,13 @@ export const NAVIGATION: NavGroup[] = [
     label: 'administration',
     items: [
       {
-        to: '/settings/company',
-        label: 'company',
+        to: '/settings/companies',
+        label: 'companies',
         icon: Building2Icon,
         permission: 'companies:manage',
       },
+      { to: '/members', label: 'members', icon: UserCogIcon, permission: 'members:read' },
+      { to: '/roles', label: 'roles', icon: ShieldCheckIcon, permission: 'members:read' },
       { to: '/activity', label: 'activity', icon: ActivityIcon, permission: 'audit:read' },
     ],
   },

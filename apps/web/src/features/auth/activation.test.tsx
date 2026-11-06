@@ -54,7 +54,7 @@ describe('activation', () => {
         json(200, {
           user: { name: 'Anna' },
           tenant: { id: 't-rossi', name: 'Gruppo Rossi' },
-          role: 'ADMIN',
+          role: { kind: 'builtin', key: 'ADMIN', id: null, name: null },
           permissions: [],
           modules: [],
           companies: [],

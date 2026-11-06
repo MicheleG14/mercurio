@@ -4,11 +4,13 @@ import { ErrorMessage } from '@/components/shared/ErrorMessage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSelectTenant } from './queries';
+import { useRoleLabel } from '@/lib/auth/role';
 import { useSession } from '@/lib/auth/session';
 
 /** Shown when the person belongs to several customers (tenants) and has not chosen one. */
 export function SelectTenantPage() {
   const { t } = useTranslation('auth');
+  const roleLabel = useRoleLabel();
   const navigate = useNavigate();
   const session = useSession();
   const select = useSelectTenant();
@@ -34,7 +36,7 @@ export function SelectTenantPage() {
               <div className="flex flex-col">
                 <span className="font-medium">{tenant.name}</span>
                 <span className="text-muted-foreground text-xs">
-                  {t('tenant.role')}: {t(`roles.${tenant.role}`)}
+                  {t('tenant.role')}: {roleLabel(tenant.role)}
                 </span>
               </div>
               <Button

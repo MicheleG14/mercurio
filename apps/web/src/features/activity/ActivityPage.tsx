@@ -12,7 +12,12 @@ const TYPES = [
   'TENANT_SELECTED',
   'TENANT_CREATED',
   'MEMBER_ADDED',
+  'MEMBER_UPDATED',
   'MEMBER_REMOVED',
+  'ACTIVATION_CODE_ISSUED',
+  'ROLE_CREATED',
+  'ROLE_UPDATED',
+  'ROLE_ARCHIVED',
   'MODULES_CHANGED',
   'COMPANY_ADDED',
   'PARTY_CREATED',
@@ -131,13 +136,23 @@ export function ActivityPage() {
             card: 'detail',
             cell: (row) => {
               const path = row.subjectId && SUBJECT_PATHS[row.subjectType ?? ''];
-              const details = row.details as { fields?: unknown; reference?: unknown } | null;
+              const details = row.details as {
+                fields?: unknown;
+                reference?: unknown;
+                email?: unknown;
+                name?: unknown;
+              } | null;
               const fields = details?.fields;
-              // A stock document is named by its number, as people know it.
+              // A stock document is named by its number, a person by email and a role by name, as
+              // people know them.
+              const own =
+                row.subjectType === 'membership'
+                  ? details?.email
+                  : row.subjectType === 'role'
+                    ? details?.name
+                    : details?.reference;
               const name =
-                typeof details?.reference === 'string'
-                  ? details.reference
-                  : t(`subjectType.${row.subjectType as 'party'}`);
+                typeof own === 'string' ? own : t(`subjectType.${row.subjectType as 'party'}`);
               return (
                 <span className="flex flex-col">
                   {path ? (

@@ -27,6 +27,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { companyStore, useCompanyId } from '@/lib/auth/company';
 import { signOut } from '@/lib/auth/client';
 import { useMe } from '@/lib/auth/me';
+import { useRoleLabel } from '@/lib/auth/role';
 import { useBreakpoint } from '@/lib/breakpoint';
 import { useAppVersion } from '@/lib/health';
 import { unsavedChanges } from '@/lib/unsaved-changes';
@@ -106,7 +107,7 @@ function AppSidebar() {
 /** What the sidebar holds; `panel` is the version opened over the content on phones and tablets. */
 function SidebarBody({ panel = false }: { panel?: boolean }) {
   const { t } = useTranslation();
-  const { t: tAuth } = useTranslation('auth');
+  const roleLabel = useRoleLabel();
   const me = useMe().data;
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -187,9 +188,7 @@ function SidebarBody({ panel = false }: { panel?: boolean }) {
             </span>
             <span className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
               <span className="truncate text-sm font-medium">{me.user.name}</span>
-              <span className="text-muted-foreground truncate text-xs">
-                {me.role && tAuth(`roles.${me.role as 'ADMIN'}`)}
-              </span>
+              <span className="text-muted-foreground truncate text-xs">{roleLabel(me.role)}</span>
             </span>
           </div>
         )}

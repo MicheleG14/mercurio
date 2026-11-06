@@ -96,6 +96,8 @@ export default function globalSetup(): void {
       ordersPhone: warehouseTenant('op', '0945678901', 'registry,warehouse,orders'),
       // Invoicing, from shipments of orders.
       invoicingDesktop: warehouseTenant('id', '1056789012', 'registry,warehouse,orders,invoicing'),
+      // People, roles and companies (phase 7): an administrator who sets up their customer.
+      members: warehouseTenant('mb', '1167890123', 'registry,warehouse'),
     }),
   );
 }

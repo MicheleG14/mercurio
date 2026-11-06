@@ -13,7 +13,12 @@
     "TENANT_SELECTED": "Customer opened",
     "TENANT_CREATED": "Customer created",
     "MEMBER_ADDED": "Person added",
+    "MEMBER_UPDATED": "Person changed",
     "MEMBER_REMOVED": "Person removed",
+    "ACTIVATION_CODE_ISSUED": "Activation code issued",
+    "ROLE_CREATED": "Role created",
+    "ROLE_UPDATED": "Role changed",
+    "ROLE_ARCHIVED": "Role archived",
     "MODULES_CHANGED": "Modules changed",
     "COMPANY_ADDED": "Company added",
     "PARTY_CREATED": "Party created",
@@ -59,7 +64,10 @@
     "company": "Company",
     "invoice": "Invoice",
     "invoice_draft": "Draft invoice",
-    "payment": "Payment"
+    "payment": "Payment",
+    "membership": "Person",
+    "role": "Role",
+    "tenant": "Customer"
   },
   "fields": "Fields: {{fields}}"
 }

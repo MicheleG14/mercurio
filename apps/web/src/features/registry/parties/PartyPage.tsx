@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ApiError } from '@/lib/api';
 import { useMe } from '@/lib/auth/me';
 import { serverFieldErrors } from '@/lib/form-errors';
-import { countryOptions } from '../countries';
+import { countryOptions } from '@/lib/countries';
 import {
   type Party,
   useArchiveParty,

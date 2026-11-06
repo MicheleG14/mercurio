@@ -1,0 +1,134 @@
+{
+  "members": {
+    "title": "People",
+    "description": "Who works on {{tenant}}, with the role and the companies they reach.",
+    "add": "Add person",
+    "search": "Search by name or email",
+    "empty": "No person found",
+    "columns": {
+      "name": "Person",
+      "role": "Role",
+      "companies": "Companies",
+      "status": "Status",
+      "lastSeen": "Last sign-in"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "PENDING_ACTIVATION": "Waiting for activation"
+    },
+    "allCompanies": "All",
+    "never": "Never",
+    "self": "You",
+    "selfHint": "Another administrator changes your role and companies.",
+    "edit": "Edit",
+    "remove": "Remove",
+    "newCode": "New code",
+    "form": {
+      "newTitle": "New person",
+      "editTitle": "Role and companies of {{name}}",
+      "email": "Email",
+      "name": "Full name",
+      "nameHint": "If the person already has a Mercurio account, the name of that account stays.",
+      "role": "Role",
+      "companies": "Companies",
+      "allCompanies": "Every company, including those added later",
+      "someCompanies": "Only the chosen companies",
+      "builtinGroup": "Built-in roles",
+      "customGroup": "Roles of the customer"
+    },
+    "removeTitle": "Remove {{name}}?",
+    "removeDescription": "They can no longer enter this customer, from their next request. Their history stays in the activity log, and you can add them again at any time.",
+    "existing": "{{email}} already has a Mercurio account: they sign in with their own credentials and find {{tenant}} among their customers.",
+    "code": {
+      "title": "Activation code for {{name}}",
+      "description": "Shown only now, and valid until {{date}}. Hand it over privately: with it the person chooses a password and sets up two-factor authentication.",
+      "message": "Hello {{name}}, to enter Mercurio open this address by {{date}}:\n\n{{url}}\n\nIf the page asks for the code, it is: {{code}}",
+      "copy": "Copy message",
+      "copied": "Message copied",
+      "close": "Close",
+      "closeHint": "Once this window is closed the code cannot be seen again: if it is lost, issue a new one."
+    }
+  },
+  "roles": {
+    "title": "Roles",
+    "description": "What whoever holds each role can do. Built-in roles are the same for every customer; the customer's roles are yours to define.",
+    "new": "New role",
+    "builtin": "Built-in",
+    "custom": "Customer's",
+    "duplicate": "Duplicate",
+    "view": "See permissions",
+    "edit": "Edit",
+    "archive": "Archive",
+    "close": "Close",
+    "members_one": "{{count}} person",
+    "members_other": "{{count}} people",
+    "permissions_one": "{{count}} permission",
+    "permissions_other": "{{count}} permissions",
+    "empty": "No role of the customer yet: duplicate a built-in role to make one.",
+    "builtinReadonly": "Built-in roles do not change: duplicate it to make a version of the customer's own.",
+    "copyOf": "{{name}} (copy)",
+    "newTitle": "New role",
+    "editTitle": "Role {{name}}",
+    "name": "Name",
+    "roleDescription": "Description",
+    "permissions": "Permissions",
+    "moduleOff": "Module not enabled: the permission will count once it is",
+    "requiredBy": "Needed by: {{list}}",
+    "reserved": "Administrator only",
+    "futureNote": "Permissions of modules that come in the future are not added to this role by themselves.",
+    "inUse_one": "{{count}} person holds it: give them another role before archiving it.",
+    "inUse_other": "{{count}} people hold it: give them another role before archiving it.",
+    "archiveTitle": "Archive the role {{name}}?",
+    "archiveDescription": "It can no longer be given. Its name becomes free for a new role.",
+    "groups": {
+      "registry": "Registry",
+      "warehouse": "Warehouse",
+      "orders": "Orders",
+      "invoicing": "Invoicing",
+      "administration": "Administration"
+    },
+    "permission": {
+      "parties": {
+        "read": "See customers and suppliers",
+        "write": "Create and change customers and suppliers"
+      },
+      "items": {
+        "read": "See items",
+        "write": "Create and change items"
+      },
+      "stock": {
+        "read": "See stock and movements",
+        "write": "Record stock movements"
+      },
+      "warehouses": {
+        "manage": "Create and archive warehouses"
+      },
+      "orders": {
+        "read": "See orders",
+        "write": "Create and confirm orders",
+        "fulfil": "Fulfil orders (move the goods)"
+      },
+      "invoicing": {
+        "read": "See invoices and due dates",
+        "write": "Prepare invoice drafts",
+        "issue": "Issue invoices and credit notes"
+      },
+      "payments": {
+        "write": "Record payments"
+      },
+      "companies": {
+        "manage": "Manage the companies and their data"
+      },
+      "members": {
+        "read": "See people and roles",
+        "manage": "Add and manage people"
+      },
+      "roles": {
+        "manage": "Create and change roles"
+      },
+      "audit": {
+        "read": "See the activity log"
+      }
+    }
+  }
+}

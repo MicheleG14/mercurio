@@ -55,7 +55,10 @@
     "toInvoice": "Da fatturare",
     "dueDates": "Scadenziario",
     "payments": "Incassi",
-    "company": "Dati azienda"
+    "company": "Dati azienda",
+    "companies": "Aziende",
+    "members": "Persone",
+    "roles": "Ruoli"
   },
   "actions": {
     "continue": "Continua",

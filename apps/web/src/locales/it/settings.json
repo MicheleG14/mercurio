@@ -32,5 +32,19 @@
       "RF02": "Contribuenti minimi",
       "RF19": "Forfettario"
     }
+  },
+  "companies": {
+    "title": "Aziende",
+    "description": "Le società del gruppo. Ognuna ha la sua partita IVA, le sue numerazioni e i suoi magazzini; clienti, fornitori e articoli sono condivisi.",
+    "add": "Aggiungi azienda",
+    "addTitle": "Nuova azienda",
+    "addHint": "Ragione sociale e partita IVA non cambiano dopo la creazione. I dati per le fatture si completano subito dopo.",
+    "legalName": "Ragione sociale",
+    "vatNumber": "Partita IVA",
+    "taxCode": "Codice fiscale",
+    "country": "Paese",
+    "header": "Dati per le fatture",
+    "current": "Azienda corrente",
+    "empty": "Nessuna azienda"
   }
 }

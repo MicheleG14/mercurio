@@ -55,7 +55,10 @@
     "toInvoice": "To invoice",
     "dueDates": "Payment schedule",
     "payments": "Payments",
-    "company": "Company data"
+    "company": "Company data",
+    "companies": "Companies",
+    "members": "People",
+    "roles": "Roles"
   },
   "actions": {
     "continue": "Continue",

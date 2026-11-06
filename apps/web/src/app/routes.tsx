@@ -12,7 +12,10 @@ import { ItemPage } from '@/features/registry/items/ItemPage';
 import { ItemsPage } from '@/features/registry/items/ItemsPage';
 import { PartiesPage } from '@/features/registry/parties/PartiesPage';
 import { PartyPage } from '@/features/registry/parties/PartyPage';
+import { CompaniesPage } from '@/features/settings/CompaniesPage';
 import { CompanyPage } from '@/features/settings/CompanyPage';
+import { MembersPage } from '@/features/members/MembersPage';
+import { RolesPage } from '@/features/members/RolesPage';
 import { StatusPage } from '@/features/status/StatusPage';
 import { DraftPage, NewDraftPage } from '@/features/invoicing/DraftPage';
 import { DueDatesPage } from '@/features/invoicing/DueDatesPage';
@@ -90,6 +93,9 @@ export const routes = [
           { path: 'invoicing/payments', element: <PaymentsPage /> },
           { path: 'invoicing/payments/new', element: <PaymentFormPage /> },
           { path: 'settings/company', element: <CompanyPage /> },
+          { path: 'settings/companies', element: <CompaniesPage /> },
+          { path: 'members', element: <MembersPage /> },
+          { path: 'roles', element: <RolesPage /> },
         ],
       },
     ],
