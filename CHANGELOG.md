@@ -5,6 +5,21 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [1.0.2] - 2026-11-06
+
+### Fixed
+
+- The overview no longer jumps down when its charts arrive: grey cards of the same shape hold
+  their place while they load, the first time only.
+- The demo always has something more than 90 days overdue, whatever the day it is written up to:
+  on some days the "over 90 days" bucket was empty.
+
+### Changed
+
+- Dependencies updated (minor and patch versions), among them NestJS 12.3, React Router 8.5 and
+  argon2 0.45.2. argon2 writes the parameters of new password hashes in another order
+  (`m,t,p`): the passwords already stored keep working, and so would a rollback to 1.0.1.
+
 ## [1.0.1] - 2026-11-06
 
 ### Fixed
@@ -320,6 +335,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[1.0.2]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.2
 [1.0.1]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.1
 [1.0.0]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.0
 [0.8.0]: https://github.com/MicheleG14/mercurio/releases/tag/v0.8.0
