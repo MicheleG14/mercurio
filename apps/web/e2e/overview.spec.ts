@@ -65,11 +65,23 @@ test('the overview charts the year, opens what is behind them, and every page pa
   await expect(card.getByRole('row')).toHaveCount(13);
   await card.getByRole('button', { name: 'Mostra il grafico' }).click();
 
-  // A bucket of delay opens the payment schedule filtered.
+  // A bucket of delay opens the payment schedule filtered. The demo's history ends on the day of
+  // the run, so which buckets have due dates changes from day to day: the oldest one that has any.
   const aging = page.locator('[data-slot="card"]', { hasText: 'Da incassare per ritardo' });
   await aging.getByRole('button', { name: 'Mostra come tabella' }).click();
-  await aging.getByRole('link', { name: 'Oltre 90 giorni' }).click();
-  await expect(page).toHaveURL(/\/invoicing\/due-dates\?status=overdue&to=\d{4}-\d{2}-\d{2}$/);
+  let bucket: string | undefined;
+  for (const name of ['Oltre 90 giorni', '61-90 giorni', '31-60 giorni', '1-30 giorni']) {
+    const row = aging.getByRole('row').filter({ has: page.getByRole('link', { name }) });
+    if (Number(await row.getByRole('cell').last().textContent()) > 0) {
+      bucket = name;
+      break;
+    }
+  }
+  expect(bucket, 'the demo has overdue due dates').toBeDefined();
+  await aging.getByRole('link', { name: bucket }).click();
+  await expect(page).toHaveURL(
+    /\/invoicing\/due-dates\?status=overdue(&from=\d{4}-\d{2}-\d{2})?&to=\d{4}-\d{2}-\d{2}$/,
+  );
   await expect(page.getByLabel('Scadenze')).toHaveValue('overdue');
   await expect(page.getByRole('row').nth(1)).toBeVisible();
   await expectAccessible(page, 'due-dates');
