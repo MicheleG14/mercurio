@@ -47,6 +47,9 @@ Named after Mercury, the Roman god of commerce.
 - **Overview**: invoiced and collected month by month, what customers owe by days overdue, top
   customers, sales ordered and shipped, stock movements; each chart with its table, each figure
   with the permission of the page it comes from.
+- **People and roles**: each customer's administrator adds colleagues, hands over their one-time
+  activation code and chooses what they reach: a built-in role or one the customer defines,
+  permission by permission, on all its companies or some; further companies of the group too.
 - **Security**: sign-in with TOTP two-factor authentication, roles, audit log.
 - **Demo**: two fictitious tenants with twelve months of history, written through the same rules as
   the API, showing every feature at least once.
@@ -82,7 +85,9 @@ Named after Mercury, the Roman god of commerce.
   and the database refuses to promise the same goods twice.
 - **Closed by default**: every API route needs a signed-in person unless it is explicitly public;
   permissions come from roles and are checked on every request, together with the enabled modules
-  and the company.
+  and the company. A customer's own roles can never hold the right to manage people or roles, and
+  an administrator can issue an activation code only for an account that cannot be taken over: the
+  database checks it itself.
 - **Sessions**: a short-lived access token in memory and a rotating refresh token in an `HttpOnly`
   cookie; reusing an old refresh token closes the session.
 - **Typed API contract**: the web client's types are generated from the API's OpenAPI document, and
@@ -176,9 +181,10 @@ images, runs the migrations, restarts the app and waits for the health check. An
 can be redeployed by hand from the **Deploy** workflow, which is also the rollback.
 
 The API connects as the `mercurio_app` database role, whose password (`POSTGRES_APP_PASSWORD`)
-lives in `.env.production` next to the owner's. Tenants and people are created with terminal
-commands, which run as the owner and are never exposed over HTTP. `compose.sh` runs them from the
-deployment folder, with its settings and the version of the app that is running:
+lives in `.env.production` next to the owner's. A tenant, with its first company, modules and
+administrator, is created with a terminal command, which runs as the owner and is never exposed over
+HTTP. `compose.sh` runs it from the deployment folder, with its settings and the version of the app
+that is running:
 
 ```bash
 ./compose.sh run --rm cli create-tenant \
@@ -188,6 +194,10 @@ deployment folder, with its settings and the version of the app that is running:
 `docker-compose.prod.yml` refuses to start without `MERCURIO_DEPLOYMENT`, which only
 `.env.production` sets: a command typed in a checkout, where `.env` holds the development database
 settings, cannot touch the production containers ([ADR 0035](docs/adr/0035-production-compose-guard.md)).
+
+From there the customer goes on in the browser: its administrator activates their account, completes
+the invoice data of the company, adds the other companies of the group, defines roles and adds
+colleagues, each with an activation code to hand over ([ADR 0037](docs/adr/0037-tenant-administration-of-people.md)).
 
 `create-tenant` and `add-user` print a one-time activation code for each new person. The person opens
 `<address>/mercurio/activate#<code>`, chooses a password, sets up an authenticator app and saves the
@@ -211,12 +221,14 @@ and the database is not exposed. Details in [ADR 0007](docs/adr/0007-continuous-
 | 4     | Orders: purchase and sales orders, reservations, concurrency     | ✅     |
 | 5     | Invoicing: invoices, credit notes, due dates, PDF                | ✅     |
 | 6     | Polish: overview charts, FatturaPA files, demo history, docs     | ✅     |
+| 7     | People, custom roles and companies managed by each customer      | ✅     |
 
 ## Possible next steps
 
 - Transmission to the exchange system through an accredited intermediary, keeping the files sent.
 - An outbox for events, if a module ever moves to a service of its own (ADR 0027).
-- Managing people from the interface (today: terminal commands), passkeys.
+- A platform operator area: creating customers, enabling their modules and recovering accounts from
+  the browser (today: terminal commands); passkeys.
 - An installable app (PWA), if working offline ever makes sense for a part of it.
 
 ## Out of scope, by choice

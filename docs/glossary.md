@@ -12,6 +12,9 @@ term; the interface uses the term of the selected language.
 | user / identity                 | utente                       | A person. One identity per email, whatever the number of tenants they work for                      |
 | membership                      | appartenenza                 | A person's place in a tenant: role and reachable companies                                          |
 | role                            | ruolo                        | What a person can do in a tenant: administrator, warehouse keeper, accountant, read only            |
+| built-in role                   | ruolo predefinito            | One of the four roles in code, the same for every tenant (ADR 0036)                                 |
+| custom role                     | ruolo personalizzato         | A role a tenant defines: a name and a set of permissions (ADR 0036)                                 |
+| activation code                 | codice di attivazione        | One-time code with which a new person sets password and two-factor authentication                   |
 | module                          | modulo                       | A sellable business area (registry, warehouse, orders, invoicing), enabled per tenant               |
 | activation code                 | codice di attivazione        | One-time code a new person uses to set their password and two-factor authentication                 |
 | session                         | sessione                     | A signed-in browser: a short access token in memory and a refresh token in a cookie                 |
