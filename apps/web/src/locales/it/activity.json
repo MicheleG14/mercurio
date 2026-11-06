@@ -13,7 +13,12 @@
     "TENANT_SELECTED": "Cliente aperto",
     "TENANT_CREATED": "Cliente creato",
     "MEMBER_ADDED": "Persona aggiunta",
+    "MEMBER_UPDATED": "Persona modificata",
     "MEMBER_REMOVED": "Persona rimossa",
+    "ACTIVATION_CODE_ISSUED": "Codice di attivazione generato",
+    "ROLE_CREATED": "Ruolo creato",
+    "ROLE_UPDATED": "Ruolo modificato",
+    "ROLE_ARCHIVED": "Ruolo archiviato",
     "MODULES_CHANGED": "Moduli modificati",
     "COMPANY_ADDED": "Azienda aggiunta",
     "PARTY_CREATED": "Soggetto creato",
@@ -59,7 +64,10 @@
     "company": "Azienda",
     "invoice": "Fattura",
     "invoice_draft": "Bozza di fattura",
-    "payment": "Incasso"
+    "payment": "Incasso",
+    "membership": "Persona",
+    "role": "Ruolo",
+    "tenant": "Cliente"
   },
   "fields": "Campi: {{fields}}"
 }

@@ -32,5 +32,19 @@
       "RF02": "Minimum taxpayers",
       "RF19": "Flat-rate"
     }
+  },
+  "companies": {
+    "title": "Companies",
+    "description": "The companies of the group. Each has its own VAT number, numbering and warehouses; customers, suppliers and items are shared.",
+    "add": "Add company",
+    "addTitle": "New company",
+    "addHint": "Legal name and VAT number do not change after creation. The invoice data follow right after.",
+    "legalName": "Legal name",
+    "vatNumber": "VAT number",
+    "taxCode": "Tax code",
+    "country": "Country",
+    "header": "Invoice data",
+    "current": "Current company",
+    "empty": "No company"
   }
 }

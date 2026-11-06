@@ -134,7 +134,16 @@
     "ALLOCATION_OVER_DUE": "Più di quanto resta da incassare della scadenza.",
     "DUE_DATE_NOT_FOUND": "Scadenza non trovata per questo cliente.",
     "DUE_DATE_WRONG_KIND": "Un incasso salda fatture, un rimborso note di credito.",
-    "BEFORE_DOCUMENT": "Prima della data del documento."
+    "BEFORE_DOCUMENT": "Prima della data del documento.",
+    "ROLE_NAME_RESERVED": "È il nome di un ruolo predefinito: scegline un altro.",
+    "ROLE_NAME_TAKEN": "Esiste già un ruolo con questo nome.",
+    "PERMISSION_UNKNOWN": "Permesso sconosciuto.",
+    "PERMISSION_RESERVED": "Gestire persone e ruoli resta all'Amministratore.",
+    "ROLE_PERMISSIONS_INCOMPLETE": "Mancano permessi che quelli scelti richiedono.",
+    "ROLE_CHOICE_INVALID": "Scegli un ruolo.",
+    "ROLE_NOT_FOUND": "Il ruolo non esiste più.",
+    "MEMBERSHIP_EXISTS": "Questa persona lavora già su questo cliente.",
+    "MEMBERSHIP_NEEDS_COMPANIES": "Scegli almeno un'azienda."
   },
   "COMPANY_DATA_INCOMPLETE": "Mancano dati dell'azienda per emettere la fattura: completali in Dati azienda.",
   "CUSTOMER_DATA_INCOMPLETE": "Mancano dati del cliente per emettere la fattura (indirizzo, identificativo fiscale, codice SdI o PEC): completali nella sua scheda.",
@@ -150,5 +159,18 @@
   "PAYMENT_NOT_FOUND": "Incasso non trovato.",
   "NOT_A_SALE": "Il DDT si stampa solo per le vendite.",
   "COMPANY_NOT_FOUND": "Azienda non trovata.",
-  "XML_DATA_INCOMPLETE": "Mancano dati che il file FatturaPA richiede: completa l'anagrafica del cliente o i dati dell'azienda."
+  "XML_DATA_INCOMPLETE": "Mancano dati che il file FatturaPA richiede: completa l'anagrafica del cliente o i dati dell'azienda.",
+  "MEMBERSHIP_EXISTS": "Questa persona lavora già su questo cliente.",
+  "MEMBERSHIP_NOT_FOUND": "Questa persona non lavora più su questo cliente: ricarica la pagina.",
+  "MEMBERSHIP_NEEDS_COMPANIES": "Scegli almeno un'azienda.",
+  "MEMBER_SELF_CHANGE": "Il tuo ruolo e le tue aziende li cambia un altro amministratore.",
+  "LAST_ADMIN": "Il cliente resterebbe senza amministratori: nomina prima un altro amministratore.",
+  "ACTIVATION_NOT_ALLOWED": "Per questa persona il codice non si genera da qui: ha già un account, o lavora anche per altri clienti. Può entrare con le sue credenziali; per recuperare l'accesso serve chi gestisce Mercurio.",
+  "USER_DISABLED": "Questo account è disattivato: rivolgiti a chi gestisce Mercurio.",
+  "INVALID_ROLE": "Ruolo non valido.",
+  "ROLE_NOT_FOUND": "Il ruolo non esiste più: ricarica la pagina.",
+  "ROLE_NAME_TAKEN": "Esiste già un ruolo con questo nome.",
+  "ROLE_IN_USE": "Qualcuno ha ancora questo ruolo: assegnagli un altro ruolo prima di archiviarlo.",
+  "COMPANY_ID_REUSED": "Questa azienda è stata registrata con dati diversi: ricarica la pagina.",
+  "COMPANY_VAT_TAKEN": "Esiste già un'azienda con questa partita IVA."
 }

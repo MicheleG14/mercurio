@@ -257,6 +257,143 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** People of the tenant; q searches name and email */
+        get: operations["MembersController_list"];
+        put?: never;
+        /** Add a person; a new identity gets an activation code, returned only here */
+        post: operations["MembersController_add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/members/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MembersController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change role or companies; never of oneself, never the last administrator */
+        patch: operations["MembersController_update"];
+        trace?: never;
+    };
+    "/members/{id}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Remove from the tenant; the person and their history stay */
+        post: operations["MembersController_remove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/members/{id}/activation-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** A new activation code, only for someone who never activated and belongs to no other tenant */
+        post: operations["MembersController_issueCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Built-in roles and the custom roles in use */
+        get: operations["RolesController_list"];
+        put?: never;
+        post: operations["RolesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/roles/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every permission, with its module and what it needs */
+        get: operations["RolesController_catalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/roles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RolesController_get"];
+        /** Name, description and permissions; 409 EDIT_CONFLICT if outdated */
+        put: operations["RolesController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/roles/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive a role nobody holds (409 ROLE_IN_USE otherwise) */
+        post: operations["RolesController_archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/parties": {
         parameters: {
             query?: never;
@@ -417,6 +554,24 @@ export interface paths {
         get: operations["ReferenceDataController_referenceData"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/companies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The companies the person reaches */
+        get: operations["CompanyListController_list"];
+        put?: never;
+        /** Add a company of the group; the same id and data again return it (B33) */
+        post: operations["CompanyListController_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1390,12 +1545,19 @@ export interface components {
              */
             code: string;
         };
+        RoleRefDto: {
+            /** @enum {string} */
+            kind: "builtin" | "custom";
+            /** @enum {string|null} */
+            key: "ADMIN" | "WAREHOUSE_KEEPER" | "ACCOUNTANT" | "READ_ONLY" | null;
+            id: string | null;
+            name: string | null;
+        };
         TenantChoiceDto: {
             id: string;
             name: string;
             slug: string;
-            /** @enum {string} */
-            role: "ADMIN" | "WAREHOUSE_KEEPER" | "ACCOUNTANT" | "READ_ONLY";
+            role: components["schemas"]["RoleRefDto"];
         };
         EnrollConfirmResponseDto: {
             /** @description Send as "Authorization: Bearer <token>" */
@@ -1478,7 +1640,7 @@ export interface components {
         MeDto: {
             user: components["schemas"]["MeUserDto"];
             tenant: components["schemas"]["MeTenantDto"] | null;
-            role?: string | null;
+            role?: components["schemas"]["RoleRefDto"] | null;
             /**
              * @example [
              *       "parties:read"
@@ -1510,6 +1672,141 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+        };
+        MemberDto: {
+            id: string;
+            email: string;
+            name: string;
+            role: components["schemas"]["RoleRefDto"];
+            allCompanies: boolean;
+            companyIds: string[];
+            /** @enum {string} */
+            status: "ACTIVE" | "PENDING_ACTIVATION";
+            /** @description A new activation code can be issued from the interface */
+            canIssueCode: boolean;
+            /** @description The signed-in person: no change of role, companies or removal */
+            isSelf: boolean;
+            /** @description Last use of this tenant */
+            lastSeenAt: string | null;
+            version: number;
+            createdAt: string;
+        };
+        MemberPageDto: {
+            items: components["schemas"]["MemberDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        RoleChoiceDto: {
+            /** @enum {string} */
+            builtin?: "ADMIN" | "WAREHOUSE_KEEPER" | "ACCOUNTANT" | "READ_ONLY";
+            /** Format: uuid */
+            customRoleId?: string;
+        };
+        AddMemberDto: {
+            /** @example mario.bianchi@example.com */
+            email: string;
+            /**
+             * @description Ignored when the person already has an account
+             * @example Mario Bianchi
+             */
+            name: string;
+            role: components["schemas"]["RoleChoiceDto"];
+            /** @description Every company of the tenant, now and later */
+            allCompanies: boolean;
+            /** @description The companies reached when allCompanies is false */
+            companyIds: string[];
+        };
+        ActivationCodeDto: {
+            /** @description Shown once: only its hash is stored */
+            code: string;
+            expiresAt: string;
+        };
+        AddedMemberDto: {
+            member: components["schemas"]["MemberDto"];
+            activation: components["schemas"]["ActivationCodeDto"] | null;
+            /** @description The person already had a Mercurio account: they sign in with it */
+            existingAccount: boolean;
+        };
+        UpdateMemberDto: {
+            /** @example 1 */
+            version: number;
+            role?: components["schemas"]["RoleChoiceDto"];
+            allCompanies?: boolean;
+            companyIds?: string[];
+        };
+        VersionDto: {
+            version: number;
+        };
+        BuiltinRoleDto: {
+            /** @enum {string} */
+            key: "ADMIN" | "WAREHOUSE_KEEPER" | "ACCOUNTANT" | "READ_ONLY";
+            permissions: string[];
+            /** @description Active members holding it */
+            members: number;
+        };
+        CustomRoleDto: {
+            id: string;
+            name: string;
+            description: string | null;
+            permissions: string[];
+            /** @enum {string|null} */
+            basedOn: "ADMIN" | "WAREHOUSE_KEEPER" | "ACCOUNTANT" | "READ_ONLY" | null;
+            /** @description Active members holding it */
+            members: number;
+            version: number;
+            archivedAt: string | null;
+            updatedAt: string;
+        };
+        RoleListDto: {
+            builtin: components["schemas"]["BuiltinRoleDto"][];
+            custom: components["schemas"]["CustomRoleDto"][];
+        };
+        PermissionInfoDto: {
+            /** @enum {string} */
+            key: "parties:read" | "parties:write" | "items:read" | "items:write" | "stock:read" | "stock:write" | "warehouses:manage" | "orders:read" | "orders:write" | "orders:fulfil" | "invoicing:read" | "invoicing:write" | "invoicing:issue" | "payments:write" | "companies:manage" | "members:read" | "members:manage" | "roles:manage" | "audit:read";
+            /** @description Null: administration of the tenant */
+            module: string | null;
+            /** @description The tenant has the module: otherwise the permission waits for it */
+            moduleEnabled: boolean;
+            /** @description Permissions it needs, directly */
+            requires: string[];
+            /** @description Built-in administrator only: not in a custom role */
+            reserved: boolean;
+        };
+        PermissionCatalogDto: {
+            permissions: components["schemas"]["PermissionInfoDto"][];
+        };
+        CreateRoleDto: {
+            /** @example Commerciale */
+            name: string;
+            description?: string | null;
+            /**
+             * @example [
+             *       "parties:read",
+             *       "parties:write"
+             *     ]
+             */
+            permissions: ("parties:read" | "parties:write" | "items:read" | "items:write" | "stock:read" | "stock:write" | "warehouses:manage" | "orders:read" | "orders:write" | "orders:fulfil" | "invoicing:read" | "invoicing:write" | "invoicing:issue" | "payments:write" | "companies:manage" | "members:read" | "members:manage" | "roles:manage" | "audit:read")[];
+            /**
+             * @description The built-in role it was duplicated from
+             * @enum {string}
+             */
+            basedOn?: "ADMIN" | "WAREHOUSE_KEEPER" | "ACCOUNTANT" | "READ_ONLY";
+        };
+        UpdateRoleDto: {
+            /** @example Commerciale */
+            name: string;
+            description?: string | null;
+            /**
+             * @example [
+             *       "parties:read",
+             *       "parties:write"
+             *     ]
+             */
+            permissions: ("parties:read" | "parties:write" | "items:read" | "items:write" | "stock:read" | "stock:write" | "warehouses:manage" | "orders:read" | "orders:write" | "orders:fulfil" | "invoicing:read" | "invoicing:write" | "invoicing:issue" | "payments:write" | "companies:manage" | "members:read" | "members:manage" | "roles:manage" | "audit:read")[];
+            /** @example 1 */
+            version: number;
         };
         /** @enum {string} */
         PartyKind: "PRIVATE" | "SOLE_TRADER" | "COMPANY" | "ORGANIZATION";
@@ -1648,9 +1945,6 @@ export interface components {
             documentLanguage?: string | null;
             notes?: string | null;
             /** @example 1 */
-            version: number;
-        };
-        VersionDto: {
             version: number;
         };
         ItemDto: {
@@ -1822,6 +2116,25 @@ export interface components {
              */
             missingForInvoices: string[];
             version: number;
+        };
+        CompanyListDto: {
+            items: components["schemas"]["CompanyDto"][];
+        };
+        CreateCompanyDto: {
+            /** @description Id of the new company (UUID v7, B33) */
+            id: string;
+            /** @example Rossi Logistica Srl */
+            legalName: string;
+            /** @example 12345678903 */
+            vatNumber: string;
+            /** @example 12345678903 */
+            taxCode?: string;
+            /**
+             * @description ISO 3166-1 alpha-2
+             * @default IT
+             * @example IT
+             */
+            country: string;
         };
         UpdateCompanyDto: {
             /** @example 1 */
@@ -2982,7 +3295,7 @@ export interface operations {
                 sort?: string;
                 /** @description Text to search for */
                 q?: string;
-                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_REMOVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "COMPANY_UPDATED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED" | "WAREHOUSE_CREATED" | "WAREHOUSE_UPDATED" | "WAREHOUSE_ARCHIVED" | "WAREHOUSE_RESTORED" | "STOCK_DOCUMENT_POSTED" | "STOCK_DOCUMENT_REVERSED" | "REORDER_LEVEL_SET" | "REORDER_LEVEL_REMOVED" | "ORDER_CREATED" | "ORDER_UPDATED" | "ORDER_DELETED" | "ORDER_CONFIRMED" | "ORDER_RESERVED" | "ORDER_CLOSED" | "ORDER_CANCELLED" | "ORDER_FULFILLED" | "ORDER_FULFILMENT_REVERSED" | "INVOICE_DRAFT_CREATED" | "INVOICE_DRAFT_UPDATED" | "INVOICE_DRAFT_DELETED" | "INVOICE_ISSUED" | "CREDIT_NOTE_ISSUED" | "PAYMENT_RECORDED" | "PAYMENT_REVERSED";
+                type?: "TENANT_SELECTED" | "TENANT_CREATED" | "MEMBER_ADDED" | "MEMBER_UPDATED" | "MEMBER_REMOVED" | "ACTIVATION_CODE_ISSUED" | "ROLE_CREATED" | "ROLE_UPDATED" | "ROLE_ARCHIVED" | "MODULES_CHANGED" | "COMPANY_ADDED" | "COMPANY_UPDATED" | "PARTY_CREATED" | "PARTY_UPDATED" | "PARTY_ARCHIVED" | "PARTY_RESTORED" | "ITEM_CREATED" | "ITEM_UPDATED" | "ITEM_ARCHIVED" | "ITEM_RESTORED" | "WAREHOUSE_CREATED" | "WAREHOUSE_UPDATED" | "WAREHOUSE_ARCHIVED" | "WAREHOUSE_RESTORED" | "STOCK_DOCUMENT_POSTED" | "STOCK_DOCUMENT_REVERSED" | "REORDER_LEVEL_SET" | "REORDER_LEVEL_REMOVED" | "ORDER_CREATED" | "ORDER_UPDATED" | "ORDER_DELETED" | "ORDER_CONFIRMED" | "ORDER_RESERVED" | "ORDER_CLOSED" | "ORDER_CANCELLED" | "ORDER_FULFILLED" | "ORDER_FULFILMENT_REVERSED" | "INVOICE_DRAFT_CREATED" | "INVOICE_DRAFT_UPDATED" | "INVOICE_DRAFT_DELETED" | "INVOICE_ISSUED" | "CREDIT_NOTE_ISSUED" | "PAYMENT_RECORDED" | "PAYMENT_REVERSED";
                 /** @description From this instant (ISO 8601), inclusive */
                 from?: string;
                 /** @description Until this instant (ISO 8601), exclusive */
@@ -3280,6 +3593,276 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthEventPageDto"];
+                };
+            };
+        };
+    };
+    MembersController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+                /** @description Text to search for */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberPageDto"];
+                };
+            };
+        };
+    };
+    MembersController_add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddMemberDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddedMemberDto"];
+                };
+            };
+        };
+    };
+    MembersController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberDto"];
+                };
+            };
+        };
+    };
+    MembersController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMemberDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberDto"];
+                };
+            };
+        };
+    };
+    MembersController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MembersController_issueCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivationCodeDto"];
+                };
+            };
+        };
+    };
+    RolesController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleListDto"];
+                };
+            };
+        };
+    };
+    RolesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRoleDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomRoleDto"];
+                };
+            };
+        };
+    };
+    RolesController_catalog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionCatalogDto"];
+                };
+            };
+        };
+    };
+    RolesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomRoleDto"];
+                };
+            };
+        };
+    };
+    RolesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRoleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomRoleDto"];
+                };
+            };
+        };
+    };
+    RolesController_archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomRoleDto"];
                 };
             };
         };
@@ -3616,6 +4199,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReferenceDataDto"];
+                };
+            };
+        };
+    };
+    CompanyListController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyListDto"];
+                };
+            };
+        };
+    };
+    CompanyListController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCompanyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyDto"];
                 };
             };
         };

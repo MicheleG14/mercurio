@@ -4,6 +4,7 @@ import enAuth from '@/locales/en/auth.json';
 import enErrors from '@/locales/en/errors.json';
 import enHome from '@/locales/en/home.json';
 import enInvoicing from '@/locales/en/invoicing.json';
+import enMembers from '@/locales/en/members.json';
 import enOrders from '@/locales/en/orders.json';
 import enRegistry from '@/locales/en/registry.json';
 import enSettings from '@/locales/en/settings.json';
@@ -16,6 +17,7 @@ import itAuth from '@/locales/it/auth.json';
 import itErrors from '@/locales/it/errors.json';
 import itHome from '@/locales/it/home.json';
 import itInvoicing from '@/locales/it/invoicing.json';
+import itMembers from '@/locales/it/members.json';
 import itOrders from '@/locales/it/orders.json';
 import itRegistry from '@/locales/it/registry.json';
 import itSettings from '@/locales/it/settings.json';
@@ -37,6 +39,7 @@ export const resources = {
     errors: itErrors,
     home: itHome,
     invoicing: itInvoicing,
+    members: itMembers,
     orders: itOrders,
     registry: itRegistry,
     settings: itSettings,
@@ -51,6 +54,7 @@ export const resources = {
     errors: enErrors,
     home: enHome,
     invoicing: enInvoicing,
+    members: enMembers,
     orders: enOrders,
     registry: enRegistry,
     settings: enSettings,

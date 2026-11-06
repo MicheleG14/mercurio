@@ -128,7 +128,7 @@ describe('the signed-in shell', () => {
         json(
           200,
           me({
-            role: 'READ_ONLY',
+            role: { kind: 'builtin', key: 'READ_ONLY', id: null, name: null },
             permissions: ['parties:read'],
             companies: [{ id: 'c1', legalName: 'Rossi Srl', vatNumber: '02746510960' }],
           }),

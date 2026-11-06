@@ -70,3 +70,13 @@ function format(
     unitDisplay: 'short',
   }).format(amount);
 }
+
+/** The day of an instant (a timestamp of the API) as people read it, in Italian time. */
+export function formatInstantDate(value: Date | string, language: string): string {
+  return new Intl.DateTimeFormat(intlLocale(language), {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Europe/Rome',
+  }).format(typeof value === 'string' ? new Date(value) : value);
+}

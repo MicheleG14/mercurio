@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { useRoleLabel } from '@/lib/auth/role';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +24,7 @@ const OverviewCharts = lazy(() => import('./OverviewCharts'));
  */
 export function HomePage() {
   const { t } = useTranslation('home');
-  const { t: tAuth } = useTranslation('auth');
+  const roleLabel = useRoleLabel();
   const me = useMe().data;
   const warehouse =
     Boolean(me?.modules.includes('warehouse')) && Boolean(me?.permissions.includes('stock:read'));
@@ -49,7 +50,7 @@ export function HomePage() {
           <CardHeader>
             <CardTitle>{t('role')}</CardTitle>
           </CardHeader>
-          <CardContent>{tAuth(`roles.${me.role as 'ADMIN'}`)}</CardContent>
+          <CardContent>{roleLabel(me.role)}</CardContent>
         </Card>
         <Card>
           <CardHeader>
