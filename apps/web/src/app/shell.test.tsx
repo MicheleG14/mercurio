@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { json, me, mockApi, session } from '@/test/api-mock';
 import { renderApp } from '@/test/render-app';
 import { PHONE_WIDTH, setScreenWidth, TABLET_WIDTH } from '@/test/screen';
-import { visibleNavigation } from './navigation';
+import { activeItemPath, visibleNavigation } from './navigation';
 
 const signedIn = (overrides: Record<string, unknown> = {}) => ({
   'POST /auth/refresh': () => json(200, session('t-rossi')),
@@ -24,6 +24,19 @@ describe('navigation', () => {
     expect(
       visibleNavigation({ permissions: [], modules: ['registry'] }).map((g) => g.label),
     ).toEqual([undefined]);
+  });
+
+  it('lights one item: the most specific for the address', () => {
+    const groups = visibleNavigation({
+      permissions: ['stock:read', 'companies:manage'],
+      modules: ['registry', 'warehouse'],
+    });
+    expect(activeItemPath(groups, '/stock/documents')).toBe('/stock/documents');
+    expect(activeItemPath(groups, '/stock/below-reorder')).toBe('/stock/below-reorder');
+    expect(activeItemPath(groups, '/stock/items/i1')).toBe('/stock');
+    expect(activeItemPath(groups, '/settings/company')).toBe('/settings/companies');
+    expect(activeItemPath(groups, '/')).toBe('/');
+    expect(activeItemPath(groups, '/account')).toBeNull();
   });
 });
 

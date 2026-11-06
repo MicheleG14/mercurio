@@ -18,6 +18,7 @@ import {
   WarehouseIcon,
   type LucideIcon,
 } from 'lucide-react';
+import { matchPath } from 'react-router';
 
 /**
  * The menu, described once (docs/conventions.md F22): the sidebar, its icons-only form and the
@@ -53,6 +54,8 @@ export interface NavItem {
   module?: string;
   /** Shown only when the tenant has enabled all these modules. */
   modules?: string[];
+  /** Other addresses that belong to this item (a page reached from its list). */
+  also?: string[];
 }
 
 export interface NavGroup {
@@ -176,6 +179,7 @@ export const NAVIGATION: NavGroup[] = [
         label: 'companies',
         icon: Building2Icon,
         permission: 'companies:manage',
+        also: ['/settings/company'],
       },
       { to: '/members', label: 'members', icon: UserCogIcon, permission: 'members:read' },
       { to: '/roles', label: 'roles', icon: ShieldCheckIcon, permission: 'members:read' },
@@ -183,6 +187,22 @@ export const NAVIGATION: NavGroup[] = [
     ],
   },
 ];
+
+/**
+ * The item of the current address: the most specific one whose path the address starts with.
+ * `/stock/documents` belongs to "Movements" only, not also to "Stock" (`/stock`), while an item's
+ * own pages (`/stock/items/…`) keep their item lit.
+ */
+export function activeItemPath(groups: readonly NavGroup[], pathname: string): string | null {
+  let best: { path: string; to: string } | null = null;
+  for (const item of groups.flatMap((group) => group.items)) {
+    for (const path of [item.to, ...(item.also ?? [])]) {
+      if (!matchPath({ path, end: path === '/' }, pathname)) continue;
+      if (!best || path.length > best.path.length) best = { path, to: item.to };
+    }
+  }
+  return best?.to ?? null;
+}
 
 /** The groups and items a person may see, without groups left empty. */
 export function visibleNavigation(
