@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [1.1.1] - 2026-11-06
+
+### Fixed
+
+- The side menu lights one item only: on Movements and Below reorder, Stock was lit too. The
+  invoice data of a company now lights Companies.
+
 ## [1.1.0] - 2026-11-06
 
 Phase 7: each customer organises itself from the browser.
@@ -368,6 +375,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[1.1.1]: https://github.com/MicheleG14/mercurio/releases/tag/v1.1.1
 [1.1.0]: https://github.com/MicheleG14/mercurio/releases/tag/v1.1.0
 [1.0.2]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.2
 [1.0.1]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.1
