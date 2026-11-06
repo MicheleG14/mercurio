@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/index.js';
+import { IdentityModule } from '../identity/index.js';
 import { TenancyModule } from '../tenancy/index.js';
-import { CompaniesController } from './companies.controller.js';
+import { CompaniesController, CompanyListController } from './companies.controller.js';
 import { CompaniesService } from './companies.service.js';
 import { ItemsController } from './items.controller.js';
 import { ItemsRepository } from './items.repository.js';
@@ -17,8 +18,14 @@ import { RegistryService } from './registry.service.js';
  * the invoice header data of each company (kept by tenancy, served here).
  */
 @Module({
-  imports: [AuditModule, TenancyModule],
-  controllers: [PartiesController, ItemsController, ReferenceDataController, CompaniesController],
+  imports: [AuditModule, IdentityModule, TenancyModule],
+  controllers: [
+    PartiesController,
+    ItemsController,
+    ReferenceDataController,
+    CompanyListController,
+    CompaniesController,
+  ],
   providers: [
     PartiesRepository,
     PartiesService,

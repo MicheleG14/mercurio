@@ -1,7 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { Injectable } from '@nestjs/common';
-import type { MembershipRole } from '../../generated/prisma/client.js';
-import type { Permission } from '../identity/index.js';
+import type { Permission, RoleRef } from '../identity/index.js';
 
 /** Who is making the request, as established from a verified access token. */
 export interface AuthContext {
@@ -9,7 +8,7 @@ export interface AuthContext {
   sessionId: string;
   /** Empty until the person chooses a tenant. */
   tenantId?: string;
-  role?: MembershipRole;
+  role?: RoleRef;
   permissions: readonly Permission[];
   /** Companies the person can reach in the tenant. */
   accessibleCompanyIds: readonly string[];

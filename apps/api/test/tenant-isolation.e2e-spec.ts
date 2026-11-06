@@ -151,12 +151,25 @@ describe('tenant isolation (e2e)', () => {
   });
 
   describe('writing', () => {
-    it('lets the API role write nothing yet: privileges arrive with the features that need them', async () => {
+    it('lets the API role add a company only to the current tenant', async () => {
       await expect(
         inTenant(world.tenants.a, (tx) =>
           tx.company.create({
-            data: { tenantId: world.tenants.a, legalName: 'X', vatNumber: '00000000009' },
+            data: { tenantId: world.tenants.b, legalName: 'X', vatNumber: '00000000009' },
           }),
+        ),
+      ).rejects.toThrow(/row-level security/i);
+    });
+
+    it('never lets the API role change who a person is', async () => {
+      await expect(
+        inTenant(world.tenants.a, (tx) =>
+          tx.user.update({ where: { id: world.users.u }, data: { name: 'Someone else' } }),
+        ),
+      ).rejects.toThrow(/permission denied/i);
+      await expect(
+        inTenant(world.tenants.a, (tx) =>
+          tx.user.create({ data: { email: 'new@example.com', name: 'New' } }),
         ),
       ).rejects.toThrow(/permission denied/i);
     });

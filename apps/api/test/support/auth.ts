@@ -58,8 +58,16 @@ export async function activate(
   userId: string,
   password = PASSWORD,
 ): Promise<Activated> {
+  return activateWithCode(app, await issueCode(admin, userId), password);
+}
+
+/** Activation with a code someone handed over (from the interface, for instance). */
+export async function activateWithCode(
+  app: INestApplication,
+  code: string,
+  password = PASSWORD,
+): Promise<Activated> {
   const http = request(app.getHttpServer());
-  const code = await issueCode(admin, userId);
   const { body: activated } = await http
     .post('/api/auth/activate')
     .send({ code, password })

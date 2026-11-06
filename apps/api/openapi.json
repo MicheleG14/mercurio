@@ -85,7 +85,12 @@
                 "TENANT_SELECTED",
                 "TENANT_CREATED",
                 "MEMBER_ADDED",
+                "MEMBER_UPDATED",
                 "MEMBER_REMOVED",
+                "ACTIVATION_CODE_ISSUED",
+                "ROLE_CREATED",
+                "ROLE_UPDATED",
+                "ROLE_ARCHIVED",
                 "MODULES_CHANGED",
                 "COMPANY_ADDED",
                 "COMPANY_UPDATED",
@@ -589,6 +594,475 @@
         "summary": "The latest security events of the signed-in person",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/members": {
+      "get": {
+        "operationId": "MembersController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "at:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Text to search for",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "People of the tenant; q searches name and email",
+        "tags": [
+          "members"
+        ]
+      },
+      "post": {
+        "operationId": "MembersController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddedMemberDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a person; a new identity gets an activation code, returned only here",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/members/{id}": {
+      "get": {
+        "operationId": "MembersController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "members"
+        ]
+      },
+      "patch": {
+        "operationId": "MembersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change role or companies; never of oneself, never the last administrator",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/members/{id}/remove": {
+      "post": {
+        "operationId": "MembersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove from the tenant; the person and their history stay",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/members/{id}/activation-code": {
+      "post": {
+        "operationId": "MembersController_issueCode",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationCodeDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "A new activation code, only for someone who never activated and belongs to no other tenant",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/roles": {
+      "get": {
+        "operationId": "RolesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleListDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Built-in roles and the custom roles in use",
+        "tags": [
+          "members"
+        ]
+      },
+      "post": {
+        "operationId": "RolesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomRoleDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/roles/catalog": {
+      "get": {
+        "operationId": "RolesController_catalog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionCatalogDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Every permission, with its module and what it needs",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/roles/{id}": {
+      "get": {
+        "operationId": "RolesController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomRoleDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "members"
+        ]
+      },
+      "put": {
+        "operationId": "RolesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomRoleDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Name, description and permissions; 409 EDIT_CONFLICT if outdated",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/roles/{id}/archive": {
+      "post": {
+        "operationId": "RolesController_archive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomRoleDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Archive a role nobody holds (409 ROLE_IN_USE otherwise)",
+        "tags": [
+          "members"
         ]
       }
     },
@@ -1241,6 +1715,68 @@
           }
         ],
         "summary": "VAT codes, units of measure, legal forms, payment terms and methods, tax regimes",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/companies": {
+      "get": {
+        "operationId": "CompanyListController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyListDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The companies the person reaches",
+        "tags": [
+          "registry"
+        ]
+      },
+      "post": {
+        "operationId": "CompanyListController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCompanyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a company of the group; the same id and data again return it (B33)",
         "tags": [
           "registry"
         ]
@@ -5247,6 +5783,42 @@
           "code"
         ]
       },
+      "RoleRefDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "builtin",
+              "custom"
+            ]
+          },
+          "key": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "WAREHOUSE_KEEPER",
+              "ACCOUNTANT",
+              "READ_ONLY"
+            ],
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "kind",
+          "key",
+          "id",
+          "name"
+        ]
+      },
       "TenantChoiceDto": {
         "type": "object",
         "properties": {
@@ -5260,13 +5832,7 @@
             "type": "string"
           },
           "role": {
-            "type": "string",
-            "enum": [
-              "ADMIN",
-              "WAREHOUSE_KEEPER",
-              "ACCOUNTANT",
-              "READ_ONLY"
-            ]
+            "$ref": "#/components/schemas/RoleRefDto"
           }
         },
         "required": [
@@ -5531,8 +6097,13 @@
             ]
           },
           "role": {
-            "type": "string",
-            "nullable": true
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleRefDto"
+              }
+            ]
           },
           "permissions": {
             "example": [
@@ -5629,6 +6200,521 @@
           "total",
           "page",
           "pageSize"
+        ]
+      },
+      "MemberDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/RoleRefDto"
+          },
+          "allCompanies": {
+            "type": "boolean"
+          },
+          "companyIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "PENDING_ACTIVATION"
+            ]
+          },
+          "canIssueCode": {
+            "type": "boolean",
+            "description": "A new activation code can be issued from the interface"
+          },
+          "isSelf": {
+            "type": "boolean",
+            "description": "The signed-in person: no change of role, companies or removal"
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Last use of this tenant"
+          },
+          "version": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "allCompanies",
+          "companyIds",
+          "status",
+          "canIssueCode",
+          "isSelf",
+          "lastSeenAt",
+          "version",
+          "createdAt"
+        ]
+      },
+      "MemberPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "RoleChoiceDto": {
+        "type": "object",
+        "properties": {
+          "builtin": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "WAREHOUSE_KEEPER",
+              "ACCOUNTANT",
+              "READ_ONLY"
+            ]
+          },
+          "customRoleId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "AddMemberDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "mario.bianchi@example.com"
+          },
+          "name": {
+            "type": "string",
+            "example": "Mario Bianchi",
+            "description": "Ignored when the person already has an account"
+          },
+          "role": {
+            "$ref": "#/components/schemas/RoleChoiceDto"
+          },
+          "allCompanies": {
+            "type": "boolean",
+            "description": "Every company of the tenant, now and later"
+          },
+          "companyIds": {
+            "description": "The companies reached when allCompanies is false",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "role",
+          "allCompanies",
+          "companyIds"
+        ]
+      },
+      "ActivationCodeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Shown once: only its hash is stored"
+          },
+          "expiresAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "expiresAt"
+        ]
+      },
+      "AddedMemberDto": {
+        "type": "object",
+        "properties": {
+          "member": {
+            "$ref": "#/components/schemas/MemberDto"
+          },
+          "activation": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActivationCodeDto"
+              }
+            ]
+          },
+          "existingAccount": {
+            "type": "boolean",
+            "description": "The person already had a Mercurio account: they sign in with it"
+          }
+        },
+        "required": [
+          "member",
+          "activation",
+          "existingAccount"
+        ]
+      },
+      "UpdateMemberDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          },
+          "role": {
+            "$ref": "#/components/schemas/RoleChoiceDto"
+          },
+          "allCompanies": {
+            "type": "boolean"
+          },
+          "companyIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "VersionDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "BuiltinRoleDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "WAREHOUSE_KEEPER",
+              "ACCOUNTANT",
+              "READ_ONLY"
+            ]
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "members": {
+            "type": "number",
+            "description": "Active members holding it"
+          }
+        },
+        "required": [
+          "key",
+          "permissions",
+          "members"
+        ]
+      },
+      "CustomRoleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "basedOn": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "WAREHOUSE_KEEPER",
+              "ACCOUNTANT",
+              "READ_ONLY"
+            ],
+            "nullable": true
+          },
+          "members": {
+            "type": "number",
+            "description": "Active members holding it"
+          },
+          "version": {
+            "type": "number"
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "permissions",
+          "basedOn",
+          "members",
+          "version",
+          "archivedAt",
+          "updatedAt"
+        ]
+      },
+      "RoleListDto": {
+        "type": "object",
+        "properties": {
+          "builtin": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BuiltinRoleDto"
+            }
+          },
+          "custom": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomRoleDto"
+            }
+          }
+        },
+        "required": [
+          "builtin",
+          "custom"
+        ]
+      },
+      "PermissionInfoDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "parties:read",
+              "parties:write",
+              "items:read",
+              "items:write",
+              "stock:read",
+              "stock:write",
+              "warehouses:manage",
+              "orders:read",
+              "orders:write",
+              "orders:fulfil",
+              "invoicing:read",
+              "invoicing:write",
+              "invoicing:issue",
+              "payments:write",
+              "companies:manage",
+              "members:read",
+              "members:manage",
+              "roles:manage",
+              "audit:read"
+            ]
+          },
+          "module": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null: administration of the tenant"
+          },
+          "moduleEnabled": {
+            "type": "boolean",
+            "description": "The tenant has the module: otherwise the permission waits for it"
+          },
+          "requires": {
+            "description": "Permissions it needs, directly",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reserved": {
+            "type": "boolean",
+            "description": "Built-in administrator only: not in a custom role"
+          }
+        },
+        "required": [
+          "key",
+          "module",
+          "moduleEnabled",
+          "requires",
+          "reserved"
+        ]
+      },
+      "PermissionCatalogDto": {
+        "type": "object",
+        "properties": {
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PermissionInfoDto"
+            }
+          }
+        },
+        "required": [
+          "permissions"
+        ]
+      },
+      "CreateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Commerciale",
+            "maxLength": 60
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200
+          },
+          "permissions": {
+            "type": "array",
+            "example": [
+              "parties:read",
+              "parties:write"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "parties:read",
+                "parties:write",
+                "items:read",
+                "items:write",
+                "stock:read",
+                "stock:write",
+                "warehouses:manage",
+                "orders:read",
+                "orders:write",
+                "orders:fulfil",
+                "invoicing:read",
+                "invoicing:write",
+                "invoicing:issue",
+                "payments:write",
+                "companies:manage",
+                "members:read",
+                "members:manage",
+                "roles:manage",
+                "audit:read"
+              ]
+            }
+          },
+          "basedOn": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "WAREHOUSE_KEEPER",
+              "ACCOUNTANT",
+              "READ_ONLY"
+            ],
+            "description": "The built-in role it was duplicated from"
+          }
+        },
+        "required": [
+          "name",
+          "permissions"
+        ]
+      },
+      "UpdateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Commerciale",
+            "maxLength": 60
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200
+          },
+          "permissions": {
+            "type": "array",
+            "example": [
+              "parties:read",
+              "parties:write"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "parties:read",
+                "parties:write",
+                "items:read",
+                "items:write",
+                "stock:read",
+                "stock:write",
+                "warehouses:manage",
+                "orders:read",
+                "orders:write",
+                "orders:fulfil",
+                "invoicing:read",
+                "invoicing:write",
+                "invoicing:issue",
+                "payments:write",
+                "companies:manage",
+                "members:read",
+                "members:manage",
+                "roles:manage",
+                "audit:read"
+              ]
+            }
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1,
+            "example": 1
+          }
+        },
+        "required": [
+          "name",
+          "permissions",
+          "version"
         ]
       },
       "PartyKind": {
@@ -6185,17 +7271,6 @@
           "version"
         ]
       },
-      "VersionDto": {
-        "type": "object",
-        "properties": {
-          "version": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "version"
-        ]
-      },
       "ItemDto": {
         "type": "object",
         "properties": {
@@ -6650,6 +7725,52 @@
           "chargeStampDuty",
           "missingForInvoices",
           "version"
+        ]
+      },
+      "CompanyListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompanyDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateCompanyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id of the new company (UUID v7, B33)"
+          },
+          "legalName": {
+            "type": "string",
+            "example": "Rossi Logistica Srl"
+          },
+          "vatNumber": {
+            "type": "string",
+            "example": "12345678903"
+          },
+          "taxCode": {
+            "type": "string",
+            "example": "12345678903"
+          },
+          "country": {
+            "type": "string",
+            "example": "IT",
+            "description": "ISO 3166-1 alpha-2",
+            "default": "IT"
+          }
+        },
+        "required": [
+          "id",
+          "legalName",
+          "vatNumber"
         ]
       },
       "UpdateCompanyDto": {

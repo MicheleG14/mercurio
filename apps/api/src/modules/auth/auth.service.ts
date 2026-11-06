@@ -3,7 +3,7 @@ import { APP_CONFIG, type AppConfig } from '../../config/app-config.js';
 import { type DbClient, PrismaService, TenantDatabase, UserDatabase } from '../../prisma/index.js';
 import { DomainException } from '../../shared/errors/index.js';
 import { AuditService, type AuthEventType } from '../audit/index.js';
-import { canAccessCompany, IdentityService, permissionsFor } from '../identity/index.js';
+import { canAccessCompany, IdentityService, toRoleRefDto } from '../identity/index.js';
 import { TenancyService } from '../tenancy/index.js';
 import type { AuthContext } from './auth-context.js';
 import type { MeDto, SessionDto, TenantChoiceDto } from './auth.dto.js';
@@ -464,7 +464,7 @@ export class AuthService {
       return {
         user: { id: ctx.userId, email: user?.email ?? '', name: user?.name ?? '' },
         tenant: tenant ? { id: tenant.id, name: tenant.name, slug: tenant.slug } : null,
-        role: ctx.role ?? null,
+        role: ctx.role ? toRoleRefDto(ctx.role) : null,
         permissions: [...ctx.permissions],
         modules,
         companies: companies
@@ -547,7 +547,7 @@ export class AuthService {
           sessionId: sid,
           tenantId,
           role: membership.role,
-          permissions: permissionsFor(membership.role),
+          permissions: membership.permissions,
           accessibleCompanyIds: accessible,
           companyId: headerState === 'valid' ? header!.toLowerCase() : undefined,
         },
@@ -677,7 +677,7 @@ export class AuthService {
         id: t.id,
         name: t.name,
         slug: t.slug,
-        role: memberships.find((m) => m.tenantId === t.id)!.role,
+        role: toRoleRefDto(memberships.find((m) => m.tenantId === t.id)!.role),
       }));
   }
 

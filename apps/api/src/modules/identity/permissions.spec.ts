@@ -1,5 +1,14 @@
 import { MembershipRole } from '../../generated/prisma/client.js';
-import { PERMISSIONS, type Permission, permissionsFor } from './permissions.js';
+import {
+  ASSIGNABLE_PERMISSIONS,
+  missingRequirements,
+  PERMISSION_MODULE,
+  PERMISSION_REQUIRES,
+  PERMISSIONS,
+  type Permission,
+  permissionsFor,
+  RESERVED_PERMISSIONS,
+} from './permissions.js';
 
 // The matrix, row by row: a change here must be a deliberate decision (docs/adr/0014, 0018
 // for the registry, 0021 for the warehouse, 0024 for orders, 0030 for invoicing), not a side effect.
@@ -35,11 +44,17 @@ describe('role permissions', () => {
     expect([...permissionsFor(role)].sort()).toEqual([...EXPECTED[role]].sort());
   });
 
-  it('keeps users and audit for administrators only', () => {
+  it('keeps people, roles and audit for administrators only', () => {
     for (const role of Object.values(MembershipRole).filter((r) => r !== 'ADMIN')) {
-      expect(permissionsFor(role)).not.toContain('users:read');
+      expect(permissionsFor(role)).not.toContain('members:read');
+      expect(permissionsFor(role)).not.toContain('members:manage');
+      expect(permissionsFor(role)).not.toContain('roles:manage');
       expect(permissionsFor(role)).not.toContain('audit:read');
     }
+  });
+
+  it.each(Object.values(MembershipRole))('%s holds everything its permissions need', (role) => {
+    expect(missingRequirements(permissionsFor(role))).toEqual([]);
   });
 
   it('never lets a read-only person write', () => {
@@ -51,5 +66,35 @@ describe('role permissions', () => {
       expect(permissionsFor(role).includes('warehouses:manage')).toBe(role === 'ADMIN');
       expect(permissionsFor(role).includes('companies:manage')).toBe(role === 'ADMIN');
     }
+  });
+});
+
+describe('permission catalog', () => {
+  it('reserves managing people and roles to the built-in administrator', () => {
+    expect(RESERVED_PERMISSIONS).toEqual(['members:manage', 'roles:manage']);
+    expect(ASSIGNABLE_PERMISSIONS).toEqual(
+      PERMISSIONS.filter((p) => !RESERVED_PERMISSIONS.includes(p)),
+    );
+  });
+
+  it('knows the requirements and the module of every permission', () => {
+    expect(Object.keys(PERMISSION_REQUIRES).sort()).toEqual([...PERMISSIONS].sort());
+    expect(Object.keys(PERMISSION_MODULE).sort()).toEqual([...PERMISSIONS].sort());
+  });
+
+  it('never requires a reserved permission from an assignable one', () => {
+    for (const permission of ASSIGNABLE_PERMISSIONS) {
+      expect(
+        missingRequirements([permission]).filter((p) => RESERVED_PERMISSIONS.includes(p)),
+      ).toEqual([]);
+    }
+  });
+
+  it('follows the whole chain of requirements', () => {
+    expect(missingRequirements(['invoicing:issue'])).toEqual(['invoicing:read', 'invoicing:write']);
+    expect(missingRequirements(['invoicing:issue', 'invoicing:write', 'invoicing:read'])).toEqual(
+      [],
+    );
+    expect(missingRequirements([])).toEqual([]);
   });
 });

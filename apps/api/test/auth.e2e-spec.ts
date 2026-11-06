@@ -328,7 +328,7 @@ describe('authentication (e2e)', () => {
       const me = await http().get('/api/auth/me').set(bearer(a.accessToken)).expect(200);
 
       expect(me.body.tenant.id).toBe(world.tenants.a);
-      expect(me.body.role).toBe('ADMIN');
+      expect(me.body.role).toEqual({ kind: 'builtin', key: 'ADMIN', id: null, name: null });
       expect(me.body.permissions).toContain('audit:read');
       expect(me.body.modules).toContain('registry');
       expect(me.body.companies.map((c: { id: string }) => c.id)).toEqual([world.companies.a]);
@@ -339,7 +339,7 @@ describe('authentication (e2e)', () => {
       const b = await sessionOf('u', world.tenants.b);
       const me = await http().get('/api/auth/me').set(bearer(b.accessToken)).expect(200);
 
-      expect(me.body.role).toBe('READ_ONLY');
+      expect(me.body.role).toEqual({ kind: 'builtin', key: 'READ_ONLY', id: null, name: null });
       expect(me.body.permissions).not.toContain('audit:read');
       expect(me.body.companies.map((c: { id: string }) => c.id)).toEqual([world.companies.b]);
     });

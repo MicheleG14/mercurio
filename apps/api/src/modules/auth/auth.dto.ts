@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, IsUUID, Length, MaxLength } from 'class-validator';
+import { RoleRefDto } from '../identity/index.js';
 
 // Input limits are generous on purpose: they stop absurd bodies, while the real rules (password
 // policy, code validity) live in the service and answer with their own codes.
@@ -95,7 +96,7 @@ export class TenantChoiceDto {
   @ApiProperty() id!: string;
   @ApiProperty() name!: string;
   @ApiProperty() slug!: string;
-  @ApiProperty({ enum: ['ADMIN', 'WAREHOUSE_KEEPER', 'ACCOUNTANT', 'READ_ONLY'] }) role!: string;
+  @ApiProperty({ type: RoleRefDto }) role!: RoleRefDto;
 }
 
 export class ActivateResponseDto {
@@ -166,7 +167,7 @@ export class MeCompanyDto {
 export class MeDto {
   @ApiProperty({ type: MeUserDto }) user!: MeUserDto;
   @ApiProperty({ type: MeTenantDto, nullable: true }) tenant!: MeTenantDto | null;
-  @ApiPropertyOptional({ type: String, nullable: true }) role!: string | null;
+  @ApiPropertyOptional({ type: RoleRefDto, nullable: true }) role!: RoleRefDto | null;
   @ApiProperty({ type: [String], example: ['parties:read'] }) permissions!: string[];
   @ApiProperty({ type: [String], example: ['registry', 'warehouse'] }) modules!: string[];
   @ApiProperty({ type: [MeCompanyDto], description: 'Companies the person can work on' })

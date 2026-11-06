@@ -68,7 +68,10 @@ describe('sign-in tables (e2e)', () => {
       expect(functions.map((f) => f.name)).toEqual([
         'app_activate_account',
         'app_find_login_subject',
+        'app_find_or_create_person',
+        'app_issue_activation_code',
         'app_rotate_session',
+        'app_tenant_member_states',
       ]);
       for (const fn of functions) {
         expect(fn.config).toContain('search_path=pg_catalog, public');
