@@ -3,11 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { Bar, BarChart, CartesianGrid, LabelList, Tooltip, XAxis, YAxis } from 'recharts';
 import { ChartCard } from '@/components/shared/ChartCard';
+import { ChartCardSkeleton } from '@/components/shared/ChartCardSkeleton';
 import { MoneyAmount } from '@/components/shared/MoneyAmount';
 import { ChartContainer } from '@/components/ui/chart';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { chartValue, formatMoney, formatMoneyTick } from '@/lib/decimal';
 import { businessToday } from '@/lib/format';
+import {
+  InvoicingChartsSkeleton,
+  OrdersChartsSkeleton,
+  StockChartsSkeleton,
+} from './OverviewChartsSkeleton';
 import { useAging, useInvoicingStats, useOrdersStats, useStockStats } from './queries';
 
 /** Series colours, in their fixed order (validated: docs/conventions.md F23). */
@@ -184,10 +190,17 @@ export default function OverviewCharts({
   const navigate = useNavigate();
   const today = businessToday();
   const [year, setYear] = useState(Number(today.slice(0, 4)));
-  const invoicingStats = useInvoicingStats(year, invoicing).data;
-  const aging = useAging(invoicing).data;
-  const ordersStats = useOrdersStats(year, orders).data;
-  const stockStats = useStockStats(year, warehouse).data;
+  const invoicingQuery = useInvoicingStats(year, invoicing);
+  const agingQuery = useAging(invoicing);
+  const ordersQuery = useOrdersStats(year, orders);
+  const stockQuery = useStockStats(year, warehouse);
+  const invoicingStats = invoicingQuery.data;
+  const aging = agingQuery.data;
+  const ordersStats = ordersQuery.data;
+  const stockStats = stockQuery.data;
+  // isLoading is only the first load: a new year keeps the previous figures until it arrives,
+  // and a request that fails leaves no card behind, as before.
+  const loading = [invoicingQuery, agingQuery, ordersQuery, stockQuery].some((q) => q.isLoading);
   const money = (raw: string) => formatMoney(raw, i18n.language, 2);
   const years = [
     ...new Set([
@@ -219,7 +232,7 @@ export default function OverviewCharts({
   };
 
   return (
-    <section className="flex flex-col gap-4" aria-labelledby="overview-trends">
+    <section className="flex flex-col gap-4" aria-labelledby="overview-trends" aria-busy={loading}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="overview-trends" className="text-lg font-semibold">
           {t('charts.title')}
@@ -237,6 +250,7 @@ export default function OverviewCharts({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
+        {invoicingQuery.isLoading && <InvoicingChartsSkeleton />}
         {invoicing && invoicingStats && (
           <>
             <ChartCard
@@ -305,6 +319,7 @@ export default function OverviewCharts({
               />
             </ChartCard>
 
+            {agingQuery.isLoading && <ChartCardSkeleton />}
             {aging && (
               <ChartCard
                 title={t('charts.aging.title')}
@@ -426,6 +441,7 @@ export default function OverviewCharts({
           </>
         )}
 
+        {ordersQuery.isLoading && <OrdersChartsSkeleton />}
         {orders && ordersStats && (
           <>
             <ChartCard
@@ -505,6 +521,7 @@ export default function OverviewCharts({
           </>
         )}
 
+        {stockQuery.isLoading && <StockChartsSkeleton />}
         {warehouse && stockStats && (
           <ChartCard
             className="lg:col-span-2"
