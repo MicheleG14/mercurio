@@ -1342,7 +1342,10 @@ class HistoryWriter {
           party: 'lario',
           terms: '60DF',
           method: 'MP05',
-          pays: { kind: 'slow', recent: 150, late: 40 },
+          // Leaves open what fell due in the last 180 days: the 89 days before the last 91 hold
+          // at least two of its monthly due dates, so something is over 90 days late whatever
+          // the reference day, even when one of them is the invoice credited by mistake.
+          pays: { kind: 'slow', recent: 180, late: 40 },
           lines: [{ code: 'CORSO-SIC', quantity: this.int(4, 8) }],
           stampDuty: true,
           onIssued: (issued) => {
