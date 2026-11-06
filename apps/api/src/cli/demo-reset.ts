@@ -60,6 +60,7 @@ export async function deleteTenantData(db: DbClient, tenantIds: readonly string[
   await db.item.deleteMany({ where: { tenantId } });
   await db.membershipCompany.deleteMany({ where: { tenantId } });
   await db.membership.deleteMany({ where: { tenantId } });
+  await db.tenantRole.deleteMany({ where: { tenantId } });
   await db.tenantModule.deleteMany({ where: { tenantId } });
   await db.company.deleteMany({ where: { tenantId } });
   await db.tenant.deleteMany({ where: { id: tenantId } });
@@ -112,6 +113,10 @@ export async function keptMembers(db: DbClient, suffix = ''): Promise<KeptMember
   const companies = await db.company.findMany({
     where: { id: { in: links.map((l) => l.companyId) } },
   });
+  const roles = await db.tenantRole.findMany({
+    where: { id: { in: memberships.flatMap((m) => (m.customRoleId ? [m.customRoleId] : [])) } },
+  });
+  const roleNames = new Map(roles.map((r) => [r.id, r.name]));
   const slugOf = new Map(tenants.map((t) => [t.id, t.slug]));
   const userOf = new Map(users.map((u) => [u.id, u]));
   const vatOf = new Map(companies.map((c) => [c.id, c.vatNumber]));
@@ -122,7 +127,8 @@ export async function keptMembers(db: DbClient, suffix = ''): Promise<KeptMember
       slug: slugOf.get(m.tenantId)!,
       email: user.email,
       name: user.name,
-      role: m.role,
+      // A custom role is put back by name: the seed creates the demo roles again.
+      role: m.role ?? roleNames.get(m.customRoleId!) ?? 'READ_ONLY',
       companies: m.allCompanies
         ? ('all' as const)
         : links.filter((l) => l.membershipId === m.id).map((l) => vatOf.get(l.companyId)!),

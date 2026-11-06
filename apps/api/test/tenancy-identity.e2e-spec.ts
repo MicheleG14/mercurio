@@ -45,8 +45,15 @@ describe('tenancy and identity (e2e)', () => {
     tenantIds.push(created.tenant.id);
     return created;
   };
+  // As the terminal does: a new identity gets its code in the same transaction.
   const addMember = async (input: Parameters<IdentityService['addMember']>[1]) => {
-    const result = await admin.$transaction((tx) => identity.addMember(tx, input));
+    const result = await admin.$transaction(async (tx) => {
+      const added = await identity.addMember(tx, input);
+      const activation = added.identityCreated
+        ? await identity.issueActivationCode(tx, added.userId)
+        : undefined;
+      return { ...added, activation };
+    });
     userIds.push(result.userId);
     return result;
   };

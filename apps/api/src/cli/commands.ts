@@ -180,6 +180,10 @@ export const COMMANDS: Record<string, Command> = {
           role: 'ADMIN',
           companies: 'all',
         });
+        // A new identity gets its code here, as the owner role: the same path as issue-code.
+        const activation = admin.identityCreated
+          ? await identity.issueActivationCode(tx, admin.userId)
+          : undefined;
         // The audit events are part of the same transaction: no change without its record.
         await audit.recordTenantEvent(tx, {
           tenantId: created.tenant.id,
@@ -195,7 +199,7 @@ export const COMMANDS: Record<string, Command> = {
           subject: { type: 'membership', id: admin.membershipId },
           details: { email: admin.email, role: 'ADMIN' },
         });
-        return { created, admin };
+        return { created, admin: { ...admin, activation } };
       });
 
       io.out(`Tenant ${created.tenant.slug} created: ${created.tenant.name}`);
@@ -264,19 +268,22 @@ export const COMMANDS: Record<string, Command> = {
           source: 'CLI',
           type: 'MEMBER_ADDED',
           subject: { type: 'membership', id: member.membershipId },
-          details: { email: member.email, role: v.role!.toUpperCase() },
+          details: { email: member.email, role: member.role },
         });
-        return member;
+        const activation = member.identityCreated
+          ? await identity.issueActivationCode(tx, member.userId)
+          : undefined;
+        return { ...member, activation };
       });
       const how = added.reactivated ? 'reactivated in' : 'added to';
-      io.out(`${added.email} ${how} ${v.tenant} as ${v.role!.toUpperCase()}`);
+      io.out(`${added.email} ${how} ${v.tenant} as ${added.role}`);
       if (!added.identityCreated) io.out('  existing identity: no new activation code');
       if (added.activation) printActivation(io, added.activation, added.email);
       io.audit({
         command: 'add-user',
         tenant: v.tenant,
         email: added.email,
-        role: v.role!.toUpperCase(),
+        role: added.role,
         companies: v.companies,
       });
     },

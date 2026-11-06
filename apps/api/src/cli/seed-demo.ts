@@ -56,6 +56,32 @@ export const DEMO = {
         { email: 'marco.verdi', name: 'Marco Verdi', role: 'WAREHOUSE_KEEPER', companies: [1] },
         { email: 'luca.gallo', name: 'Luca Gallo', role: 'READ_ONLY', companies: [0] },
         { email: 'paola.conti', name: 'Paola Conti', role: 'ACCOUNTANT', companies: 'all' },
+        // A custom role (phase 7), and someone who has not activated the account yet: the
+        // People page shows both, and offers a new code for the second.
+        { email: 'elena.ferri', name: 'Elena Ferri', role: 'Commerciale', companies: 'all' },
+        {
+          email: 'giulia.moretti',
+          name: 'Giulia Moretti',
+          role: 'READ_ONLY',
+          companies: [0],
+          pending: true,
+        },
+      ],
+      roles: [
+        {
+          name: 'Commerciale',
+          description: 'Clienti e fornitori, ordini dei clienti, fatture in lettura',
+          basedOn: 'ACCOUNTANT',
+          permissions: [
+            'parties:read',
+            'parties:write',
+            'items:read',
+            'stock:read',
+            'orders:read',
+            'orders:write',
+            'invoicing:read',
+          ],
+        },
       ],
       parties: [
         company('bruni', 'Ferramenta Bruni Srl', '0612345678', 'SRL', 'customer', {
@@ -363,6 +389,9 @@ export async function seedDemo(db: DbClient, services: SeedServices, options: Se
       });
       companyIds.push(added.id);
     }
+    for (const role of 'roles' in tenant ? tenant.roles : []) {
+      await services.identity.createRole(db, tenantId, role);
+    }
     for (const member of tenant.members) {
       const added = await services.identity.addMember(db, {
         tenantId,
@@ -372,7 +401,8 @@ export async function seedDemo(db: DbClient, services: SeedServices, options: Se
         companies:
           member.companies === 'all' ? 'all' : member.companies.map((index) => companyIds[index]!),
       });
-      userIds.add(added.userId);
+      // A pending person gets no demo credentials: they have not activated their account.
+      if (!('pending' in member && member.pending)) userIds.add(added.userId);
     }
 
     const parties = new Map<string, string>();

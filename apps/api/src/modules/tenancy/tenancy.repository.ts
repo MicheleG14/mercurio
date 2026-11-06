@@ -6,6 +6,8 @@ import type { CompanyProfileData } from './company-profile.js';
 import { MODULE_KEYS, type ModuleKey } from './module-catalog.js';
 
 export interface NewCompany {
+  /** Chosen by the client from the interface (B33); generated otherwise. */
+  id?: string;
   tenantId: string;
   legalName: string;
   vatNumber: string;

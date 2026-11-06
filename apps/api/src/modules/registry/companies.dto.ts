@@ -1,9 +1,51 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsInt,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { Text } from './dto-fields.js';
 
-// The company's invoice header data (phase 5). Its name and identifiers are set by the platform
-// operator from the terminal and only shown here.
+// The company's invoice header data (phase 5). Its name and identifiers are set when it is
+// created (by an administrator from phase 7, or from the terminal) and never change after.
+
+/** UUID version 7 (B7), chosen by the client so a second click adds no second company (B33). */
+const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/** A further company of the group: its identity only, the header data follow in its own page. */
+export class CreateCompanyDto {
+  @ApiProperty({ description: 'Id of the new company (UUID v7, B33)' })
+  @Matches(UUID_V7)
+  id!: string;
+
+  @ApiProperty({ example: 'Rossi Logistica Srl' })
+  @IsString()
+  @MaxLength(200)
+  legalName!: string;
+
+  @ApiProperty({ example: '12345678903' })
+  @IsString()
+  @MaxLength(30)
+  vatNumber!: string;
+
+  @ApiPropertyOptional({ example: '12345678903' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  taxCode?: string;
+
+  @ApiPropertyOptional({ example: 'IT', description: 'ISO 3166-1 alpha-2', default: 'IT' })
+  @IsOptional()
+  @IsString()
+  @Length(2, 2)
+  country?: string;
+}
 
 /** Only the fields sent change; null empties an optional field. */
 export class UpdateCompanyDto {
@@ -85,4 +127,8 @@ export class CompanyDto {
   })
   missingForInvoices!: string[];
   @ApiProperty() version!: number;
+}
+
+export class CompanyListDto {
+  @ApiProperty({ type: [CompanyDto] }) items!: CompanyDto[];
 }

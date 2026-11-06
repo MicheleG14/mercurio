@@ -156,10 +156,17 @@ describe('demo seed (e2e)', () => {
     expect(await services.identity.listMembers(admin, rossi.id)).toHaveLength(
       DEMO.tenants[0].members.length,
     );
-    // Six people: Paola Conti is one identity in two tenants.
+    // Eight people: Paola Conti is one identity in two tenants.
     expect(
       await admin.user.count({ where: { email: { endsWith: `.${suffix}@example.com` } } }),
-    ).toBe(6);
+    ).toBe(8);
+    // A custom role, and someone waiting for activation, without demo credentials (phase 7).
+    const roles = await services.identity.listRoles(admin, rossi.id);
+    expect(roles.map((r) => r.name)).toEqual(['Commerciale']);
+    const giulia = await admin.user.findFirstOrThrow({
+      where: { email: `giulia.moretti.${suffix}@example.com` },
+    });
+    expect(await admin.credential.count({ where: { userId: giulia.id } })).toBe(0);
   });
 
   it('keeps each tenant to its own data, as the API role', async () => {

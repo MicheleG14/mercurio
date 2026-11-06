@@ -1,4 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import type { Company } from '../../generated/prisma/client.js';
 import type { DbClient } from '../../prisma/index.js';
 import { DomainException } from '../../shared/errors/index.js';
 import { normalizeName } from '../../shared/text.js';
@@ -46,6 +47,31 @@ export class TenancyService {
       tenantId: tenant.id,
       ...this.normalizeCompany(input),
     });
+  }
+
+  /**
+   * A company added from the interface, with the id the client chose (B33): sending the same
+   * company again returns it instead of failing, a different one with that id is refused.
+   */
+  async addCompanyToTenant(
+    db: DbClient,
+    tenantId: string,
+    input: CompanyInput & { id: string },
+  ): Promise<{ company: Company; created: boolean }> {
+    const data = this.normalizeCompany(input);
+    const existing = await this.repository.findCompany(db, input.id);
+    if (existing) {
+      const same =
+        existing.tenantId === tenantId &&
+        existing.legalName === data.legalName &&
+        existing.vatNumber === data.vatNumber &&
+        (existing.taxCode ?? undefined) === (data.taxCode ?? undefined) &&
+        existing.country === data.country;
+      if (!same) throw new DomainException('COMPANY_ID_REUSED', HttpStatus.CONFLICT);
+      return { company: existing, created: false };
+    }
+    const company = await this.repository.createCompany(db, { id: input.id, tenantId, ...data });
+    return { company, created: true };
   }
 
   /** Enables and disables modules, refusing any result that breaks a dependency. */

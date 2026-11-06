@@ -36,20 +36,26 @@ enum UserStatus {
 }
 
 /// A user's place in a tenant: role and reachable companies. Never deleted: REMOVED instead.
+/// The role is either a built-in one (`role`) or one the tenant defined (`customRoleId`), never
+/// both and never neither (checked by the database).
 model Membership {
   id           String           @id @default(uuid(7)) @db.Uuid
   tenantId     String           @map("tenant_id") @db.Uuid
   userId       String           @map("user_id") @db.Uuid
-  role         MembershipRole
+  role         MembershipRole?
+  customRoleId String?          @map("custom_role_id") @db.Uuid
   status       MembershipStatus @default(ACTIVE)
   /// True: every company of the tenant. False: only those in membership_companies.
   allCompanies Boolean          @default(false) @map("all_companies")
+  /// Optimistic concurrency (B29) for role and companies.
+  version      Int              @default(1)
   createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  tenant    Tenant              @relation(fields: [tenantId], references: [id])
-  user      User                @relation(fields: [userId], references: [id])
-  companies MembershipCompany[]
+  tenant     Tenant              @relation(fields: [tenantId], references: [id])
+  user       User                @relation(fields: [userId], references: [id])
+  customRole TenantRole?         @relation(fields: [tenantId, customRoleId], references: [tenantId, id])
+  companies  MembershipCompany[]
 
   @@unique([tenantId, userId])
   @@unique([tenantId, id])
@@ -70,6 +76,30 @@ enum MembershipStatus {
   REMOVED
 
   @@map("membership_status")
+}
+
+/// A role a tenant defined for itself: a name and a set of permissions, validated against the
+/// catalog in code. Built-in roles are not rows: they live in code (ROLE_PERMISSIONS) and get new
+/// permissions with each release; a custom role never does by itself.
+model TenantRole {
+  id          String          @id @default(uuid(7)) @db.Uuid
+  tenantId    String          @map("tenant_id") @db.Uuid
+  name        String
+  description String?
+  permissions String[]
+  /// The built-in role it was duplicated from, for information only.
+  basedOn     MembershipRole? @map("based_on")
+  version     Int             @default(1)
+  archivedAt  DateTime?       @map("archived_at") @db.Timestamptz(6)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  memberships Membership[]
+
+  /// Target of composite foreign keys: a membership never points to another tenant's role (B25).
+  @@unique([tenantId, id])
+  @@map("tenant_roles")
 }
 
 /// Companies reachable by a membership with allCompanies = false. Both foreign keys include

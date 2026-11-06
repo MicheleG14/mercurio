@@ -46,6 +46,7 @@ describe('tenant tables (guard)', () => {
         'stock_documents',
         'stock_movements',
         'tenant_modules',
+        'tenant_roles',
         'warehouses',
       ]),
     );
@@ -104,6 +105,7 @@ describe('tenant tables (guard)', () => {
     expect(tableWrites).toEqual([
       { table: 'audit_events', privilege: 'INSERT' },
       { table: 'auth_events', privilege: 'INSERT' },
+      { table: 'companies', privilege: 'INSERT' },
       { table: 'credit_allocations', privilege: 'INSERT' },
       { table: 'invoice_counters', privilege: 'INSERT' },
       { table: 'invoice_draft_lines', privilege: 'DELETE' },
@@ -119,6 +121,9 @@ describe('tenant tables (guard)', () => {
       { table: 'invoiceable_lines', privilege: 'INSERT' },
       { table: 'invoices', privilege: 'INSERT' },
       { table: 'items', privilege: 'INSERT' },
+      { table: 'membership_companies', privilege: 'DELETE' },
+      { table: 'membership_companies', privilege: 'INSERT' },
+      { table: 'memberships', privilege: 'INSERT' },
       { table: 'order_counters', privilege: 'INSERT' },
       { table: 'order_fulfilment_lines', privilege: 'INSERT' },
       { table: 'order_fulfilments', privilege: 'INSERT' },
@@ -139,6 +144,7 @@ describe('tenant tables (guard)', () => {
       { table: 'stock_movements', privilege: 'INSERT' },
       { table: 'stock_reservations', privilege: 'DELETE' },
       { table: 'stock_reservations', privilege: 'INSERT' },
+      { table: 'tenant_roles', privilege: 'INSERT' },
       { table: 'warehouses', privilege: 'INSERT' },
     ]);
 
@@ -192,6 +198,25 @@ describe('tenant tables (guard)', () => {
       'share_capital',
       'sole_shareholder',
       'tax_regime',
+      'updated_at',
+      'version',
+    ]);
+    // People (phase 7): a membership changes in role, companies and status, never its person or
+    // tenant; a custom role never in its tenant or the role it was based on. No UPDATE on users:
+    // a person's name and email are theirs, not the tenant's.
+    expect(byTable('memberships')).toEqual([
+      'all_companies',
+      'custom_role_id',
+      'role',
+      'status',
+      'updated_at',
+      'version',
+    ]);
+    expect(byTable('tenant_roles')).toEqual([
+      'archived_at',
+      'description',
+      'name',
+      'permissions',
       'updated_at',
       'version',
     ]);
@@ -260,6 +285,7 @@ describe('tenant tables (guard)', () => {
       'invoice_due_dates',
       'invoiceable_fulfilments',
       'items',
+      'memberships',
       'order_counters',
       'order_fulfilments',
       'order_lines',
@@ -271,6 +297,7 @@ describe('tenant tables (guard)', () => {
       'stock_balances',
       'stock_document_counters',
       'stock_reservations',
+      'tenant_roles',
       'warehouses',
     ]);
   });
