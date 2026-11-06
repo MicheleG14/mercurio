@@ -5,6 +5,14 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Each phase of the [roadmap](README.md#roadmap) ends with
 a release.
 
+## [1.1.2] - 2026-11-06
+
+### Fixed
+
+- In the lines of invoice drafts, orders and stock documents, the amount (or the stock) and the
+  remove button sit on the row of the fields, centred on them: the amount was at the height of the
+  labels and the button wrapped below it.
+
 ## [1.1.1] - 2026-11-06
 
 ### Fixed
@@ -375,6 +383,7 @@ features yet.
   hand.
 - Documentation: architecture, conventions, glossary, first architecture decision records.
 
+[1.1.2]: https://github.com/MicheleG14/mercurio/releases/tag/v1.1.2
 [1.1.1]: https://github.com/MicheleG14/mercurio/releases/tag/v1.1.1
 [1.1.0]: https://github.com/MicheleG14/mercurio/releases/tag/v1.1.0
 [1.0.2]: https://github.com/MicheleG14/mercurio/releases/tag/v1.0.2
