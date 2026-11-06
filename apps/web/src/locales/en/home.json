@@ -43,6 +43,7 @@
     "invoicing": "Numbered invoices and credit notes, PDF, payment schedule and payments."
   },
   "charts": {
+    "loading": "Loading the charts",
     "title": "Trends",
     "year": "Year",
     "month": "Month",

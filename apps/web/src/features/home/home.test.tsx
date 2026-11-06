@@ -130,6 +130,31 @@ describe('overview charts', () => {
     expect(screen.getByText('Nessun ordine cliente da evadere.')).toBeInTheDocument();
   });
 
+  it('holds the place of the charts while their figures load', async () => {
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const all = routes(['invoicing:read']);
+    mockApi({
+      ...all,
+      'GET /invoicing/stats': async () => {
+        await held;
+        return all['GET /invoicing/stats']();
+      },
+    });
+    renderApp('/');
+    const section = await screen.findByRole('region', { name: 'Andamento' });
+    expect(section).toHaveAttribute('aria-busy', 'true');
+    expect(section.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
+    expect(screen.queryByText(`Fatturato e incassato nel ${year}`)).not.toBeInTheDocument();
+
+    release();
+    expect(await screen.findByText(`Fatturato e incassato nel ${year}`)).toBeInTheDocument();
+    expect(section).toHaveAttribute('aria-busy', 'false');
+    expect(section.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(0);
+  });
+
   it('says when a year has no documents', async () => {
     mockApi(routes(['invoicing:read'], true));
     renderApp('/');

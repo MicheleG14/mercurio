@@ -43,6 +43,7 @@
     "invoicing": "Fatture e note di credito numerate, PDF, scadenziario e incassi."
   },
   "charts": {
+    "loading": "Caricamento dei grafici",
     "title": "Andamento",
     "year": "Anno",
     "month": "Mese",

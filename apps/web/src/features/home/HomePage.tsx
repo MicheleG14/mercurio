@@ -7,6 +7,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMe } from '@/lib/auth/me';
 import { MoneyAmount } from '@/components/shared/MoneyAmount';
+import { OverviewChartsSkeleton } from './OverviewChartsSkeleton';
 import { useInvoicingSummary, useOrdersSummary, useStockSummary } from './queries';
 
 /** The modules a tenant can have, besides the registry that is always there. */
@@ -175,7 +176,15 @@ export function HomePage() {
         )}
         {(warehouse || orders || invoicing) && (
           <div className="md:col-span-2">
-            <Suspense fallback={null}>
+            <Suspense
+              fallback={
+                <OverviewChartsSkeleton
+                  invoicing={invoicing}
+                  orders={orders}
+                  warehouse={warehouse}
+                />
+              }
+            >
               <OverviewCharts invoicing={invoicing} orders={orders} warehouse={warehouse} />
             </Suspense>
           </div>
