@@ -68,7 +68,7 @@ export function RolesPage() {
       )}
       <ErrorMessage error={roles.error ?? archive.error} />
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium">{t('roles.builtin')}</h2>
+        <h2 className="text-sm font-medium">{t('roles.builtinTitle')}</h2>
         <div className="grid gap-3 md:grid-cols-2">
           {roles.data?.builtin.map((role) => (
             <Card key={role.key} size="sm">
@@ -108,7 +108,7 @@ export function RolesPage() {
         </div>
       </section>
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium">{t('roles.custom')}</h2>
+        <h2 className="text-sm font-medium">{t('roles.customTitle')}</h2>
         {roles.data && roles.data.custom.length === 0 && (
           <p className="text-muted-foreground text-sm">{t('roles.empty')}</p>
         )}

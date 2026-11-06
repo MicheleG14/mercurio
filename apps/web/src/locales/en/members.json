@@ -129,6 +129,8 @@
       "audit": {
         "read": "See the activity log"
       }
-    }
+    },
+    "builtinTitle": "Built-in roles",
+    "customTitle": "The customer's roles"
   }
 }
