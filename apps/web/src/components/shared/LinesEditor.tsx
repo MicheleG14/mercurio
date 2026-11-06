@@ -62,7 +62,9 @@ export function LinesEditor({
             )}
           >
             {renderLine(index)}
-            <div className="flex items-end justify-between gap-3 md:h-full md:flex-col md:items-end md:justify-start md:pt-6">
+            {/* On wider screens: beside the fields, under their labels (mt-6) and centred on an
+                input's height (min-h-9), the aside and the remove button in one row. */}
+            <div className="flex items-center justify-between gap-3 md:mt-6 md:min-h-9 md:justify-end">
               {renderAside?.(index) ?? <span />}
               <Button
                 type="button"
